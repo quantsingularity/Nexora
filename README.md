@@ -6,6 +6,8 @@
 
 An end-to-end MLOps system predicting 30-day hospital readmission risk with clinical-grade validation and regulatory compliance.
 
+> **Note**: This Project is currently under active development. Features and functionalities are being added and improved continuously to enhance user experience.
+
 ## 🏥 Key Features
 
 - **Multi-Modal Clinical Data Processing**
