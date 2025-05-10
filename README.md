@@ -7,7 +7,7 @@
 An end-to-end MLOps system predicting 30-day hospital readmission risk with clinical-grade validation and regulatory compliance.
 
 <div align="center">
-  <img src="Nexora.bmp" alt="An end-to-end MLOps system predicting 30-day hospital readmission risk with clinical-grade validation and regulatory compliance" width="100%">
+  <img src="docs/Nexora.bmp" alt="An end-to-end MLOps system predicting 30-day hospital readmission risk with clinical-grade validation and regulatory compliance" width="100%">
 </div>
 
 > **Note**: This Project is currently under active development. Features and functionalities are being added and improved continuously to enhance user experience.
