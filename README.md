@@ -1,5 +1,6 @@
 # Hospital Readmission Risk Prediction System
 
+[![CI Status](https://img.shields.io/github/actions/workflow/status/abrar2030/Nexora/ci-cd.yml?branch=main&label=CI&logo=github)](https://github.com/abrar2030/Nexora/actions)
 [![CI Status](https://img.shields.io/github/workflow/status/abrar2030/Nexora/CI/main?label=CI)](https://github.com/abrar2030/Nexora/actions)
 [![Test Coverage](https://img.shields.io/codecov/c/github/abrar2030/Nexora/main?label=Coverage)](https://codecov.io/gh/abrar2030/Nexora)
 [![HIPAA Compliance](https://img.shields.io/badge/HIPAA-Compliant-brightgreen)](https://www.hhs.gov/hipaa)
