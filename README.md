@@ -11,7 +11,7 @@
 Nexora is an advanced healthcare AI platform that predicts patient readmission risk using machine learning and electronic health record (EHR) data, helping clinicians make informed decisions and improve patient outcomes.
 
 <div align="center">
-  <img src="docs/images/nexora_dashboard.png" alt="Nexora Clinical Dashboard" width="80%">
+  <img src="docs/images/Nexora_dashboard.bmp" alt="Nexora Clinical Dashboard" width="80%">
 </div>
 
 > **Note**: This project is under active development and follows strict healthcare compliance standards. All features are continuously validated for clinical accuracy and regulatory compliance.
