@@ -1,5 +1,7 @@
 # Hospital Readmission Risk Prediction System
 
+[![CI Status](https://img.shields.io/github/workflow/status/abrar2030/Nexora/CI/main?label=CI)](https://github.com/abrar2030/Nexora/actions)
+[![Test Coverage](https://img.shields.io/codecov/c/github/abrar2030/Nexora/main?label=Coverage)](https://codecov.io/gh/abrar2030/Nexora)
 [![HIPAA Compliance](https://img.shields.io/badge/HIPAA-Compliant-brightgreen)](https://www.hhs.gov/hipaa)
 [![Python 3.10](https://img.shields.io/badge/Python-3.10-blue)](https://www.python.org/)
 [![Model Registry](https://img.shields.io/badge/MLflow-Registry-orange)](https://mlflow.org/)
@@ -11,6 +13,21 @@ An end-to-end MLOps system predicting 30-day hospital readmission risk with clin
 </div>
 
 > **Note**: This Project is currently under active development. Features and functionalities are being added and improved continuously to enhance user experience.
+
+## Table of Contents
+- [Key Features](#-key-features)
+- [Feature Implementation Status](#feature-implementation-status)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Model Performance](#-model-performance)
+- [Project Structure](#-project-structure)
+- [Configuration](#-configuration)
+- [Clinical Integration](#-clinical-integration)
+- [Compliance & Security](#-compliance--security)
+- [Testing](#testing)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ## 🏥 Key Features
 
@@ -34,6 +51,47 @@ An end-to-end MLOps system predicting 30-day hospital readmission risk with clin
   - Synthetic data generation
   - Multi-hospital federated learning
   - Clinical concept drift detection
+
+## Feature Implementation Status
+
+| Feature | Status | Description | Planned Release |
+|---------|--------|-------------|----------------|
+| **Clinical Data Processing** |
+| FHIR/HL7 Ingestion | ✅ Implemented | Standard healthcare data format support | v1.0 |
+| OMOP CDM Transformation | ✅ Implemented | Common data model standardization | v1.0 |
+| PHI De-identification | ✅ Implemented | HIPAA-compliant data anonymization | v1.0 |
+| Multi-modal Integration | 🔄 In Progress | Combining structured and unstructured data | v1.1 |
+| Real-time Data Streams | 📅 Planned | Continuous data processing pipeline | v1.2 |
+| **ML Models** |
+| Deep Survival Transformers | ✅ Implemented | Advanced time-to-event prediction | v1.0 |
+| Clinical BERT Embeddings | ✅ Implemented | NLP for clinical notes | v1.0 |
+| Fairness-constrained Ensembles | ✅ Implemented | Bias mitigation in predictions | v1.0 |
+| Multi-task Learning | 🔄 In Progress | Joint prediction of related outcomes | v1.1 |
+| Explainable AI Components | 🔄 In Progress | Interpretable prediction rationales | v1.1 |
+| Reinforcement Learning | 📅 Planned | Adaptive intervention policies | v1.2 |
+| **Healthcare Compliance** |
+| HIPAA Audit Logging | ✅ Implemented | Comprehensive access tracking | v1.0 |
+| Adverse Event Monitoring | ✅ Implemented | Safety surveillance system | v1.0 |
+| IRB Model Versioning | ✅ Implemented | Research protocol compliance | v1.0 |
+| Automated Compliance Reports | 🔄 In Progress | Regulatory documentation generation | v1.1 |
+| Multi-jurisdiction Compliance | 📅 Planned | International regulatory frameworks | v1.2 |
+| **Clinical Integration** |
+| Clinician Dashboard | ✅ Implemented | Streamlit-based user interface | v1.0 |
+| EHR Alert Integration | ✅ Implemented | Care workflow notifications | v1.0 |
+| SMART-on-FHIR Launch | ✅ Implemented | EHR-embedded application | v1.0 |
+| Order Entry Integration | 🔄 In Progress | Direct clinical action support | v1.1 |
+| Clinical Decision Support | 📅 Planned | Context-aware recommendations | v1.2 |
+| **Enterprise MLOps** |
+| Synthetic Data Generation | ✅ Implemented | Privacy-preserving synthetic patients | v1.0 |
+| Federated Learning | ✅ Implemented | Multi-hospital collaborative training | v1.0 |
+| Concept Drift Detection | ✅ Implemented | Model performance monitoring | v1.0 |
+| Automated Model Retraining | 🔄 In Progress | Continuous model improvement | v1.1 |
+| A/B Testing Framework | 📅 Planned | Controlled feature evaluation | v1.2 |
+
+**Legend:**
+- ✅ Implemented: Feature is complete and available
+- 🔄 In Progress: Feature is currently being developed
+- 📅 Planned: Feature is planned for future release
 
 ## 🚀 Installation
 
@@ -161,16 +219,103 @@ kubectl port-forward svc/grafana 3000:3000
 open http://localhost:3000/dashboards
 ```
 
-## 🤝 Contributing
+## Testing
 
-1. Request IRB approval for clinical contributions
-2. Sign HIPAA Business Associate Agreement (BAA)
-3. Follow clinical validation protocol:
+The project includes comprehensive testing to ensure clinical reliability and regulatory compliance:
+
+### Unit Testing
+- Model component tests
+- Data processing pipeline tests
+- API endpoint tests
+
+### Integration Testing
+- End-to-end clinical workflows
+- FHIR integration tests
+- EHR alert system tests
+
+### Clinical Validation
+- Retrospective cohort validation
+- Prospective clinical evaluation
+- Subgroup performance analysis
+
+### Compliance Testing
+- HIPAA compliance verification
+- Audit log validation
+- PHI de-identification testing
+
+To run tests:
+
 ```bash
+# Run all tests
+make test
+
+# Run specific test suite
+make test-clinical
+make test-models
+make test-compliance
+
+# Run with clinical validation
 make clinical-validation \
   TEST_DATA=path/to/annotated_dataset \
   GROUND_TRUTH=physician_reviews.csv
 ```
+
+## CI/CD Pipeline
+
+Nexora uses GitHub Actions for continuous integration and deployment:
+
+### Continuous Integration
+- Automated testing on each pull request and push to main
+- Code quality checks with pylint and black
+- Test coverage reporting with pytest-cov
+- Security scanning for vulnerabilities
+- HIPAA compliance verification
+
+### Continuous Deployment
+- Automated model training and evaluation
+- Model registry updates with versioning
+- Kubernetes deployment with canary releases
+- Compliance documentation generation
+
+Current CI/CD Status:
+- Build: ![Build Status](https://img.shields.io/github/workflow/status/abrar2030/Nexora/CI/main?label=build)
+- Test Coverage: ![Coverage](https://img.shields.io/codecov/c/github/abrar2030/Nexora/main?label=coverage)
+- Model Quality: ![Model Quality](https://img.shields.io/badge/AUC--ROC-0.82-brightgreen)
+- HIPAA Compliance: ![HIPAA Status](https://img.shields.io/badge/HIPAA-Compliant-brightgreen)
+
+## 🤝 Contributing
+
+Contributing to Nexora requires adherence to clinical research and healthcare data standards:
+
+1. **Request IRB approval for clinical contributions**
+   - All clinical data contributions must have appropriate IRB approval
+   - Follow institutional guidelines for patient data handling
+
+2. **Sign HIPAA Business Associate Agreement (BAA)**
+   - Contributors must complete HIPAA training
+   - Sign appropriate data use agreements
+
+3. **Follow clinical validation protocol**
+   - Use established validation methodologies
+   - Document all validation procedures thoroughly
+
+4. **Development Process**
+   - Fork the repository
+   - Create a feature branch (`git checkout -b feature/amazing-feature`)
+   - Make your changes following our coding standards
+   - Add tests for new functionality
+   - Commit your changes (`git commit -m 'Add some amazing feature'`)
+   - Push to the branch (`git push origin feature/amazing-feature`)
+   - Open a Pull Request
+
+### Development Guidelines
+
+- Follow PEP 8 style guide for Python code
+- Document all clinical algorithms thoroughly
+- Include clinical rationale for model features
+- Write comprehensive tests for all components
+- Update documentation for any changes
+- Ensure all tests pass before submitting a pull request
 
 ## 📄 License
 
