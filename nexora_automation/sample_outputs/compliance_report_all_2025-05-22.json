@@ -1,0 +1,97 @@
+{
+  "metadata": {
+    "report_id": "1bd1e4bf-5cb9-4618-a07d-040a4be0ec9c",
+    "generated_at": "2025-05-22T05:08:00.988614",
+    "period": "month",
+    "start_date": "2025-04-22",
+    "end_date": "2025-05-22",
+    "report_type": "all"
+  },
+  "summary": {
+    "overall_compliance_percentage": 100.0,
+    "total_controls": 2,
+    "total_applicable_controls": 2,
+    "compliant_controls": 2,
+    "non_compliant_controls": 0,
+    "not_applicable_controls": 0,
+    "total_findings": 0,
+    "total_recommendations": 0,
+    "standards": {
+      "hipaa": {
+        "name": "HIPAA",
+        "compliance_percentage": 100.0,
+        "compliant_controls": 1,
+        "non_compliant_controls": 0,
+        "total_applicable_controls": 1
+      },
+      "gdpr": {
+        "name": "GDPR",
+        "compliance_percentage": 100.0,
+        "compliant_controls": 1,
+        "non_compliant_controls": 0,
+        "total_applicable_controls": 1
+      }
+    },
+    "period_start": "2025-04-22",
+    "period_end": "2025-05-22",
+    "period_type": "month",
+    "compliance_status_text": "Highly Compliant"
+  },
+  "compliance_status": {
+    "hipaa": {
+      "total_controls": 1,
+      "compliant_controls": 1,
+      "non_compliant_controls": 0,
+      "not_applicable_controls": 0,
+      "compliance_percentage": 100.0,
+      "requirements": {
+        "hipaa-164-308": {
+          "title": "Administrative Safeguards",
+          "description": "Implement policies and procedures to prevent, detect, contain, and correct security violations.",
+          "total_controls": 1,
+          "compliant_controls": 1,
+          "non_compliant_controls": 0,
+          "not_applicable_controls": 0,
+          "compliance_percentage": 100.0,
+          "controls": {
+            "hipaa-164-308-a-1": {
+              "title": "Security Management Process",
+              "description": "Implement policies and procedures to prevent, detect, contain, and correct security violations.",
+              "status": "compliant",
+              "details": "Pattern found in /home/ubuntu/test_env/config/security.yaml"
+            }
+          }
+        }
+      }
+    },
+    "gdpr": {
+      "total_controls": 1,
+      "compliant_controls": 1,
+      "non_compliant_controls": 0,
+      "not_applicable_controls": 0,
+      "compliance_percentage": 100.0,
+      "requirements": {
+        "gdpr-article-5": {
+          "title": "Principles relating to processing of personal data",
+          "description": "Personal data shall be processed lawfully, fairly and in a transparent manner.",
+          "total_controls": 1,
+          "compliant_controls": 1,
+          "non_compliant_controls": 0,
+          "not_applicable_controls": 0,
+          "compliance_percentage": 100.0,
+          "controls": {
+            "gdpr-article-5-1-a": {
+              "title": "Lawfulness, fairness and transparency",
+              "description": "Personal data must be processed lawfully, fairly, and in a transparent manner.",
+              "status": "compliant",
+              "details": "Pattern found in /home/ubuntu/test_env/config/privacy.yaml"
+            }
+          }
+        }
+      }
+    }
+  },
+  "findings": [],
+  "recommendations": [],
+  "evidence": []
+}

@@ -1,0 +1,48 @@
+{
+  "timestamp": "2025-05-22T05:07:20.332464",
+  "environment": "dev",
+  "status": "WARN",
+  "summary": {
+    "total_checks": 5,
+    "status_counts": {
+      "PASS": 1,
+      "FAIL": 0,
+      "ERROR": 0,
+      "UNKNOWN": 3,
+      "INFO": 1
+    }
+  },
+  "checks": {
+    "system": {
+      "cpu": {
+        "status": "UNKNOWN",
+        "message": "psutil not available for CPU check"
+      },
+      "memory": {
+        "status": "UNKNOWN",
+        "message": "psutil not available for memory check"
+      },
+      "disk": {
+        "status": "UNKNOWN",
+        "message": "psutil not available for disk check"
+      },
+      "load_average": {
+        "status": "PASS",
+        "value": "0.02, 0.01, 0.00",
+        "normalized": "0.21%",
+        "threshold": "80%",
+        "message": "System load average (1, 5, 15 min): 0.02, 0.01, 0.00"
+      },
+      "info": {
+        "status": "INFO",
+        "hostname": "c59184774662",
+        "platform": "Linux-6.1.102-x86_64-with-glibc2.35",
+        "python_version": "3.11.0rc1",
+        "time": "2025-05-22T05:07:20.334023"
+      }
+    },
+    "services": {},
+    "databases": {},
+    "api_endpoints": {}
+  }
+}

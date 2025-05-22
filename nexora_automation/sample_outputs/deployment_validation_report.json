@@ -1,0 +1,76 @@
+{
+  "timestamp": "2025-05-22T05:07:40.110109",
+  "environment": "dev",
+  "status": "ERROR",
+  "summary": {
+    "total_validations": 6,
+    "status_counts": {
+      "PASS": 1,
+      "FAIL": 4,
+      "ERROR": 1,
+      "UNKNOWN": 0
+    }
+  },
+  "validations": {
+    "kubernetes": {
+      "status": "ERROR",
+      "message": "kubernetes client library not available for Kubernetes validation"
+    },
+    "services": {
+      "nexora-api": {
+        "status": "FAIL",
+        "type": "http",
+        "url": "http://localhost:8080/api/health",
+        "message": "Connection error when connecting to http://localhost:8080/api/health"
+      },
+      "nexora-db": {
+        "status": "FAIL",
+        "type": "tcp",
+        "host": "localhost",
+        "port": 5432,
+        "message": "TCP service is not available at localhost:5432 (error code: 111)",
+        "error_code": 111
+      }
+    },
+    "api_endpoints": {
+      "patient-api": {
+        "status": "FAIL",
+        "url": "http://localhost:8080/api/patients",
+        "method": "GET",
+        "message": "Connection error when connecting to http://localhost:8080/api/patients"
+      }
+    },
+    "databases": {
+      "nexora-postgres": {
+        "status": "ERROR",
+        "type": "postgresql",
+        "message": "psycopg2 not available for PostgreSQL validation"
+      }
+    },
+    "configurations": {
+      "api-config": {
+        "status": "PASS",
+        "type": "file",
+        "file_path": "/home/ubuntu/test_env/config/api-config.yaml",
+        "message": "Configuration validation passed",
+        "settings_checked": 2
+      },
+      "env-vars": {
+        "status": "FAIL",
+        "type": "env",
+        "message": "Environment variables validation failed",
+        "missing_vars": [
+          "NEXORA_ENV"
+        ],
+        "invalid_vars": []
+      }
+    }
+  },
+  "deployment_info": {
+    "name": "nexora-dev",
+    "environment": "dev",
+    "expected_version": "1.0.0",
+    "actual_version": "unknown",
+    "timestamp": "2025-05-22T05:07:40.110325"
+  }
+}
