@@ -1,9 +1,7 @@
 # Nexora
 
-[![CI/CD Status](https://img.shields.io/github/actions/workflow/status/abrar2030/Nexora/ci-cd.yml?branch=main&label=CI/CD&logo=github)](https://github.com/abrar2030/Nexora/actions)
+![CI/CD Status](https://img.shields.io/github/actions/workflow/status/abrar2030/Nexora/cicd.yml?branch=main&label=CI/CD&logo=github)
 [![Test Coverage](https://img.shields.io/badge/coverage-89%25-brightgreen)](https://github.com/abrar2030/Nexora/actions)
-[![Model Quality](https://img.shields.io/badge/AUROC-0.82-brightgreen)](https://github.com/abrar2030/Nexora/tree/main/model_cards)
-[![HIPAA Compliance](https://img.shields.io/badge/HIPAA-compliant-brightgreen)](https://github.com/abrar2030/Nexora/tree/main/compliance)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## 🏥 Healthcare AI Readmission Risk Prediction Platform
