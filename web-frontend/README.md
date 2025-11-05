@@ -165,19 +165,3 @@ The web frontend can be deployed using various methods:
 2. **Docker**: The application can be containerized using the Dockerfile in the project root and deployed to container orchestration platforms like Kubernetes.
 
 3. **Continuous Deployment**: The CI/CD pipeline can automatically build and deploy the application when changes are pushed to specific branches.
-
-## Related Components
-
-- The web frontend communicates with backend APIs defined in the `src/serving/` directory.
-- It displays data processed by components in the `src/data_pipeline/` directory.
-- It visualizes predictions from models defined in the `src/model_factory/` directory.
-- The mobile version of the application is in the `mobile-frontend/` directory, sharing similar functionality but optimized for mobile devices.
-
-## Future Enhancements
-
-1. **Advanced Visualizations**: Implement more sophisticated data visualizations for clinical metrics and model predictions.
-2. **Real-time Updates**: Add WebSocket support for real-time updates of patient data and alerts.
-3. **Offline Support**: Implement service workers for offline functionality and improved performance.
-4. **Multi-language Support**: Add internationalization for supporting multiple languages.
-5. **Theme Customization**: Allow users to customize the application theme based on their preferences.
-6. **Integration with EHR Systems**: Develop deeper integrations with electronic health record systems for seamless workflow.

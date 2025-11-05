@@ -162,26 +162,3 @@ The mobile frontend includes several types of tests:
    # Run the tests
    detox test --configuration ios.sim
    ```
-
-## Development Guidelines
-
-1. **Component Structure**: Follow the established component structure, separating screens from reusable components.
-2. **Styling**: Use the theme system defined in `src/theme/theme.js` for consistent styling.
-3. **Testing**: Write unit tests for components and end-to-end tests for critical user flows.
-4. **State Management**: Use React's Context API or Redux for state management as the application grows.
-5. **API Integration**: Use the API client in `src/services/api.js` for all backend communication.
-6. **Accessibility**: Ensure all components are accessible, with proper labels and keyboard navigation.
-
-## Related Components
-
-- The mobile frontend communicates with backend APIs defined in the `src/serving/` directory.
-- It displays data processed by components in the `src/data_pipeline/` directory.
-- It visualizes predictions from models defined in the `src/model_factory/` directory.
-
-## Future Enhancements
-
-1. **Offline Support**: Implement offline data caching for use in low-connectivity environments.
-2. **Biometric Authentication**: Add support for fingerprint or face recognition login.
-3. **Push Notifications**: Implement push notifications for critical patient updates.
-4. **Barcode Scanning**: Add support for scanning patient wristbands or medication barcodes.
-5. **Analytics**: Integrate usage analytics to improve the user experience.
