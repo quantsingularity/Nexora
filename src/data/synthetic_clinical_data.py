@@ -1,4 +1,4 @@
-from synthgauge import generate
+import numpy as np\nimport pandas as pd\nfrom synthgauge import generate
 from faker import Faker
 
 class ClinicalDataGenerator:

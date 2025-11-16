@@ -1,4 +1,4 @@
-import sqlite3
+import sqlite3\nimport pandas as pd
 from datetime import datetime
 
 class PHIAuditLogger:

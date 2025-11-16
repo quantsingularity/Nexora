@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, HTTPException, Depends, Body
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
@@ -8,9 +9,9 @@ from datetime import datetime
 
 # Import model registry and other utilities
 # These would need to be implemented or imported from other modules
-# from ..model_factory.model_registry import ModelRegistry
-# from ..utils.fhir_connector import FHIRConnector
-# from ..compliance.phi_audit_logger import PHIAuditLogger
+from ..model_factory.model_registry import ModelRegistry
+from ..utils.fhir_connector import FHIRConnector
+from ..compliance.phi_audit_logger import PHIAuditLogger
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -63,40 +64,21 @@ async def health_check():
 # Model information endpoint
 @app.get("/models")
 async def list_models():
-    # This would need to be implemented with actual model registry
-    # models = ModelRegistry().list_models()
-    # For now, return mock data
-    models = [
-        {"name": "readmission_risk", "versions": ["1.0.0", "1.1.0"]},
-        {"name": "mortality_prediction", "versions": ["1.0.0"]},
-        {"name": "length_of_stay", "versions": ["1.0.0"]}
-    ]
+    models = ModelRegistry().list_models()
     return {"models": models}
 
 # Prediction endpoint
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(request: PredictionRequest):
     try:
-        # Log the request (PHI handling would need proper implementation)
-        # PHIAuditLogger().log_prediction_request(request.patient_id)
+        PHIAuditLogger().log_prediction_request(request.patient_id)
         
-        # Generate a request ID if not provided
         if not request.request_id:
             request.request_id = f"req_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         
-        # This would need to be implemented with actual model registry
-        # model = ModelRegistry().get_model(request.model_name, request.model_version)
-        # predictions = model.predict(request.patient_data)
-        # explanations = model.explain(request.patient_data)
-        
-        # For now, return mock data
-        predictions = {
-            "risk": 0.75,
-            "top_features": ["age", "previous_admissions", "diabetes"],
-            "cohort_size": 120,
-            "shap_features": ["age", "previous_admissions", "diabetes", "hypertension", "heart_disease"],
-            "shap_values": [0.3, 0.25, 0.2, 0.15, 0.1]
-        }
+        model = ModelRegistry().get_model(request.model_name, request.model_version)
+        predictions = model.predict(request.patient_data)
+        explanations = model.explain(request.patient_data)
         
         return PredictionResponse(
             request_id=request.request_id,
@@ -104,8 +86,8 @@ async def predict(request: PredictionRequest):
             model_version=request.model_version or "latest",
             timestamp=datetime.now().isoformat(),
             predictions=predictions,
-            explanations={"method": "SHAP", "values": predictions["shap_values"]},
-            uncertainty={"confidence_interval": [0.65, 0.85]}
+            explanations=explanations,
+            uncertainty=predictions.get("uncertainty", {"confidence_interval": [0.65, 0.85]})
         )
     
     except Exception as e:
@@ -120,31 +102,16 @@ async def predict_from_fhir(
     model_version: Optional[str] = None
 ):
     try:
-        # This would need to be implemented with actual FHIR connector
-        # fhir_connector = FHIRConnector()
-        # patient_data = fhir_connector.get_patient_data(patient_id)
+        fhir_connector = FHIRConnector()
+        patient_data = fhir_connector.get_patient_data(patient_id)
         
-        # Convert to prediction request
-        # request = PredictionRequest(
-        #     model_name=model_name,
-        #     model_version=model_version,
-        #     patient_data=patient_data
-        # )
+        request = PredictionRequest(
+            model_name=model_name,
+            model_version=model_version,
+            patient_data=patient_data
+        )
         
-        # Return prediction
-        # return await predict(request)
-        
-        # For now, return mock data
-        return {
-            "request_id": f"fhir_{patient_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
-            "model_name": model_name,
-            "model_version": model_version or "latest",
-            "timestamp": datetime.now().isoformat(),
-            "predictions": {
-                "risk": 0.65,
-                "top_features": ["age", "previous_admissions", "diabetes"]
-            }
-        }
+        return await predict(request)
     
     except Exception as e:
         logger.error(f"Error processing FHIR prediction request: {str(e)}")
