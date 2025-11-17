@@ -10,17 +10,18 @@ class ClinicalMetrics:
     def comorbidity_index(diagnoses):
         """Charlson Comorbidity Index calculation"""
         cci_weights = {
-            'MI': 1, 'CHF': 1, 'PVD': 1, 'CVA': 1,
-            'DEMENTIA': 1, 'COPD': 1, 'DIABETES': 1
+            "MI": 1,
+            "CHF": 1,
+            "PVD": 1,
+            "CVA": 1,
+            "DEMENTIA": 1,
+            "COPD": 1,
+            "DIABETES": 1,
         }
         return sum(cci_weights.get(dx, 0) for dx in diagnoses)
 
     @staticmethod
     def medication_risk_score(medications):
         """Calculate anticholinergic burden score"""
-        acb_scale = {
-            'amitriptyline': 3,
-            'diphenhydramine': 3,
-            'paroxetine': 2
-        }
+        acb_scale = {"amitriptyline": 3, "diphenhydramine": 3, "paroxetine": 2}
         return sum(acb_scale.get(med, 0) for med in medications)
