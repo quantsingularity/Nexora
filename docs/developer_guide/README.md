@@ -63,7 +63,7 @@ This guide provides comprehensive information for developers working on the Hosp
 2. Update the configuration with your local settings:
    ```yaml
    environment: development
-   
+
    data:
      fhir:
        base_url: http://localhost:8080/fhir
@@ -71,7 +71,7 @@ This guide provides comprehensive information for developers working on the Hosp
      synthetic:
        enabled: true
        patient_count: 1000
-   
+
    model:
      training:
        epochs: 10
@@ -80,7 +80,7 @@ This guide provides comprehensive information for developers working on the Hosp
      fairness_constraints:
        enabled: true
        max_disparity: 0.1
-   
+
    monitoring:
      enabled: true
      log_level: DEBUG
@@ -159,20 +159,20 @@ Example:
 
 ```python
 def calculate_readmission_risk(
-    patient_data: Dict[str, Any], 
+    patient_data: Dict[str, Any],
     model_version: str = "latest"
 ) -> Tuple[float, List[Dict[str, float]]]:
     """Calculate readmission risk for a patient.
-    
+
     Args:
         patient_data: Dictionary containing patient clinical data
         model_version: Version of the model to use, defaults to "latest"
-        
+
     Returns:
         Tuple containing:
             - Readmission risk score (0.0 to 1.0)
             - List of risk factors with contribution weights
-            
+
     Raises:
         ValueError: If patient_data is missing required fields
         ModelNotFoundError: If specified model_version doesn't exist
@@ -206,10 +206,10 @@ logger = get_logger(__name__)
 
 def process_patient_data(patient_id: str) -> None:
     logger.info(
-        "Processing patient data", 
+        "Processing patient data",
         extra={"patient_id": patient_id, "operation": "data_processing"}
     )
-    
+
     try:
         # Processing logic
         pass
@@ -344,7 +344,7 @@ def test_icd10_encoder_invalid_code():
 1. **Synthetic Data**: Use synthetic data for most tests
    ```python
    from src.data.synthetic_clinical_data import generate_synthetic_patients
-   
+
    def test_with_synthetic_data():
        patients = generate_synthetic_patients(10)
        # Test with synthetic patients
@@ -357,7 +357,7 @@ def test_icd10_encoder_invalid_code():
        model = DeepFM()
        model.load_weights("tests/fixtures/model_weights.h5")
        return model
-   
+
    def test_model_prediction(trained_model):
        prediction = trained_model.predict(test_data)
        assert 0.0 <= prediction <= 1.0

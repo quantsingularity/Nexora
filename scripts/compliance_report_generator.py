@@ -1516,7 +1516,7 @@ class ComplianceReportGenerator:
             <p>Period: {{ report.summary.period_start }} to {{ report.summary.period_end }}</p>
             <p>Generated: {{ report.metadata.generated_at }}</p>
         </div>
-        
+
         <div class="section">
             <h2>Executive Summary</h2>
             <div class="summary-box">
@@ -1541,14 +1541,14 @@ class ComplianceReportGenerator:
                     <span>Requiring remediation</span>
                 </div>
             </div>
-            
+
             {% if charts.compliance_by_standard %}
             <div class="chart">
                 <h3>Compliance by Standard</h3>
                 <img src="{{ charts.compliance_by_standard }}" alt="Compliance by Standard">
             </div>
             {% endif %}
-            
+
             <h3>Standards Summary</h3>
             <table>
                 <thead>
@@ -1571,12 +1571,12 @@ class ComplianceReportGenerator:
                 </tbody>
             </table>
         </div>
-        
+
         {% if report.findings %}
         <div class="section">
             <h2>Key Findings</h2>
             <p>The following {{ report.findings|length }} findings require attention:</p>
-            
+
             {% for finding in report.findings %}
             <div class="finding no-break">
                 <h3>{{ finding.control_title }}</h3>
@@ -1589,12 +1589,12 @@ class ComplianceReportGenerator:
             {% endfor %}
         </div>
         {% endif %}
-        
+
         {% if report.recommendations %}
         <div class="section">
             <h2>Recommendations</h2>
             <p>The following recommendations address the identified findings:</p>
-            
+
             {% for recommendation in report.recommendations %}
             <div class="recommendation no-break">
                 <h3>{{ recommendation.title }}</h3>
@@ -1604,24 +1604,24 @@ class ComplianceReportGenerator:
             {% endfor %}
         </div>
         {% endif %}
-        
+
         {% for standard_id, standard_data in report.compliance_status.items() %}
         <div class="section">
             <h2>{{ standard_id|upper }} Compliance Details</h2>
             <p>Overall compliance: {{ "%.1f"|format(standard_data.compliance_percentage) }}%</p>
-            
+
             {% if charts.get(standard_id + '_compliance') %}
             <div class="chart">
                 <img src="{{ charts[standard_id + '_compliance'] }}" alt="{{ standard_id|upper }} Compliance">
             </div>
             {% endif %}
-            
+
             {% for req_id, req_data in standard_data.requirements.items() %}
             <div class="no-break">
                 <h3>{{ req_data.title }}</h3>
                 <p>{{ req_data.description }}</p>
                 <p>Compliance: {{ "%.1f"|format(req_data.compliance_percentage) }}%</p>
-                
+
                 <table>
                     <thead>
                         <tr>
@@ -1644,7 +1644,7 @@ class ComplianceReportGenerator:
             {% endfor %}
         </div>
         {% endfor %}
-        
+
         {% if report.evidence and report.evidence|length > 0 %}
         <div class="section">
             <h2>Evidence</h2>
@@ -1657,7 +1657,7 @@ class ComplianceReportGenerator:
             {% endfor %}
         </div>
         {% endif %}
-        
+
         <div class="footer">
             <p>Report ID: {{ report.metadata.report_id }}</p>
             <p>Generated on {{ report.metadata.generated_at }}</p>

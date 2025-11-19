@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { 
-  Box, 
-  Grid, 
-  Paper, 
-  Typography, 
-  Card, 
-  CardContent, 
+import {
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  Card,
+  CardContent,
   CardHeader,
   Avatar,
   IconButton,
@@ -21,7 +21,7 @@ import {
   Chip,
   LinearProgress
 } from '@mui/material';
-import { 
+import {
   MoreVert as MoreVertIcon,
   ArrowBack as ArrowBackIcon,
   CalendarToday as CalendarIcon,
@@ -59,7 +59,7 @@ const PatientDetail = () => {
         setLoading(false);
       }
     };
-    
+
     fetchPatientDetail();
   }, [id]);
 
@@ -119,9 +119,9 @@ const PatientDetail = () => {
       {
         label: 'Impact on Risk',
         data: patient.riskFactors.map(factor => factor.impact),
-        backgroundColor: patient.riskFactors.map(factor => 
-          factor.impact > 0.2 ? 'rgba(244, 67, 54, 0.7)' : 
-          factor.impact > 0.1 ? 'rgba(255, 152, 0, 0.7)' : 
+        backgroundColor: patient.riskFactors.map(factor =>
+          factor.impact > 0.2 ? 'rgba(244, 67, 54, 0.7)' :
+          factor.impact > 0.1 ? 'rgba(255, 152, 0, 0.7)' :
           'rgba(76, 175, 80, 0.7)'
         ),
         borderRadius: 5,
@@ -132,9 +132,9 @@ const PatientDetail = () => {
   return (
     <Box>
       <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
-        <Button 
-          variant="outlined" 
-          startIcon={<ArrowBackIcon />} 
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
           sx={{ mr: 2 }}
           onClick={handleBack}
         >
@@ -150,10 +150,10 @@ const PatientDetail = () => {
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar 
-                  sx={{ 
-                    width: 64, 
-                    height: 64, 
+                <Avatar
+                  sx={{
+                    width: 64,
+                    height: 64,
                     bgcolor: 'primary.main',
                     fontSize: '1.5rem',
                     mr: 2
@@ -170,57 +170,57 @@ const PatientDetail = () => {
                   </Typography>
                 </Box>
               </Box>
-              
+
               <Divider sx={{ my: 2 }} />
-              
+
               <List dense>
                 <ListItem>
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <CalendarIcon fontSize="small" />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary="Age" 
-                    secondary={`${patient.age} years (${patient.dob})`} 
+                  <ListItemText
+                    primary="Age"
+                    secondary={`${patient.age} years (${patient.dob})`}
                   />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <AssignmentIcon fontSize="small" />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary="Gender" 
-                    secondary={patient.gender} 
+                  <ListItemText
+                    primary="Gender"
+                    secondary={patient.gender}
                   />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <HospitalIcon fontSize="small" />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary="Primary Diagnosis" 
-                    secondary={patient.primaryDiagnosis} 
+                  <ListItemText
+                    primary="Primary Diagnosis"
+                    secondary={patient.primaryDiagnosis}
                   />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <WarningIcon fontSize="small" />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary="Risk Score" 
+                  <ListItemText
+                    primary="Risk Score"
                     secondary={
-                      <Chip 
-                        label={`${(patient.riskScore * 100).toFixed(0)}%`} 
+                      <Chip
+                        label={`${(patient.riskScore * 100).toFixed(0)}%`}
                         color={getRiskColor(patient.riskScore)}
                         size="small"
                         sx={{ mt: 0.5 }}
                       />
-                    } 
+                    }
                   />
                 </ListItem>
               </List>
-              
+
               <Divider sx={{ my: 2 }} />
-              
+
               <Typography variant="subtitle2" gutterBottom>
                 Contact Information
               </Typography>
@@ -236,7 +236,7 @@ const PatientDetail = () => {
             </CardContent>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={8}>
           <Card sx={{ mb: 3 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -247,7 +247,7 @@ const PatientDetail = () => {
                 <Tab label="Timeline" />
               </Tabs>
             </Box>
-            
+
             {/* Clinical Data Tab */}
             {activeTab === 0 && (
               <CardContent>
@@ -255,8 +255,8 @@ const PatientDetail = () => {
                   Lab Results
                 </Typography>
                 <Box sx={{ height: 300, mb: 4 }}>
-                  <Line 
-                    data={labResultsData} 
+                  <Line
+                    data={labResultsData}
                     options={{
                       responsive: true,
                       maintainAspectRatio: false,
@@ -273,7 +273,7 @@ const PatientDetail = () => {
                     }}
                   />
                 </Box>
-                
+
                 <Typography variant="h6" gutterBottom>
                   Diagnoses
                 </Typography>
@@ -283,16 +283,16 @@ const PatientDetail = () => {
                       <ListItemIcon>
                         <HospitalIcon />
                       </ListItemIcon>
-                      <ListItemText 
-                        primary={diagnosis.name} 
-                        secondary={`Diagnosed: ${diagnosis.date} | ICD-10: ${diagnosis.code}`} 
+                      <ListItemText
+                        primary={diagnosis.name}
+                        secondary={`Diagnosed: ${diagnosis.date} | ICD-10: ${diagnosis.code}`}
                       />
                     </ListItem>
                   ))}
                 </List>
               </CardContent>
             )}
-            
+
             {/* Risk Analysis Tab */}
             {activeTab === 1 && (
               <CardContent>
@@ -300,8 +300,8 @@ const PatientDetail = () => {
                   Risk Factors
                 </Typography>
                 <Box sx={{ height: 300, mb: 4 }}>
-                  <Bar 
-                    data={riskFactorsData} 
+                  <Bar
+                    data={riskFactorsData}
                     options={{
                       indexAxis: 'y',
                       responsive: true,
@@ -323,7 +323,7 @@ const PatientDetail = () => {
                     }}
                   />
                 </Box>
-                
+
                 <Typography variant="h6" gutterBottom>
                   Recommended Interventions
                 </Typography>
@@ -333,15 +333,15 @@ const PatientDetail = () => {
                       <ListItemIcon>
                         <ScienceIcon />
                       </ListItemIcon>
-                      <ListItemText 
-                        primary={intervention.name} 
-                        secondary={intervention.description} 
+                      <ListItemText
+                        primary={intervention.name}
+                        secondary={intervention.description}
                       />
-                      <Chip 
-                        label={intervention.priority} 
+                      <Chip
+                        label={intervention.priority}
                         color={
-                          intervention.priority === 'High' ? 'error' : 
-                          intervention.priority === 'Medium' ? 'warning' : 
+                          intervention.priority === 'High' ? 'error' :
+                          intervention.priority === 'Medium' ? 'warning' :
                           'success'
                         }
                         size="small"
@@ -351,7 +351,7 @@ const PatientDetail = () => {
                 </List>
               </CardContent>
             )}
-            
+
             {/* Medications Tab */}
             {activeTab === 2 && (
               <CardContent>
@@ -364,16 +364,16 @@ const PatientDetail = () => {
                       <ListItemIcon>
                         <MedicationIcon />
                       </ListItemIcon>
-                      <ListItemText 
-                        primary={medication.name} 
-                        secondary={`Dosage: ${medication.dosage} | Frequency: ${medication.frequency}`} 
+                      <ListItemText
+                        primary={medication.name}
+                        secondary={`Dosage: ${medication.dosage} | Frequency: ${medication.frequency}`}
                       />
                     </ListItem>
                   ))}
                 </List>
               </CardContent>
             )}
-            
+
             {/* Timeline Tab */}
             {activeTab === 3 && (
               <CardContent>
@@ -386,9 +386,9 @@ const PatientDetail = () => {
                       <ListItemIcon>
                         <TimelineIcon />
                       </ListItemIcon>
-                      <ListItemText 
-                        primary={event.title} 
-                        secondary={`${event.date} | ${event.description}`} 
+                      <ListItemText
+                        primary={event.title}
+                        secondary={`${event.date} | ${event.description}`}
                       />
                     </ListItem>
                   ))}
@@ -396,7 +396,7 @@ const PatientDetail = () => {
               </CardContent>
             )}
           </Card>
-          
+
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
             <Button variant="outlined">
               Download Records

@@ -119,24 +119,24 @@ make deploy CONFIG=local
    global:
      environment: production
      registry: ghcr.io/health-ai
-   
+
    fhir:
      serverUrl: https://fhir.example.org/R4
      clientId: client_id
      clientSecret: client_secret
-   
+
    database:
      host: postgres.database.svc.cluster.local
      port: 5432
      name: readmission
      user: readmission_user
-   
+
    modelServing:
      replicas: 3
      gpu:
        enabled: true
        count: 1
-   
+
    clinicianUi:
      replicas: 2
      ingress:
@@ -523,7 +523,7 @@ data:
    #!/bin/bash
    # Test database restore
    gunzip -c /backups/readmission-latest.sql.gz | psql -U readmission_user -d readmission_test
-   
+
    # Test model loading
    python -m src.utils.model_loader --test --model-path /backups/models/latest
    ```

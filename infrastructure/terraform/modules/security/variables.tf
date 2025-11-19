@@ -2,7 +2,7 @@
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
-  
+
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod."
@@ -12,7 +12,7 @@ variable "environment" {
 variable "app_name" {
   description = "Application name for resource naming and tagging"
   type        = string
-  
+
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]*[a-z0-9]$", var.app_name))
     error_message = "App name must start with a letter, contain only lowercase letters, numbers, and hyphens, and end with a letter or number."
@@ -46,7 +46,7 @@ variable "ssh_allowed_cidrs" {
   description = "CIDR blocks allowed for SSH access"
   type        = list(string)
   default     = ["10.0.0.0/8"]
-  
+
   validation {
     condition = alltrue([
       for cidr in var.ssh_allowed_cidrs : can(cidrhost(cidr, 0))
@@ -65,7 +65,7 @@ variable "db_admin_allowed_cidrs" {
   description = "CIDR blocks allowed for database administration access"
   type        = list(string)
   default     = ["10.0.0.0/8"]
-  
+
   validation {
     condition = alltrue([
       for cidr in var.db_admin_allowed_cidrs : can(cidrhost(cidr, 0))
@@ -85,7 +85,7 @@ variable "bastion_allowed_cidrs" {
   description = "CIDR blocks allowed to access bastion host"
   type        = list(string)
   default     = []
-  
+
   validation {
     condition = alltrue([
       for cidr in var.bastion_allowed_cidrs : can(cidrhost(cidr, 0))
@@ -105,7 +105,7 @@ variable "waf_rate_limit" {
   description = "Rate limit for WAF (requests per 5-minute period)"
   type        = number
   default     = 2000
-  
+
   validation {
     condition     = var.waf_rate_limit >= 100 && var.waf_rate_limit <= 20000000
     error_message = "WAF rate limit must be between 100 and 20,000,000."
@@ -122,7 +122,7 @@ variable "blocked_countries" {
   description = "List of country codes to block (ISO 3166-1 alpha-2)"
   type        = list(string)
   default     = []
-  
+
   validation {
     condition = alltrue([
       for country in var.blocked_countries : can(regex("^[A-Z]{2}$", country))
@@ -149,7 +149,7 @@ variable "cloudtrail_retention_days" {
   description = "CloudTrail log retention period in days"
   type        = number
   default     = 2555  # 7 years for financial compliance
-  
+
   validation {
     condition     = var.cloudtrail_retention_days >= 90
     error_message = "CloudTrail retention must be at least 90 days for compliance."
@@ -167,7 +167,7 @@ variable "config_retention_days" {
   description = "AWS Config retention period in days"
   type        = number
   default     = 2555  # 7 years for financial compliance
-  
+
   validation {
     condition     = var.config_retention_days >= 90
     error_message = "Config retention must be at least 90 days for compliance."
@@ -187,4 +187,3 @@ variable "enable_inspector" {
   type        = bool
   default     = true
 }
-

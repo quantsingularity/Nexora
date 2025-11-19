@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Grid, 
-  Paper, 
-  Typography, 
-  Card, 
-  CardContent, 
+import {
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  Card,
+  CardContent,
   CardHeader,
   Avatar,
   IconButton,
@@ -14,7 +14,7 @@ import {
   LinearProgress,
   Chip
 } from '@mui/material';
-import { 
+import {
   MoreVert as MoreVertIcon,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
@@ -32,7 +32,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointE
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
-  
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -45,21 +45,21 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
-    
+
     fetchDashboardData();
   }, []);
 
   // Prepare chart data from API response
   const prepareChartData = () => {
     if (!dashboardData) return null;
-    
+
     const patientRiskData = {
       labels: ['High Risk', 'Medium Risk', 'Low Risk'],
       datasets: [
         {
           data: [
-            dashboardData.patientRiskDistribution.highRisk, 
-            dashboardData.patientRiskDistribution.mediumRisk, 
+            dashboardData.patientRiskDistribution.highRisk,
+            dashboardData.patientRiskDistribution.mediumRisk,
             dashboardData.patientRiskDistribution.lowRisk
           ],
           backgroundColor: ['#f44336', '#ff9800', '#4caf50'],
@@ -101,7 +101,7 @@ const Dashboard = () => {
         },
       ],
     };
-    
+
     return {
       patientRiskData,
       admissionsData,
@@ -119,9 +119,9 @@ const Dashboard = () => {
             {icon}
           </Avatar>
           {trend && (
-            <Chip 
-              icon={trend === 'up' ? <TrendingUpIcon /> : <TrendingDownIcon />} 
-              label={`${trendValue}%`} 
+            <Chip
+              icon={trend === 'up' ? <TrendingUpIcon /> : <TrendingDownIcon />}
+              label={`${trendValue}%`}
               size="small"
               color={trend === 'up' ? 'success' : 'error'}
               variant="outlined"
@@ -162,9 +162,9 @@ const Dashboard = () => {
         <>
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={6} md={3}>
-              <StatCard 
-                title="Active Patients" 
-                value={dashboardData.stats.activePatients.toLocaleString()} 
+              <StatCard
+                title="Active Patients"
+                value={dashboardData.stats.activePatients.toLocaleString()}
                 subtitle="Total patients under care"
                 icon={<PeopleIcon />}
                 color="primary"
@@ -173,9 +173,9 @@ const Dashboard = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <StatCard 
-                title="High Risk Patients" 
-                value={dashboardData.stats.highRiskPatients.toLocaleString()} 
+              <StatCard
+                title="High Risk Patients"
+                value={dashboardData.stats.highRiskPatients.toLocaleString()}
                 subtitle={`${(dashboardData.stats.highRiskPatients / dashboardData.stats.activePatients * 100).toFixed(1)}% of total patients`}
                 icon={<TrendingUpIcon />}
                 color="error"
@@ -184,18 +184,18 @@ const Dashboard = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <StatCard 
-                title="Avg. Length of Stay" 
-                value={`${dashboardData.stats.avgLengthOfStay} days`} 
+              <StatCard
+                title="Avg. Length of Stay"
+                value={`${dashboardData.stats.avgLengthOfStay} days`}
                 subtitle="Last 30 days"
                 icon={<AssignmentIcon />}
                 color="info"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <StatCard 
-                title="Active Models" 
-                value={dashboardData.stats.activeModels} 
+              <StatCard
+                title="Active Models"
+                value={dashboardData.stats.activeModels}
                 subtitle="Last updated: Today"
                 icon={<ScienceIcon />}
                 color="success"
@@ -206,8 +206,8 @@ const Dashboard = () => {
           <Grid container spacing={3}>
             <Grid item xs={12} md={8}>
               <Card sx={{ height: '100%' }}>
-                <CardHeader 
-                  title="Admissions & Readmissions Trend" 
+                <CardHeader
+                  title="Admissions & Readmissions Trend"
                   action={
                     <IconButton aria-label="settings">
                       <MoreVertIcon />
@@ -217,8 +217,8 @@ const Dashboard = () => {
                 <Divider />
                 <CardContent>
                   <Box sx={{ height: 300, p: 1 }}>
-                    <Line 
-                      data={chartData.admissionsData} 
+                    <Line
+                      data={chartData.admissionsData}
                       options={{
                         responsive: true,
                         maintainAspectRatio: false,
@@ -240,8 +240,8 @@ const Dashboard = () => {
             </Grid>
             <Grid item xs={12} md={4}>
               <Card sx={{ height: '100%' }}>
-                <CardHeader 
-                  title="Patient Risk Distribution" 
+                <CardHeader
+                  title="Patient Risk Distribution"
                   action={
                     <IconButton aria-label="settings">
                       <MoreVertIcon />
@@ -251,8 +251,8 @@ const Dashboard = () => {
                 <Divider />
                 <CardContent>
                   <Box sx={{ height: 300, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <Doughnut 
-                      data={chartData.patientRiskData} 
+                    <Doughnut
+                      data={chartData.patientRiskData}
                       options={{
                         responsive: true,
                         maintainAspectRatio: false,
@@ -270,8 +270,8 @@ const Dashboard = () => {
             </Grid>
             <Grid item xs={12}>
               <Card>
-                <CardHeader 
-                  title="Model Performance Metrics" 
+                <CardHeader
+                  title="Model Performance Metrics"
                   action={
                     <IconButton aria-label="settings">
                       <MoreVertIcon />
@@ -281,8 +281,8 @@ const Dashboard = () => {
                 <Divider />
                 <CardContent>
                   <Box sx={{ height: 250, p: 1 }}>
-                    <Bar 
-                      data={chartData.modelPerformanceData} 
+                    <Bar
+                      data={chartData.modelPerformanceData}
                       options={{
                         responsive: true,
                         maintainAspectRatio: false,

@@ -180,17 +180,17 @@ echo "Running linting on Jupyter notebooks..."
 if [ -d "notebooks" ]; then
   echo "Installing nbqa for notebook linting..."
   pip3 install --upgrade nbqa
-  
+
   echo "Formatting Jupyter notebooks with Black..."
   python3 -m nbqa black notebooks || {
     echo "Black encountered issues with notebooks. Please review the above errors."
   }
-  
+
   echo "Sorting imports in Jupyter notebooks with isort..."
   python3 -m nbqa isort notebooks || {
     echo "isort encountered issues with notebooks. Please review the above errors."
   }
-  
+
   echo "Linting Jupyter notebooks with flake8..."
   python3 -m nbqa flake8 notebooks || {
     echo "flake8 found issues in notebooks. Please review the above warnings/errors."
@@ -302,11 +302,11 @@ if [ "$YAMLLINT_AVAILABLE" = true ]; then
   echo "yamllint completed."
 else
   echo "Skipping yamllint (not installed)."
-  
+
   # 3.2 Basic YAML validation using Python
   echo "Performing basic YAML validation using Python..."
   pip3 install --upgrade pyyaml
-  
+
   for dir in "${YAML_DIRECTORIES[@]}"; do
     if [ -d "$dir" ]; then
       echo "Validating YAML files in $dir..."
@@ -338,7 +338,7 @@ if [ "$TERRAFORM_AVAILABLE" = true ]; then
     fi
   done
   echo "terraform fmt completed."
-  
+
   # 4.2 Run terraform validate if available
   echo "Running terraform validate for Terraform files..."
   for dir in "${TERRAFORM_DIRECTORIES[@]}"; do

@@ -5,9 +5,14 @@ import unittest
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import (auc, average_precision_score,
-                             classification_report, confusion_matrix,
-                             precision_recall_curve, roc_curve)
+from sklearn.metrics import (
+    auc,
+    average_precision_score,
+    classification_report,
+    confusion_matrix,
+    precision_recall_curve,
+    roc_curve,
+)
 from sklearn.model_selection import StratifiedKFold
 
 # Add project root to path

@@ -24,7 +24,7 @@ resource "aws_s3_bucket" "main" {
 # S3 bucket versioning for data protection
 resource "aws_s3_bucket_versioning" "main" {
   bucket = aws_s3_bucket.main.id
-  
+
   versioning_configuration {
     status     = var.enable_versioning ? "Enabled" : "Suspended"
     mfa_delete = var.enable_mfa_delete ? "Enabled" : "Disabled"
@@ -87,7 +87,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "main" {
       content {
         days = var.expiration_days
       }
-      
+
     }
 
     # Clean up incomplete multipart uploads
@@ -412,7 +412,7 @@ resource "aws_s3_bucket" "backups" {
 resource "aws_s3_bucket_versioning" "backups" {
   count  = var.enable_backup_bucket ? 1 : 0
   bucket = aws_s3_bucket.backups[0].id
-  
+
   versioning_configuration {
     status = "Enabled"
   }
@@ -538,4 +538,3 @@ resource "aws_s3_bucket_inventory" "main" {
     "IntelligentTieringAccessTier"
   ]
 }
-

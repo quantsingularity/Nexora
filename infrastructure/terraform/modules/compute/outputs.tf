@@ -227,4 +227,3 @@ output "compliance_status" {
     security_groups_applied = length(var.security_group_ids) > 0
   }
 }
-

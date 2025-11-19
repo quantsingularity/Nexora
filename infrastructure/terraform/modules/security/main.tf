@@ -649,4 +649,3 @@ resource "aws_shield_protection" "main" {
     Purpose     = "DDoS-Protection"
   }
 }
-

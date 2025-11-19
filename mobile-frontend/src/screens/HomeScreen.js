@@ -82,7 +82,7 @@ const HomeScreen = ({ navigation }) => {
 
     // Apply search filter
     if (searchTerm.trim()) {
-      patients = patients.filter(p => 
+      patients = patients.filter(p =>
         p.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -129,7 +129,7 @@ const HomeScreen = ({ navigation }) => {
   }, [allPatients, searchTerm, filterOption, sortOption]);
 
   const renderPatient = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       onPress={() => navigation.navigate('PatientDetail', { patientId: item.id, patientName: item.name })}>
       <Card style={styles.patientCard}>
         <View style={styles.patientInfo}>
@@ -154,7 +154,7 @@ const HomeScreen = ({ navigation }) => {
       onRequestClose={() => setVisible(false)}
     >
       <Pressable style={styles.modalOverlay} onPress={() => setVisible(false)}>
-        <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}> 
+        <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
           <Text style={styles.modalTitle}>{title}</Text>
           {Object.values(options).map(opt => (
             <TouchableOpacity
@@ -189,10 +189,10 @@ const HomeScreen = ({ navigation }) => {
 
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome, {username}!</Text>
-        <CustomButton 
-          title="Logout" 
-          onPress={handleLogout} 
-          style={styles.logoutButton} 
+        <CustomButton
+          title="Logout"
+          onPress={handleLogout}
+          style={styles.logoutButton}
           textStyle={styles.logoutButtonText}
         />
       </View>
@@ -205,16 +205,16 @@ const HomeScreen = ({ navigation }) => {
           style={styles.searchInput}
         />
         <View style={styles.buttonRow}>
-          <CustomButton 
+          <CustomButton
             title={`Sort: ${SORT_OPTIONS[Object.keys(SORT_OPTIONS).find(key => SORT_OPTIONS[key].key === sortOption)].label}`}
-            onPress={() => setSortModalVisible(true)} 
-            style={styles.controlButton} 
+            onPress={() => setSortModalVisible(true)}
+            style={styles.controlButton}
             textStyle={styles.controlButtonText}
           />
-          <CustomButton 
+          <CustomButton
             title={`Filter: ${FILTER_OPTIONS[Object.keys(FILTER_OPTIONS).find(key => FILTER_OPTIONS[key].key === filterOption)].label}`}
-            onPress={() => setFilterModalVisible(true)} 
-            style={styles.controlButton} 
+            onPress={() => setFilterModalVisible(true)}
+            style={styles.controlButton}
             textStyle={styles.controlButtonText}
           />
         </View>
@@ -371,4 +371,3 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
-

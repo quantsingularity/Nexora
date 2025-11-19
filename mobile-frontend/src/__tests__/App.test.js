@@ -9,4 +9,4 @@ describe('App Component', () => {
   });
 
   // Add more test cases as needed
-}); 
+});

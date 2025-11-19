@@ -95,7 +95,7 @@ deidentifier = PHIDeidentifier(config)
 
 # De-identify DataFrame
 deidentified_df = deidentifier.deidentify_dataframe(
-    df, 
+    df,
     patient_id_col='patient_id',
     phi_cols=['name', 'dob', 'address', 'phone', 'email']
 )

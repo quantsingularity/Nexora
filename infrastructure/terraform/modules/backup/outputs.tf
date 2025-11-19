@@ -228,4 +228,3 @@ output "operational_information" {
     disaster_recovery_documented = var.create_dr_documentation
   }
 }
-

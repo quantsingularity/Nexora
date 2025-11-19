@@ -188,4 +188,3 @@ output "network_summary" {
     vpn_gateway_enabled       = var.enable_vpn_gateway
   }
 }
-

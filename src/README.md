@@ -138,7 +138,7 @@ The source code in this directory is used in various ways:
 1. **Data Processing**:
    ```python
    from src.data_pipeline.clinical_etl import ClinicalETL
-   
+
    etl = ClinicalETL(config_path)
    processed_data = etl.process(raw_data)
    ```
@@ -146,7 +146,7 @@ The source code in this directory is used in various ways:
 2. **Model Training**:
    ```python
    from src.model_factory.deep_fm import DeepFMModel
-   
+
    model = DeepFMModel(config)
    model.train(train_data, validation_data)
    model.save(model_path)
@@ -156,7 +156,7 @@ The source code in this directory is used in various ways:
    ```bash
    # Start the REST API server
    python -m src.serving.rest_api
-   
+
    # Start the gRPC server
    python -m src.serving.grpc_server
    ```

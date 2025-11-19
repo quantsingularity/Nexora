@@ -2,8 +2,7 @@ from datetime import date
 
 import pytest
 
-from src.monitoring.adverse_event_reporting import (AdverseEvent,
-                                                    report_adverse_event)
+from src.monitoring.adverse_event_reporting import AdverseEvent, report_adverse_event
 from src.monitoring.model_reviewer import ModelReviewer
 
 
@@ -85,7 +84,7 @@ def test_adverse_event_statistics():
     with DatabaseConnection("adverse_events") as conn:
         stats = conn.execute(
             """
-            SELECT 
+            SELECT
                 event_type,
                 severity,
                 COUNT(*) as count
@@ -107,7 +106,7 @@ def test_adverse_event_trends():
     with DatabaseConnection("adverse_events") as conn:
         trends = conn.execute(
             """
-            SELECT 
+            SELECT
                 DATE_TRUNC('month', event_date) as month,
                 COUNT(*) as count
             FROM adverse_events
@@ -128,7 +127,7 @@ def test_adverse_event_correlation():
     with DatabaseConnection("adverse_events") as conn:
         correlations = conn.execute(
             """
-            SELECT 
+            SELECT
                 AVG(model_prediction) as avg_prediction,
                 COUNT(*) as event_count
             FROM adverse_events

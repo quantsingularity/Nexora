@@ -6,29 +6,29 @@ const useMockData = true;
 // Generate mock patient data
 const generateMockPatients = () => {
   const diagnoses = [
-    'Hypertension', 'Type 2 Diabetes', 'Congestive Heart Failure', 
-    'COPD', 'Asthma', 'Pneumonia', 'COVID-19', 'Stroke', 
+    'Hypertension', 'Type 2 Diabetes', 'Congestive Heart Failure',
+    'COPD', 'Asthma', 'Pneumonia', 'COVID-19', 'Stroke',
     'Myocardial Infarction', 'Chronic Kidney Disease'
   ];
-  
+
   const firstNames = [
-    'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 
-    'Linda', 'William', 'Elizabeth', 'David', 'Susan', 'Richard', 'Jessica', 
+    'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael',
+    'Linda', 'William', 'Elizabeth', 'David', 'Susan', 'Richard', 'Jessica',
     'Joseph', 'Sarah', 'Thomas', 'Karen', 'Charles', 'Nancy'
   ];
-  
+
   const lastNames = [
-    'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 
-    'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 
+    'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller',
+    'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez',
     'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'
   ];
-  
+
   const patients = [];
-  
+
   for (let i = 1; i <= 50; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-    
+
     patients.push({
       id: `P${String(i).padStart(5, '0')}`,
       name: `${firstName} ${lastName}`,
@@ -39,7 +39,7 @@ const generateMockPatients = () => {
       riskScore: Math.random()
     });
   }
-  
+
   return patients;
 };
 
@@ -56,7 +56,7 @@ const generateMockPatientDetail = (id) => {
     phone: "(555) 123-4567",
     email: "john.smith@example.com",
     address: "123 Main St, Anytown, CA 94123",
-    
+
     labResults: [
       { date: "2025-01-15", glucose: 142, hemoglobin: 13.2 },
       { date: "2025-02-01", glucose: 156, hemoglobin: 12.9 },
@@ -65,14 +65,14 @@ const generateMockPatientDetail = (id) => {
       { date: "2025-03-15", glucose: 152, hemoglobin: 13.0 },
       { date: "2025-04-01", glucose: 138, hemoglobin: 13.1 }
     ],
-    
+
     diagnoses: [
       { name: "Type 2 Diabetes", date: "2020-03-15", code: "E11.9" },
       { name: "Hypertension", date: "2021-06-22", code: "I10" },
       { name: "Hyperlipidemia", date: "2021-06-22", code: "E78.5" },
       { name: "Diabetic Neuropathy", date: "2023-11-08", code: "E11.40" }
     ],
-    
+
     riskFactors: [
       { name: "Previous Hospitalizations", impact: 0.28 },
       { name: "HbA1c > 8.0", impact: 0.22 },
@@ -81,72 +81,72 @@ const generateMockPatientDetail = (id) => {
       { name: "Hypertension", impact: 0.12 },
       { name: "Hyperlipidemia", impact: 0.05 }
     ],
-    
+
     interventions: [
-      { 
-        name: "Medication Adherence Program", 
-        description: "Enroll patient in medication adherence monitoring program with weekly check-ins", 
-        priority: "High" 
+      {
+        name: "Medication Adherence Program",
+        description: "Enroll patient in medication adherence monitoring program with weekly check-ins",
+        priority: "High"
       },
-      { 
-        name: "Diabetes Education", 
-        description: "Schedule comprehensive diabetes self-management education session", 
-        priority: "Medium" 
+      {
+        name: "Diabetes Education",
+        description: "Schedule comprehensive diabetes self-management education session",
+        priority: "Medium"
       },
-      { 
-        name: "Nutrition Consultation", 
-        description: "Refer to dietitian for medical nutrition therapy", 
-        priority: "Medium" 
+      {
+        name: "Nutrition Consultation",
+        description: "Refer to dietitian for medical nutrition therapy",
+        priority: "Medium"
       },
-      { 
-        name: "Remote Monitoring", 
-        description: "Provide glucose monitoring device with data transmission capabilities", 
-        priority: "High" 
+      {
+        name: "Remote Monitoring",
+        description: "Provide glucose monitoring device with data transmission capabilities",
+        priority: "High"
       }
     ],
-    
+
     medications: [
       { name: "Metformin", dosage: "1000mg", frequency: "Twice daily" },
       { name: "Lisinopril", dosage: "10mg", frequency: "Once daily" },
       { name: "Atorvastatin", dosage: "20mg", frequency: "Once daily at bedtime" },
       { name: "Aspirin", dosage: "81mg", frequency: "Once daily" }
     ],
-    
+
     timeline: [
-      { 
-        title: "Initial Diagnosis", 
-        date: "2020-03-15", 
-        description: "Diagnosed with Type 2 Diabetes" 
+      {
+        title: "Initial Diagnosis",
+        date: "2020-03-15",
+        description: "Diagnosed with Type 2 Diabetes"
       },
-      { 
-        title: "Hospitalization", 
-        date: "2021-06-20", 
-        description: "Admitted for hyperglycemia, diagnosed with hypertension and hyperlipidemia" 
+      {
+        title: "Hospitalization",
+        date: "2021-06-20",
+        description: "Admitted for hyperglycemia, diagnosed with hypertension and hyperlipidemia"
       },
-      { 
-        title: "Medication Change", 
-        date: "2022-08-12", 
-        description: "Increased Metformin dosage to 1000mg BID" 
+      {
+        title: "Medication Change",
+        date: "2022-08-12",
+        description: "Increased Metformin dosage to 1000mg BID"
       },
-      { 
-        title: "Specialist Referral", 
-        date: "2023-11-08", 
-        description: "Referred to neurologist, diagnosed with diabetic neuropathy" 
+      {
+        title: "Specialist Referral",
+        date: "2023-11-08",
+        description: "Referred to neurologist, diagnosed with diabetic neuropathy"
       },
-      { 
-        title: "Emergency Visit", 
-        date: "2024-12-30", 
-        description: "ER visit for hypoglycemic episode" 
+      {
+        title: "Emergency Visit",
+        date: "2024-12-30",
+        description: "ER visit for hypoglycemic episode"
       },
-      { 
-        title: "Follow-up Visit", 
-        date: "2025-01-15", 
-        description: "Regular check-up, HbA1c: 8.2%" 
+      {
+        title: "Follow-up Visit",
+        date: "2025-01-15",
+        description: "Regular check-up, HbA1c: 8.2%"
       },
-      { 
-        title: "Latest Visit", 
-        date: "2025-04-01", 
-        description: "Follow-up visit, adjusted medication regimen" 
+      {
+        title: "Latest Visit",
+        date: "2025-04-01",
+        description: "Follow-up visit, adjusted medication regimen"
       }
     ]
   };
@@ -203,7 +203,7 @@ export const checkHealth = async () => {
   if (useMockData) {
     return { status: "healthy", timestamp: new Date().toISOString() };
   }
-  
+
   try {
     const response = await api.get('/health');
     return response.data;
@@ -218,7 +218,7 @@ export const getModels = async () => {
   if (useMockData) {
     return generateMockModels();
   }
-  
+
   try {
     const response = await api.get('/models');
     return response.data.models;
@@ -233,7 +233,7 @@ export const getPatients = async () => {
   if (useMockData) {
     return generateMockPatients();
   }
-  
+
   try {
     const response = await api.get('/patients');
     return response.data.patients;
@@ -248,7 +248,7 @@ export const getPatientDetail = async (patientId) => {
   if (useMockData) {
     return generateMockPatientDetail(patientId);
   }
-  
+
   try {
     const response = await api.get(`/patients/${patientId}`);
     return response.data;
@@ -274,7 +274,7 @@ export const makePrediction = async (modelName, modelVersion, patientData) => {
         shap_values: [0.3, 0.25, 0.2, 0.15, 0.1]
       },
       explanations: {
-        method: "SHAP", 
+        method: "SHAP",
         values: [0.3, 0.25, 0.2, 0.15, 0.1]
       },
       uncertainty: {
@@ -282,7 +282,7 @@ export const makePrediction = async (modelName, modelVersion, patientData) => {
       }
     };
   }
-  
+
   try {
     const response = await api.post('/predict', {
       model_name: modelName,
@@ -310,7 +310,7 @@ export const getPredictionFromFHIR = async (patientId, modelName, modelVersion) 
       }
     };
   }
-  
+
   try {
     const response = await api.post(`/fhir/patient/${patientId}/predict`, null, {
       params: {
@@ -351,7 +351,7 @@ export const getDashboardData = async () => {
       }
     };
   }
-  
+
   try {
     const response = await api.get('/dashboard');
     return response.data;

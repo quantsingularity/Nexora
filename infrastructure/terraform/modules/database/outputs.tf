@@ -267,4 +267,3 @@ output "compliance_status" {
     point_in_time_recovery = true  # Enabled with automated backups
   }
 }
-

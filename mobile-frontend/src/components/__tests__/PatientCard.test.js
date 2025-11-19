@@ -153,4 +153,4 @@ describe('PatientCard', () => {
       backgroundColor: expect.stringMatching(/green|#00ff00/i)
     });
   });
-}); 
+});

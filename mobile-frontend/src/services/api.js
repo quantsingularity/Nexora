@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Define the base URL for the API. Replace with the actual deployed backend URL.
-// For local testing, if the backend runs on the host machine, 
+// For local testing, if the backend runs on the host machine,
 // use the host machine's IP address or a service like ngrok.
 // For now, using a placeholder.
 const API_BASE_URL = 'http://localhost:8000'; // Replace with actual backend URL
@@ -38,7 +38,7 @@ const listModels = () => {
 
 const getPatients = async () => {
   // This endpoint doesn't exist in the provided backend API.
-  // We'll keep the mock data logic in HomeScreen for now, 
+  // We'll keep the mock data logic in HomeScreen for now,
   // or adapt if a patient list endpoint is available.
   console.warn('getPatients function called, but no backend endpoint defined. Using mock data.');
   // Simulate API delay
@@ -58,10 +58,10 @@ const getPatientDetails = async (patientId) => {
   // We might need to call the prediction endpoint to get risk details.
   // For now, keeping the mock logic, but ideally, this would call the prediction endpoint.
   console.warn(`getPatientDetails for ${patientId} called, but no direct backend endpoint defined. Using mock data.`);
-  
+
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 700));
-  
+
   // Mock data logic from PatientDetailScreen (simplified)
   if (patientId === 'p001') {
     return {
@@ -99,4 +99,3 @@ export default {
   getPatientDetails, // Still uses mock data
   postPrediction,
 };
-

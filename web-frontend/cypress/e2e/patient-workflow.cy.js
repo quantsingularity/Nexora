@@ -126,4 +126,4 @@ describe('Patient Workflow', () => {
     // Verify audit trail
     cy.get('[data-testid="audit-trail"]').should('contain', 'Risk assessment updated');
   });
-}); 
+});

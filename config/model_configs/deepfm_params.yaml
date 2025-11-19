@@ -44,7 +44,7 @@ feature_columns:
         max_length: 25
   temporal:
     - lab_results:
-        features: 
+        features:
           - glucose
           - hemoglobin
           - creatinine

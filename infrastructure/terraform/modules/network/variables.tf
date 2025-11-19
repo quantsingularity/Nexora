@@ -3,7 +3,7 @@ variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   type        = string
   default     = "10.0.0.0/16"
-  
+
   validation {
     condition     = can(cidrhost(var.vpc_cidr, 0))
     error_message = "VPC CIDR must be a valid IPv4 CIDR block."
@@ -13,7 +13,7 @@ variable "vpc_cidr" {
 variable "availability_zones" {
   description = "List of availability zones"
   type        = list(string)
-  
+
   validation {
     condition     = length(var.availability_zones) >= 2
     error_message = "At least 2 availability zones must be specified for high availability."
@@ -23,7 +23,7 @@ variable "availability_zones" {
 variable "public_subnet_cidrs" {
   description = "CIDR blocks for public subnets"
   type        = list(string)
-  
+
   validation {
     condition = alltrue([
       for cidr in var.public_subnet_cidrs : can(cidrhost(cidr, 0))
@@ -35,7 +35,7 @@ variable "public_subnet_cidrs" {
 variable "private_subnet_cidrs" {
   description = "CIDR blocks for private subnets"
   type        = list(string)
-  
+
   validation {
     condition = alltrue([
       for cidr in var.private_subnet_cidrs : can(cidrhost(cidr, 0))
@@ -47,7 +47,7 @@ variable "private_subnet_cidrs" {
 variable "database_subnet_cidrs" {
   description = "CIDR blocks for database subnets"
   type        = list(string)
-  
+
   validation {
     condition = alltrue([
       for cidr in var.database_subnet_cidrs : can(cidrhost(cidr, 0))
@@ -59,7 +59,7 @@ variable "database_subnet_cidrs" {
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
-  
+
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod."
@@ -69,7 +69,7 @@ variable "environment" {
 variable "app_name" {
   description = "Application name for resource naming and tagging"
   type        = string
-  
+
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]*[a-z0-9]$", var.app_name))
     error_message = "App name must start with a letter, contain only lowercase letters, numbers, and hyphens, and end with a letter or number."
@@ -132,7 +132,7 @@ variable "flow_logs_retention" {
   description = "VPC Flow Logs retention period in days"
   type        = number
   default     = 30
-  
+
   validation {
     condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653], var.flow_logs_retention)
     error_message = "Flow logs retention days must be a valid CloudWatch Logs retention period."
@@ -151,4 +151,3 @@ variable "kms_key_id" {
   description = "KMS key ID for encrypting logs and other resources"
   type        = string
 }
-

@@ -79,16 +79,16 @@ def run_tests(output_dir="test_results"):
     ======================================
     HIPAA Compliance Test Results Summary
     ======================================
-    
+
     Tests Run: {report['total_tests']}
     Failures: {report['failures']}
     Errors: {report['errors']}
     Skipped: {report['skipped']}
-    
+
     Overall Status: {'PASS' if report['success'] else 'FAIL'}
-    
+
     Timestamp: {report['timestamp']}
-    
+
     See {report_path} for detailed results.
     """
 

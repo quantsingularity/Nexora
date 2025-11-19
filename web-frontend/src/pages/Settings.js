@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Grid, 
-  Typography, 
-  Card, 
-  CardContent, 
+import {
+  Box,
+  Grid,
+  Typography,
+  Card,
+  CardContent,
   CardHeader,
   Divider,
   List,
@@ -21,7 +21,7 @@ import {
   Tabs,
   Tab
 } from '@mui/material';
-import { 
+import {
   Settings as SettingsIcon,
   Security as SecurityIcon,
   Notifications as NotificationsIcon,
@@ -46,7 +46,7 @@ const Settings = () => {
     try {
       // In a real application, we would call an API to save settings
       // await api.saveSettings(settingsData);
-      
+
       // For now, just simulate a successful save
       setSnackbarMessage('Settings saved successfully');
       setSnackbarSeverity('success');
@@ -241,9 +241,9 @@ const Settings = () => {
                 <ListItemIcon>
                   <NotificationsIcon />
                 </ListItemIcon>
-                <ListItemText 
-                  primary="High-Risk Patient Alerts" 
-                  secondary="Receive notifications when patients are identified as high-risk" 
+                <ListItemText
+                  primary="High-Risk Patient Alerts"
+                  secondary="Receive notifications when patients are identified as high-risk"
                 />
                 <Switch defaultChecked />
               </ListItem>
@@ -252,9 +252,9 @@ const Settings = () => {
                 <ListItemIcon>
                   <NotificationsIcon />
                 </ListItemIcon>
-                <ListItemText 
-                  primary="Model Update Notifications" 
-                  secondary="Receive notifications when prediction models are updated" 
+                <ListItemText
+                  primary="Model Update Notifications"
+                  secondary="Receive notifications when prediction models are updated"
                 />
                 <Switch defaultChecked />
               </ListItem>
@@ -263,9 +263,9 @@ const Settings = () => {
                 <ListItemIcon>
                   <NotificationsIcon />
                 </ListItemIcon>
-                <ListItemText 
-                  primary="System Maintenance Alerts" 
-                  secondary="Receive notifications about scheduled maintenance" 
+                <ListItemText
+                  primary="System Maintenance Alerts"
+                  secondary="Receive notifications about scheduled maintenance"
                 />
                 <Switch defaultChecked />
               </ListItem>
@@ -274,9 +274,9 @@ const Settings = () => {
                 <ListItemIcon>
                   <NotificationsIcon />
                 </ListItemIcon>
-                <ListItemText 
-                  primary="Weekly Summary Reports" 
-                  secondary="Receive weekly summary of patient risk profiles" 
+                <ListItemText
+                  primary="Weekly Summary Reports"
+                  secondary="Receive weekly summary of patient risk profiles"
                 />
                 <Switch defaultChecked />
               </ListItem>
@@ -285,9 +285,9 @@ const Settings = () => {
                 <ListItemIcon>
                   <NotificationsIcon />
                 </ListItemIcon>
-                <ListItemText 
-                  primary="Email Notifications" 
-                  secondary="Receive notifications via email" 
+                <ListItemText
+                  primary="Email Notifications"
+                  secondary="Receive notifications via email"
                 />
                 <Switch defaultChecked />
               </ListItem>
@@ -296,9 +296,9 @@ const Settings = () => {
                 <ListItemIcon>
                   <NotificationsIcon />
                 </ListItemIcon>
-                <ListItemText 
-                  primary="Mobile Push Notifications" 
-                  secondary="Receive notifications on your mobile device" 
+                <ListItemText
+                  primary="Mobile Push Notifications"
+                  secondary="Receive notifications on your mobile device"
                 />
                 <Switch defaultChecked />
               </ListItem>
@@ -321,9 +321,9 @@ const Settings = () => {
                 <ListItemIcon>
                   <StorageIcon />
                 </ListItemIcon>
-                <ListItemText 
-                  primary="Electronic Health Record (EHR)" 
-                  secondary="Connected: Epic Systems" 
+                <ListItemText
+                  primary="Electronic Health Record (EHR)"
+                  secondary="Connected: Epic Systems"
                 />
                 <Switch defaultChecked />
               </ListItem>
@@ -332,9 +332,9 @@ const Settings = () => {
                 <ListItemIcon>
                   <StorageIcon />
                 </ListItemIcon>
-                <ListItemText 
-                  primary="Laboratory Information System" 
-                  secondary="Connected: Sunquest" 
+                <ListItemText
+                  primary="Laboratory Information System"
+                  secondary="Connected: Sunquest"
                 />
                 <Switch defaultChecked />
               </ListItem>
@@ -343,16 +343,16 @@ const Settings = () => {
                 <ListItemIcon>
                   <StorageIcon />
                 </ListItemIcon>
-                <ListItemText 
-                  primary="Pharmacy System" 
-                  secondary="Connected: Cerner PharmNet" 
+                <ListItemText
+                  primary="Pharmacy System"
+                  secondary="Connected: Cerner PharmNet"
                 />
                 <Switch defaultChecked />
               </ListItem>
             </List>
-            
+
             <Divider sx={{ my: 3 }} />
-            
+
             <Typography variant="h6" gutterBottom>
               Data Synchronization
             </Typography>
@@ -380,9 +380,9 @@ const Settings = () => {
                 </Box>
               </Grid>
             </Grid>
-            
+
             <Divider sx={{ my: 3 }} />
-            
+
             <Typography variant="h6" gutterBottom>
               Data Retention
             </Typography>
@@ -419,12 +419,12 @@ const Settings = () => {
       {/* System Tab */}
       {activeTab === 4 && (
         <Card>
-          <CardHeader 
-            title="System Settings" 
+          <CardHeader
+            title="System Settings"
             action={
-              <Button 
-                variant="outlined" 
-                size="small" 
+              <Button
+                variant="outlined"
+                size="small"
                 onClick={handleHealthCheck}
               >
                 Check Health
@@ -438,36 +438,36 @@ const Settings = () => {
             </Typography>
             <List>
               <ListItem>
-                <ListItemText 
-                  primary="Application Version" 
-                  secondary="Nexora v1.2.0" 
+                <ListItemText
+                  primary="Application Version"
+                  secondary="Nexora v1.2.0"
                 />
               </ListItem>
               <Divider />
               <ListItem>
-                <ListItemText 
-                  primary="Last Updated" 
-                  secondary="April 10, 2025" 
+                <ListItemText
+                  primary="Last Updated"
+                  secondary="April 10, 2025"
                 />
               </ListItem>
               <Divider />
               <ListItem>
-                <ListItemText 
-                  primary="Database Status" 
-                  secondary="Connected (MongoDB v5.0)" 
+                <ListItemText
+                  primary="Database Status"
+                  secondary="Connected (MongoDB v5.0)"
                 />
               </ListItem>
               <Divider />
               <ListItem>
-                <ListItemText 
-                  primary="API Status" 
-                  secondary="Operational (v1.1)" 
+                <ListItemText
+                  primary="API Status"
+                  secondary="Operational (v1.1)"
                 />
               </ListItem>
             </List>
-            
+
             <Divider sx={{ my: 3 }} />
-            
+
             <Typography variant="h6" gutterBottom>
               Performance Settings
             </Typography>
@@ -494,9 +494,9 @@ const Settings = () => {
                 />
               </Grid>
             </Grid>
-            
+
             <Divider sx={{ my: 3 }} />
-            
+
             <Typography variant="h6" gutterBottom>
               Logging
             </Typography>
@@ -536,8 +536,8 @@ const Settings = () => {
       )}
 
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           startIcon={<SaveIcon />}
           onClick={handleSave}
         >

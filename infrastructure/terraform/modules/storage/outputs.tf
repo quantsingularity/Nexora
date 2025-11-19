@@ -201,4 +201,3 @@ output "bucket_urls" {
     website_url   = var.enable_static_website ? "http://${aws_s3_bucket_website_configuration.website[0].website_endpoint}" : null
   }
 }
-

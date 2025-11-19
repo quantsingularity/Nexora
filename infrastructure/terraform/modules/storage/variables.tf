@@ -2,7 +2,7 @@
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
-  
+
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod."
@@ -12,7 +12,7 @@ variable "environment" {
 variable "app_name" {
   description = "Application name for resource naming and tagging"
   type        = string
-  
+
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]*[a-z0-9]$", var.app_name))
     error_message = "App name must start with a letter, contain only lowercase letters, numbers, and hyphens, and end with a letter or number."
@@ -54,7 +54,7 @@ variable "transition_to_ia_days" {
   description = "Days after which objects are transitioned to IA storage class"
   type        = number
   default     = 30
-  
+
   validation {
     condition     = var.transition_to_ia_days >= 30
     error_message = "Transition to IA must be at least 30 days."
@@ -65,7 +65,7 @@ variable "transition_to_glacier_days" {
   description = "Days after which objects are transitioned to Glacier storage class"
   type        = number
   default     = 90
-  
+
   validation {
     condition     = var.transition_to_glacier_days >= 90
     error_message = "Transition to Glacier must be at least 90 days."
@@ -76,7 +76,7 @@ variable "expiration_days" {
   description = "Days after which objects are permanently deleted (0 = never delete)"
   type        = number
   default     = 2555  # 7 years for financial compliance
-  
+
   validation {
     condition     = var.expiration_days >= 0
     error_message = "Expiration days must be non-negative."
@@ -134,7 +134,7 @@ variable "bucket_size_alarm_threshold" {
   description = "S3 bucket size alarm threshold in bytes"
   type        = number
   default     = 107374182400  # 100 GB
-  
+
   validation {
     condition     = var.bucket_size_alarm_threshold > 0
     error_message = "Bucket size alarm threshold must be positive."
@@ -178,7 +178,7 @@ variable "object_lock_mode" {
   description = "Object Lock mode (GOVERNANCE or COMPLIANCE)"
   type        = string
   default     = "COMPLIANCE"
-  
+
   validation {
     condition     = contains(["GOVERNANCE", "COMPLIANCE"], var.object_lock_mode)
     error_message = "Object Lock mode must be either GOVERNANCE or COMPLIANCE."
@@ -189,7 +189,7 @@ variable "object_lock_retention_days" {
   description = "Object Lock retention period in days"
   type        = number
   default     = 2555  # 7 years for financial compliance
-  
+
   validation {
     condition     = var.object_lock_retention_days > 0
     error_message = "Object Lock retention days must be positive."
@@ -222,7 +222,7 @@ variable "multipart_upload_threshold" {
   description = "Threshold in bytes for multipart uploads"
   type        = number
   default     = 104857600  # 100 MB
-  
+
   validation {
     condition     = var.multipart_upload_threshold >= 5242880  # 5 MB minimum
     error_message = "Multipart upload threshold must be at least 5 MB."
@@ -234,10 +234,9 @@ variable "request_payer" {
   description = "Who pays for S3 requests and data transfer (BucketOwner or Requester)"
   type        = string
   default     = "BucketOwner"
-  
+
   validation {
     condition     = contains(["BucketOwner", "Requester"], var.request_payer)
     error_message = "Request payer must be either BucketOwner or Requester."
   }
 }
-

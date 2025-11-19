@@ -888,7 +888,7 @@ resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  
+
   tags = {
     Name        = "${var.environment}-vpc"
     Environment = var.environment
@@ -902,7 +902,7 @@ resource "aws_subnet" "public" {
   cidr_block              = var.public_subnets[count.index]
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = true
-  
+
   tags = {
     Name        = "${var.environment}-public-subnet-${count.index + 1}"
     Environment = var.environment
@@ -915,7 +915,7 @@ resource "aws_subnet" "private" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.private_subnets[count.index]
   availability_zone       = var.availability_zones[count.index]
-  
+
   tags = {
     Name        = "${var.environment}-private-subnet-${count.index + 1}"
     Environment = var.environment
@@ -928,7 +928,7 @@ resource "aws_subnet" "database" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.database_subnets[count.index]
   availability_zone       = var.availability_zones[count.index]
-  
+
   tags = {
     Name        = "${var.environment}-database-subnet-${count.index + 1}"
     Environment = var.environment
@@ -947,21 +947,21 @@ resource "aws_eks_cluster" "main" {
   name     = "${var.environment}-readmission-cluster"
   role_arn = aws_iam_role.eks_cluster.arn
   version  = var.kubernetes_version
-  
+
   vpc_config {
     subnet_ids              = var.subnet_ids
     endpoint_private_access = true
     endpoint_public_access  = true
     security_group_ids      = [aws_security_group.eks_cluster.id]
   }
-  
+
   encryption_config {
     resources = ["secrets"]
     provider {
       key_arn = var.kms_key_arn
     }
   }
-  
+
   tags = {
     Environment = var.environment
     Project     = "readmission-risk"
@@ -973,15 +973,15 @@ resource "aws_eks_node_group" "general" {
   node_group_name = "${var.environment}-general"
   node_role_arn   = aws_iam_role.eks_node.arn
   subnet_ids      = var.subnet_ids
-  
+
   scaling_config {
     desired_size = var.general_node_desired_size
     min_size     = var.general_node_min_size
     max_size     = var.general_node_max_size
   }
-  
+
   instance_types = var.general_node_instance_types
-  
+
   tags = {
     Environment = var.environment
     Project     = "readmission-risk"
@@ -994,15 +994,15 @@ resource "aws_eks_node_group" "gpu" {
   node_group_name = "${var.environment}-gpu"
   node_role_arn   = aws_iam_role.eks_node.arn
   subnet_ids      = var.subnet_ids
-  
+
   scaling_config {
     desired_size = var.gpu_node_desired_size
     min_size     = var.gpu_node_min_size
     max_size     = var.gpu_node_max_size
   }
-  
+
   instance_types = var.gpu_node_instance_types
-  
+
   tags = {
     Environment = var.environment
     Project     = "readmission-risk"

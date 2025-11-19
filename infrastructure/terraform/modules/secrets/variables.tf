@@ -2,7 +2,7 @@
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
-  
+
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod."
@@ -12,7 +12,7 @@ variable "environment" {
 variable "app_name" {
   description = "Application name for resource naming and tagging"
   type        = string
-  
+
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]*[a-z0-9]$", var.app_name))
     error_message = "App name must start with a letter, contain only lowercase letters, numbers, and hyphens, and end with a letter or number."
@@ -28,7 +28,7 @@ variable "kms_key_id" {
 variable "db_username" {
   description = "Database master username"
   type        = string
-  
+
   validation {
     condition     = can(regex("^[a-zA-Z][a-zA-Z0-9_]*$", var.db_username)) && length(var.db_username) >= 3
     error_message = "Database username must start with a letter, be at least 3 characters long, and contain only alphanumeric characters and underscores."
@@ -39,7 +39,7 @@ variable "db_password" {
   description = "Database master password"
   type        = string
   sensitive   = true
-  
+
   validation {
     condition     = length(var.db_password) >= 12
     error_message = "Database password must be at least 12 characters long."
@@ -116,7 +116,7 @@ variable "rotation_interval_days" {
   description = "Number of days between automatic secret rotations"
   type        = number
   default     = 30
-  
+
   validation {
     condition     = var.rotation_interval_days >= 1 && var.rotation_interval_days <= 365
     error_message = "Rotation interval must be between 1 and 365 days."
@@ -135,7 +135,7 @@ variable "audit_log_retention_days" {
   description = "Secrets access audit log retention period in days"
   type        = number
   default     = 2555  # 7 years for financial compliance
-  
+
   validation {
     condition     = var.audit_log_retention_days >= 90
     error_message = "Audit log retention must be at least 90 days for compliance."
@@ -207,4 +207,3 @@ variable "dev_secrets" {
   default     = {}
   sensitive   = true
 }
-

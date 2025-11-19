@@ -14,7 +14,7 @@ terraform {
       version = "~> 4.0"
     }
   }
-  
+
   backend "s3" {
     # Enhanced backend configuration with encryption
     encrypt        = true
@@ -26,7 +26,7 @@ terraform {
 # Configure AWS provider with enhanced security
 provider "aws" {
   region = var.aws_region
-  
+
   # Enhanced default tags for compliance and governance
   default_tags {
     tags = merge(var.default_tags, {
@@ -39,7 +39,7 @@ provider "aws" {
       LastUpdated         = formatdate("YYYY-MM-DD", timestamp())
     })
   }
-  
+
   # Assume role for cross-account access if specified
   dynamic "assume_role" {
     for_each = var.assume_role_arn != null ? [1] : []
@@ -62,7 +62,7 @@ resource "aws_kms_key" "main" {
   description             = "KMS key for ${var.app_name} ${var.environment} environment"
   deletion_window_in_days = var.kms_deletion_window
   enable_key_rotation     = true
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -89,7 +89,7 @@ resource "aws_kms_key" "main" {
       }
     ]
   })
-  
+
   tags = {
     Name        = "${var.app_name}-${var.environment}-kms-key"
     Environment = var.environment
@@ -105,7 +105,7 @@ resource "aws_kms_alias" "main" {
 # Enhanced network module with security features
 module "network" {
   source = "./modules/network"
-  
+
   environment              = var.environment
   vpc_cidr                = var.vpc_cidr
   availability_zones      = var.availability_zones
@@ -120,7 +120,7 @@ module "network" {
   flow_logs_retention     = var.flow_logs_retention_days
   kms_key_id             = aws_kms_key.main.arn
   app_name               = var.app_name
-  
+
   # Network security enhancements
   enable_network_acls     = true
   enable_security_groups  = true
@@ -130,12 +130,12 @@ module "network" {
 # Enhanced security module
 module "security" {
   source = "./modules/security"
-  
+
   environment            = var.environment
   vpc_id                = module.network.vpc_id
   app_name              = var.app_name
   kms_key_id            = aws_kms_key.main.arn
-  
+
   # Security enhancements
   enable_waf             = var.enable_waf
   enable_shield          = var.enable_shield
@@ -143,18 +143,18 @@ module "security" {
   enable_config          = var.enable_config
   enable_cloudtrail      = var.enable_cloudtrail
   enable_inspector       = var.enable_inspector
-  
+
   # Compliance settings
   cloudtrail_retention_days = var.audit_log_retention_days
   config_retention_days     = var.config_retention_days
-  
+
   depends_on = [module.network]
 }
 
 # Enhanced compute module with security hardening
 module "compute" {
   source = "./modules/compute"
-  
+
   environment            = var.environment
   vpc_id                = module.network.vpc_id
   private_subnet_ids    = module.network.private_subnet_ids
@@ -163,27 +163,27 @@ module "compute" {
   key_name              = var.key_name
   app_name              = var.app_name
   kms_key_id            = aws_kms_key.main.arn
-  
+
   # Security configurations
   security_group_ids    = [module.security.app_security_group_id]
   enable_detailed_monitoring = true
   enable_ebs_encryption = true
   enable_imdsv2_only    = true
-  
+
   # Auto Scaling and Load Balancing
   min_size              = var.asg_min_size
   max_size              = var.asg_max_size
   desired_capacity      = var.asg_desired_capacity
   health_check_type     = "ELB"
   health_check_grace_period = 300
-  
+
   depends_on = [module.network, module.security]
 }
 
 # Enhanced database module with encryption and backup
 module "database" {
   source = "./modules/database"
-  
+
   environment            = var.environment
   vpc_id                = module.network.vpc_id
   private_subnet_ids    = module.network.private_subnet_ids
@@ -193,7 +193,7 @@ module "database" {
   db_username           = var.db_username
   db_password           = var.db_password
   kms_key_id            = aws_kms_key.main.arn
-  
+
   # Security configurations
   security_group_ids    = [module.security.db_security_group_id]
   enable_encryption     = true
@@ -201,105 +201,104 @@ module "database" {
   backup_retention_period = var.db_backup_retention_days
   backup_window         = var.db_backup_window
   maintenance_window    = var.db_maintenance_window
-  
+
   # High availability and performance
   multi_az              = var.db_multi_az
   enable_performance_insights = true
   performance_insights_retention_period = 7
-  
+
   # Monitoring and logging
   enable_enhanced_monitoring = true
   monitoring_interval   = 60
   enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
-  
+
   depends_on = [module.network, module.security]
 }
 
 # Enhanced storage module with encryption and lifecycle policies
 module "storage" {
   source = "./modules/storage"
-  
+
   environment           = var.environment
   app_name             = var.app_name
   kms_key_id           = aws_kms_key.main.arn
-  
+
   # Security configurations
   enable_encryption    = true
   enable_versioning    = true
   enable_mfa_delete    = var.enable_mfa_delete
-  
+
   # Compliance and lifecycle
   enable_lifecycle_policy = true
   transition_to_ia_days   = var.s3_transition_to_ia_days
   transition_to_glacier_days = var.s3_transition_to_glacier_days
   expiration_days        = var.s3_expiration_days
-  
+
   # Access logging and monitoring
   enable_access_logging  = true
   enable_server_access_logging = true
-  
+
   depends_on = [module.security]
 }
 
 # Monitoring and logging module
 module "monitoring" {
   source = "./modules/monitoring"
-  
+
   environment           = var.environment
   app_name             = var.app_name
   kms_key_id           = aws_kms_key.main.arn
-  
+
   # CloudWatch configuration
   log_retention_days   = var.cloudwatch_log_retention_days
   enable_detailed_monitoring = true
-  
+
   # Alerting configuration
   sns_topic_name       = "${var.app_name}-${var.environment}-alerts"
   alert_email_endpoints = var.alert_email_endpoints
-  
+
   # Monitoring targets
   vpc_id               = module.network.vpc_id
   load_balancer_arn    = module.compute.load_balancer_arn
   rds_instance_id      = module.database.db_instance_id
-  
+
   depends_on = [module.network, module.compute, module.database]
 }
 
 # Secrets management module
 module "secrets" {
   source = "./modules/secrets"
-  
+
   environment          = var.environment
   app_name            = var.app_name
   kms_key_id          = aws_kms_key.main.arn
-  
+
   # Database credentials
   db_username         = var.db_username
   db_password         = var.db_password
-  
+
   # Application secrets
   app_secrets         = var.app_secrets
-  
+
   depends_on = [module.security]
 }
 
 # Backup and disaster recovery module
 module "backup" {
   source = "./modules/backup"
-  
+
   environment         = var.environment
   app_name           = var.app_name
   kms_key_id         = aws_kms_key.main.arn
-  
+
   # Backup configuration
   backup_retention_days = var.backup_retention_days
   backup_schedule      = var.backup_schedule
-  
+
   # Resources to backup
   rds_instance_arn     = module.database.db_instance_arn
   ebs_volume_ids       = module.compute.ebs_volume_ids
   s3_bucket_arn        = module.storage.s3_bucket_arn
-  
+
   depends_on = [module.compute, module.database, module.storage]
 }
-

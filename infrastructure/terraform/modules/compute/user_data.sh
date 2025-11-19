@@ -363,12 +363,12 @@ class HealthCheckHandler(http.server.BaseHTTPRequestHandler):
                         "services": self.check_services()
                     }
                 }
-                
+
                 # Determine overall status
                 all_healthy = all(check["status"] == "ok" for check in health_status["checks"].values())
                 if not all_healthy:
                     health_status["status"] = "unhealthy"
-                
+
                 self.send_response(200 if all_healthy else 503)
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
@@ -382,7 +382,7 @@ class HealthCheckHandler(http.server.BaseHTTPRequestHandler):
         else:
             self.send_response(404)
             self.end_headers()
-    
+
     def check_disk_space(self):
         try:
             result = subprocess.run(['df', '-h', '/'], capture_output=True, text=True)
@@ -393,7 +393,7 @@ class HealthCheckHandler(http.server.BaseHTTPRequestHandler):
         except:
             pass
         return {"status": "error", "message": "Unable to check disk space"}
-    
+
     def check_memory(self):
         try:
             with open('/proc/meminfo', 'r') as f:
@@ -405,7 +405,7 @@ class HealthCheckHandler(http.server.BaseHTTPRequestHandler):
         except:
             pass
         return {"status": "error", "message": "Unable to check memory"}
-    
+
     def check_docker(self):
         try:
             result = subprocess.run(['systemctl', 'is-active', 'docker'], capture_output=True, text=True)
@@ -414,12 +414,12 @@ class HealthCheckHandler(http.server.BaseHTTPRequestHandler):
         except:
             pass
         return {"status": "error", "message": "Unable to check Docker status"}
-    
+
     def check_services(self):
         services = ['amazon-ssm-agent', 'amazon-cloudwatch-agent']
         service_status = {}
         all_ok = True
-        
+
         for service in services:
             try:
                 result = subprocess.run(['systemctl', 'is-active', service], capture_output=True, text=True)
@@ -430,7 +430,7 @@ class HealthCheckHandler(http.server.BaseHTTPRequestHandler):
             except:
                 service_status[service] = "error"
                 all_ok = False
-        
+
         return {"status": "ok" if all_ok else "error", "services": service_status}
 
 if __name__ == "__main__":
@@ -504,4 +504,3 @@ log "User data script completed successfully"
 # /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
 
 exit 0
-

@@ -158,7 +158,7 @@ The mobile frontend includes several types of tests:
    ```bash
    # Build the app for testing
    detox build --configuration ios.sim
-   
+
    # Run the tests
    detox test --configuration ios.sim
    ```

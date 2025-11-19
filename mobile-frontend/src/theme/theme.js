@@ -47,4 +47,3 @@ export const GlobalStyles = {
   },
   // Add other global styles as needed
 };
-

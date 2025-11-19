@@ -479,21 +479,21 @@ class EHRIntegration:
     def __init__(self, config_path):
         with open(config_path, 'r') as f:
             self.config = json.load(f)
-        
+
         self.fhir_connector = FHIRConnector(self.config['fhir'])
         self.predictor = Predictor(self.config['model']['path'])
-        
+
     def get_patient_data(self, patient_id):
         """Retrieve patient data from EHR system."""
         return self.fhir_connector.get_patient_bundle(patient_id)
-        
+
     def predict_readmission_risk(self, patient_id):
         """Predict readmission risk for a patient."""
         patient_data = self.get_patient_data(patient_id)
         processed_data = self.fhir_connector.process_patient_bundle(patient_data)
         prediction = self.predictor.predict(processed_data)
         return prediction
-        
+
     def send_alert(self, patient_id, prediction):
         """Send alert to EHR system."""
         if prediction['readmission_risk'] >= self.config['alert_threshold']:
@@ -514,10 +514,10 @@ class EHRIntegration:
                     'contentString': f"Readmission Risk Alert: {prediction['readmission_risk']:.2f}"
                 }]
             }
-            
+
             response = self.fhir_connector.client.create(alert_data)
             return response
-        
+
         return None
 ```
 

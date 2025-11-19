@@ -373,7 +373,7 @@ resource "aws_secretsmanager_secret_rotation" "database_credentials" {
 
   secret_id           = aws_secretsmanager_secret.database_credentials.id
   rotation_lambda_arn = var.rotation_lambda_arn
-  
+
   rotation_rules {
     automatically_after_days = var.rotation_interval_days
   }
@@ -424,9 +424,8 @@ resource "aws_s3_bucket_public_access_block" "secrets_backup" {
 resource "aws_s3_bucket_versioning" "secrets_backup" {
   count  = var.enable_secrets_backup ? 1 : 0
   bucket = aws_s3_bucket.secrets_backup[0].id
-  
+
   versioning_configuration {
     status = "Enabled"
   }
 }
-

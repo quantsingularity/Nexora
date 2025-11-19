@@ -3,7 +3,7 @@ variable "aws_region" {
   description = "AWS region to deploy resources"
   type        = string
   default     = "us-west-2"
-  
+
   validation {
     condition = can(regex("^[a-z]{2}-[a-z]+-[0-9]$", var.aws_region))
     error_message = "AWS region must be in the format: us-west-2, eu-west-1, etc."
@@ -13,7 +13,7 @@ variable "aws_region" {
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
-  
+
   validation {
     condition     = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod."
@@ -23,7 +23,7 @@ variable "environment" {
 variable "app_name" {
   description = "Application name - used for resource naming and tagging"
   type        = string
-  
+
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]*[a-z0-9]$", var.app_name))
     error_message = "App name must start with a letter, contain only lowercase letters, numbers, and hyphens, and end with a letter or number."
@@ -35,7 +35,7 @@ variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   type        = string
   default     = "10.0.0.0/16"
-  
+
   validation {
     condition     = can(cidrhost(var.vpc_cidr, 0))
     error_message = "VPC CIDR must be a valid IPv4 CIDR block."
@@ -46,7 +46,7 @@ variable "availability_zones" {
   description = "List of availability zones"
   type        = list(string)
   default     = ["us-west-2a", "us-west-2b", "us-west-2c"]
-  
+
   validation {
     condition     = length(var.availability_zones) >= 2
     error_message = "At least 2 availability zones must be specified for high availability."
@@ -87,7 +87,7 @@ variable "flow_logs_retention_days" {
   description = "VPC Flow Logs retention period in days"
   type        = number
   default     = 30
-  
+
   validation {
     condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653], var.flow_logs_retention_days)
     error_message = "Flow logs retention days must be a valid CloudWatch Logs retention period."
@@ -99,7 +99,7 @@ variable "instance_type" {
   description = "EC2 instance type"
   type        = string
   default     = "t3.medium"
-  
+
   validation {
     condition = can(regex("^[a-z][0-9][a-z]?\\.[a-z0-9]+$", var.instance_type))
     error_message = "Instance type must be a valid EC2 instance type (e.g., t3.medium, m5.large)."
@@ -116,7 +116,7 @@ variable "asg_min_size" {
   description = "Minimum size of the Auto Scaling Group"
   type        = number
   default     = 1
-  
+
   validation {
     condition     = var.asg_min_size >= 1
     error_message = "ASG minimum size must be at least 1."
@@ -127,7 +127,7 @@ variable "asg_max_size" {
   description = "Maximum size of the Auto Scaling Group"
   type        = number
   default     = 10
-  
+
   validation {
     condition     = var.asg_max_size >= var.asg_min_size
     error_message = "ASG maximum size must be greater than or equal to minimum size."
@@ -145,7 +145,7 @@ variable "db_instance_class" {
   description = "RDS instance class"
   type        = string
   default     = "db.t3.micro"
-  
+
   validation {
     condition = can(regex("^db\\.[a-z0-9]+\\.[a-z0-9]+$", var.db_instance_class))
     error_message = "DB instance class must be a valid RDS instance type (e.g., db.t3.micro, db.r5.large)."
@@ -155,7 +155,7 @@ variable "db_instance_class" {
 variable "db_name" {
   description = "Database name"
   type        = string
-  
+
   validation {
     condition     = can(regex("^[a-zA-Z][a-zA-Z0-9_]*$", var.db_name))
     error_message = "Database name must start with a letter and contain only alphanumeric characters and underscores."
@@ -166,7 +166,7 @@ variable "db_username" {
   description = "Database master username"
   type        = string
   sensitive   = true
-  
+
   validation {
     condition     = can(regex("^[a-zA-Z][a-zA-Z0-9_]*$", var.db_username)) && length(var.db_username) >= 3
     error_message = "Database username must start with a letter, be at least 3 characters long, and contain only alphanumeric characters and underscores."
@@ -177,7 +177,7 @@ variable "db_password" {
   description = "Database master password"
   type        = string
   sensitive   = true
-  
+
   validation {
     condition     = length(var.db_password) >= 12
     error_message = "Database password must be at least 12 characters long."
@@ -194,7 +194,7 @@ variable "db_backup_retention_days" {
   description = "Number of days to retain automated backups"
   type        = number
   default     = 30
-  
+
   validation {
     condition     = var.db_backup_retention_days >= 7 && var.db_backup_retention_days <= 35
     error_message = "Backup retention period must be between 7 and 35 days for compliance."
@@ -254,7 +254,7 @@ variable "kms_deletion_window" {
   description = "KMS key deletion window in days"
   type        = number
   default     = 30
-  
+
   validation {
     condition     = var.kms_deletion_window >= 7 && var.kms_deletion_window <= 30
     error_message = "KMS deletion window must be between 7 and 30 days."
@@ -266,7 +266,7 @@ variable "audit_log_retention_days" {
   description = "CloudTrail log retention period in days"
   type        = number
   default     = 2555  # 7 years for financial compliance
-  
+
   validation {
     condition     = var.audit_log_retention_days >= 365
     error_message = "Audit log retention must be at least 365 days for compliance."
@@ -283,7 +283,7 @@ variable "cloudwatch_log_retention_days" {
   description = "CloudWatch Logs retention period in days"
   type        = number
   default     = 365
-  
+
   validation {
     condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653], var.cloudwatch_log_retention_days)
     error_message = "CloudWatch log retention days must be a valid retention period."
@@ -333,7 +333,7 @@ variable "alert_email_endpoints" {
   description = "List of email addresses for alerts"
   type        = list(string)
   default     = []
-  
+
   validation {
     condition = alltrue([
       for email in var.alert_email_endpoints : can(regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", email))
@@ -369,7 +369,7 @@ variable "default_tags" {
     BackupRequired     = "true"
     MonitoringEnabled  = "true"
   }
-  
+
   validation {
     condition = alltrue([
       for key, value in var.default_tags : can(regex("^[a-zA-Z0-9+\\-=._:/@]+$", key)) && can(regex("^[a-zA-Z0-9+\\-=._:/@\\s]+$", value))
@@ -377,4 +377,3 @@ variable "default_tags" {
     error_message = "Tag keys and values must contain only valid characters."
   }
 }
-

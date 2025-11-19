@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Paper, 
-  Typography, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
+import {
+  Box,
+  Paper,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
   TableRow,
   TablePagination,
   TextField,
@@ -20,7 +20,7 @@ import {
   Divider,
   LinearProgress
 } from '@mui/material';
-import { 
+import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
   Add as AddIcon,
@@ -49,7 +49,7 @@ const PatientList = () => {
         setLoading(false);
       }
     };
-    
+
     fetchPatients();
   }, []);
 
@@ -71,7 +71,7 @@ const PatientList = () => {
     navigate(`/patients/${patientId}`);
   };
 
-  const filteredPatients = patients.filter(patient => 
+  const filteredPatients = patients.filter(patient =>
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (patient.diagnosis && patient.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -117,9 +117,9 @@ const PatientList = () => {
               <FilterListIcon />
             </IconButton>
           </Box>
-          
+
           <Divider sx={{ my: 2 }} />
-          
+
           {loading ? (
             <Box sx={{ width: '100%', mt: 4, mb: 4 }}>
               <LinearProgress />
@@ -157,8 +157,8 @@ const PatientList = () => {
                             <TableCell>{patient.diagnosis}</TableCell>
                             <TableCell>{patient.lastVisit}</TableCell>
                             <TableCell>
-                              <Chip 
-                                label={`${(patient.riskScore * 100).toFixed(0)}%`} 
+                              <Chip
+                                label={`${(patient.riskScore * 100).toFixed(0)}%`}
                                 color={getRiskColor(patient.riskScore)}
                                 size="small"
                               />
@@ -174,7 +174,7 @@ const PatientList = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
-              
+
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"

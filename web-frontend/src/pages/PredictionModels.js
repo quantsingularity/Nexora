@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Grid, 
-  Paper, 
-  Typography, 
-  Card, 
-  CardContent, 
+import {
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  Card,
+  CardContent,
   CardHeader,
   Avatar,
   IconButton,
@@ -27,7 +27,7 @@ import {
   InputLabel,
   FormControl
 } from '@mui/material';
-import { 
+import {
   MoreVert as MoreVertIcon,
   Science as ScienceIcon,
   Tune as TuneIcon,
@@ -61,7 +61,7 @@ const PredictionModels = () => {
         setLoading(false);
       }
     };
-    
+
     fetchModels();
   }, []);
 
@@ -129,8 +129,8 @@ const PredictionModels = () => {
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
           <Card>
-            <CardHeader 
-              title="Available Models" 
+            <CardHeader
+              title="Available Models"
               action={
                 <IconButton aria-label="refresh" onClick={() => api.getModels().then(data => setModels(data))}>
                   <RefreshIcon />
@@ -141,13 +141,13 @@ const PredictionModels = () => {
             <CardContent>
               <List>
                 {models.map((model, index) => (
-                  <ListItem 
-                    key={index} 
+                  <ListItem
+                    key={index}
                     divider={index < models.length - 1}
                     secondaryAction={
-                      <Chip 
+                      <Chip
                         icon={model.status === 'Active' ? <CheckCircleIcon /> : <ErrorIcon />}
-                        label={model.status} 
+                        label={model.status}
                         color={model.status === 'Active' ? 'success' : 'default'}
                         size="small"
                       />
@@ -156,9 +156,9 @@ const PredictionModels = () => {
                     <ListItemIcon>
                       <ScienceIcon />
                     </ListItemIcon>
-                    <ListItemText 
-                      primary={model.name} 
-                      secondary={`Version: ${model.version} | Updated: ${model.lastUpdated}`} 
+                    <ListItemText
+                      primary={model.name}
+                      secondary={`Version: ${model.version} | Updated: ${model.lastUpdated}`}
                     />
                   </ListItem>
                 ))}
@@ -166,7 +166,7 @@ const PredictionModels = () => {
             </CardContent>
           </Card>
         </Grid>
-        
+
         <Grid item xs={12} md={8}>
           <Card sx={{ mb: 3 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -176,7 +176,7 @@ const PredictionModels = () => {
                 <Tab label="Configuration" />
               </Tabs>
             </Box>
-            
+
             {/* Performance Tab */}
             {activeTab === 0 && (
               <CardContent>
@@ -184,8 +184,8 @@ const PredictionModels = () => {
                   Model Performance Metrics
                 </Typography>
                 <Box sx={{ height: 300, mb: 4 }}>
-                  <Bar 
-                    data={performanceData} 
+                  <Bar
+                    data={performanceData}
                     options={{
                       responsive: true,
                       maintainAspectRatio: false,
@@ -207,7 +207,7 @@ const PredictionModels = () => {
                     }}
                   />
                 </Box>
-                
+
                 <Typography variant="h6" gutterBottom>
                   Performance Summary
                 </Typography>
@@ -263,7 +263,7 @@ const PredictionModels = () => {
                 </Grid>
               </CardContent>
             )}
-            
+
             {/* Training History Tab */}
             {activeTab === 1 && (
               <CardContent>
@@ -271,8 +271,8 @@ const PredictionModels = () => {
                   Training History
                 </Typography>
                 <Box sx={{ height: 300, mb: 4 }}>
-                  <Line 
-                    data={trainingData} 
+                  <Line
+                    data={trainingData}
                     options={{
                       responsive: true,
                       maintainAspectRatio: false,
@@ -299,7 +299,7 @@ const PredictionModels = () => {
                     }}
                   />
                 </Box>
-                
+
                 <Typography variant="h6" gutterBottom>
                   Training Details
                 </Typography>
@@ -355,14 +355,14 @@ const PredictionModels = () => {
                 </Grid>
               </CardContent>
             )}
-            
+
             {/* Configuration Tab */}
             {activeTab === 2 && (
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Model Configuration
                 </Typography>
-                
+
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
                     <FormControl fullWidth margin="normal">
@@ -453,7 +453,7 @@ const PredictionModels = () => {
                     />
                   </Grid>
                 </Grid>
-                
+
                 <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                   <Button variant="outlined">
                     Reset to Defaults
@@ -465,7 +465,7 @@ const PredictionModels = () => {
               </CardContent>
             )}
           </Card>
-          
+
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
             <Button variant="outlined" startIcon={<CloudDownloadIcon />}>
               Export Model

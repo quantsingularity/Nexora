@@ -16,10 +16,11 @@ import numpy as np
 import pandas as pd
 
 from ...data_pipeline.hipaa_compliance.deidentifier import (
-    DeidentificationConfig, PHIDeidentifier)
+    DeidentificationConfig,
+    PHIDeidentifier,
+)
 from ...data_pipeline.hipaa_compliance.phi_detector import PHIDetector
-from ...validation.pipeline_validator import (AutomatedValidator,
-                                              PipelineValidator)
+from ...validation.pipeline_validator import AutomatedValidator, PipelineValidator
 
 
 # Mock the ETL class for testing purposes

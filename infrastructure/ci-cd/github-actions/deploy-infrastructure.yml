@@ -39,7 +39,7 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -79,13 +79,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [security-scan]
     if: always() && (needs.security-scan.result == 'success' || github.event_name != 'pull_request')
-    
+
     strategy:
       matrix:
         environment: [dev, staging, prod]
-        
+
     environment: ${{ matrix.environment }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -147,17 +147,17 @@ jobs:
             const fs = require('fs');
             const plan = fs.readFileSync('${{ env.TERRAFORM_DIR }}/${{ matrix.environment }}.tfplan.txt', 'utf8');
             const output = `#### Terraform Plan for ${{ matrix.environment }} 📖
-            
+
             <details><summary>Show Plan</summary>
-            
+
             \`\`\`terraform
             ${plan}
             \`\`\`
-            
+
             </details>
-            
+
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -170,13 +170,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [terraform-plan]
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
-    
+
     strategy:
       matrix:
         environment: [dev, staging, prod]
-        
+
     environment: ${{ matrix.environment }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -246,11 +246,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [terraform-apply]
     if: always() && needs.terraform-apply.result == 'success'
-    
+
     strategy:
       matrix:
         environment: [dev, staging, prod]
-        
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -301,7 +301,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [terraform-apply, compliance-check]
     if: always()
-    
+
     steps:
       - name: Send Slack notification
         if: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -325,11 +325,10 @@ jobs:
           from: GitHub Actions <noreply@github.com>
           body: |
             Infrastructure deployment completed with status: ${{ job.status }}
-            
+
             Repository: ${{ github.repository }}
             Commit: ${{ github.sha }}
             Author: ${{ github.actor }}
             Workflow: ${{ github.workflow }}
-            
-            View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
+            View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

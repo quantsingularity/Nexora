@@ -141,7 +141,7 @@ const PatientDetailScreen = ({ route, navigation }) => {
   return (
     <ScreenWrapper>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-        
+
         <Card style={styles.riskCard}>
           <Text style={styles.sectionTitle}>Overall Risk Score</Text>
           <Text style={[styles.riskText, { color: getRiskColor(details.risk) }]}>
@@ -267,4 +267,3 @@ const styles = StyleSheet.create({
 });
 
 export default PatientDetailScreen;
-

@@ -13,7 +13,7 @@ jest.mock('../../services/api', () => ({
 
 describe('PatientDashboard', () => {
   const mockSetSelectedPatient = jest.fn();
-  
+
   const renderWithContext = (component) => {
     return render(
       <PatientContext.Provider value={{ selectedPatient: null, setSelectedPatient: mockSetSelectedPatient }}>
@@ -33,7 +33,7 @@ describe('PatientDashboard', () => {
 
   it('loads and displays patient data', async () => {
     renderWithContext(<PatientDashboard />);
-    
+
     await waitFor(() => {
       expect(screen.getByText(mockPatientData.name)).toBeInTheDocument();
       expect(screen.getByText(`Age: ${mockPatientData.age}`)).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe('PatientDashboard', () => {
 
   it('displays risk predictions', async () => {
     renderWithContext(<PatientDashboard />);
-    
+
     await waitFor(() => {
       expect(screen.getByText(/risk score/i)).toBeInTheDocument();
       expect(screen.getByText(`${mockPredictions.risk * 100}%`)).toBeInTheDocument();
@@ -51,7 +51,7 @@ describe('PatientDashboard', () => {
 
   it('displays feature importance chart', async () => {
     renderWithContext(<PatientDashboard />);
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('feature-importance-chart')).toBeInTheDocument();
     });
@@ -59,10 +59,10 @@ describe('PatientDashboard', () => {
 
   it('handles patient selection', async () => {
     renderWithContext(<PatientDashboard />);
-    
+
     const patientSelect = screen.getByLabelText(/select patient/i);
     await userEvent.selectOptions(patientSelect, '12345');
-    
+
     expect(mockSetSelectedPatient).toHaveBeenCalledWith('12345');
   });
 
@@ -70,9 +70,9 @@ describe('PatientDashboard', () => {
     const mockError = new Error('API Error');
     jest.spyOn(console, 'error').mockImplementation(() => {});
     require('../../services/api').getPatientData.mockRejectedValueOnce(mockError);
-    
+
     renderWithContext(<PatientDashboard />);
-    
+
     await waitFor(() => {
       expect(screen.getByText(/error loading patient data/i)).toBeInTheDocument();
     });
@@ -80,16 +80,16 @@ describe('PatientDashboard', () => {
 
   it('updates predictions when patient changes', async () => {
     renderWithContext(<PatientDashboard />);
-    
+
     // Initial load
     await waitFor(() => {
       expect(screen.getByText(`${mockPredictions.risk * 100}%`)).toBeInTheDocument();
     });
-    
+
     // Change patient
     const patientSelect = screen.getByLabelText(/select patient/i);
     await userEvent.selectOptions(patientSelect, '67890');
-    
+
     // Verify new predictions loaded
     await waitFor(() => {
       expect(screen.getByText(/loading predictions/i)).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe('PatientDashboard', () => {
 
   it('displays patient demographics correctly', async () => {
     renderWithContext(<PatientDashboard />);
-    
+
     await waitFor(() => {
       expect(screen.getByText(/demographics/i)).toBeInTheDocument();
       expect(screen.getByText(`Gender: ${mockPatientData.gender}`)).toBeInTheDocument();
@@ -108,7 +108,7 @@ describe('PatientDashboard', () => {
 
   it('displays clinical history', async () => {
     renderWithContext(<PatientDashboard />);
-    
+
     await waitFor(() => {
       expect(screen.getByText(/clinical history/i)).toBeInTheDocument();
       mockPatientData.diagnoses.forEach(diagnosis => {
@@ -119,11 +119,11 @@ describe('PatientDashboard', () => {
 
   it('handles prediction explanation toggle', async () => {
     renderWithContext(<PatientDashboard />);
-    
+
     await waitFor(() => {
       const toggleButton = screen.getByText(/show explanation/i);
       fireEvent.click(toggleButton);
       expect(screen.getByText(/feature importance/i)).toBeInTheDocument();
     });
   });
-}); 
+});

@@ -17,8 +17,11 @@ import pandas as pd
 import statsmodels.api as sm
 from scipy import stats
 from sklearn.calibration import calibration_curve
-from sklearn.metrics import (average_precision_score, precision_recall_curve,
-                             roc_auc_score)
+from sklearn.metrics import (
+    average_precision_score,
+    precision_recall_curve,
+    roc_auc_score,
+)
 
 logger = logging.getLogger(__name__)
 

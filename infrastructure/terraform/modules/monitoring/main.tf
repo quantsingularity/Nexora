@@ -479,4 +479,3 @@ resource "aws_xray_sampling_rule" "main" {
     Environment = var.environment
   }
 }
-

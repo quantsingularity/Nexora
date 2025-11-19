@@ -153,28 +153,28 @@ describe('Patient Workflow', () => {
     try {
       // Enable offline mode
       await device.setURLBlacklist(['.*/api/.*']);
-      
+
       // Navigate to patient list
       await element(by.id('patient-list-tab')).tap();
-      
+
       // Verify offline indicator
       await waitFor(element(by.id('offline-indicator'))).toBeVisible().withTimeout(5000);
-      
+
       // Verify cached data is displayed
       await waitFor(element(by.id('patient-list'))).toBeVisible().withTimeout(5000);
-      
+
       // Attempt to update data
       await element(by.text('John Doe')).tap();
       await element(by.id('update-risk-button')).tap();
       await element(by.id('risk-input')).typeText('0.9');
       await element(by.id('save-risk-button')).tap();
-      
+
       // Verify offline warning
       await waitFor(element(by.id('offline-warning'))).toBeVisible().withTimeout(5000);
-      
+
       // Re-enable network
       await device.setURLBlacklist([]);
-      
+
       // Verify sync
       await element(by.id('sync-button')).tap();
       await waitFor(element(by.id('sync-success'))).toBeVisible().withTimeout(5000);
@@ -183,4 +183,4 @@ describe('Patient Workflow', () => {
       throw error;
     }
   });
-}); 
+});

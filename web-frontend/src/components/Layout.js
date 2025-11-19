@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { 
-  Box, 
-  Drawer, 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Divider, 
-  IconButton, 
-  List, 
-  ListItem, 
-  ListItemButton, 
-  ListItemIcon, 
+import {
+  Box,
+  Drawer,
+  AppBar,
+  Toolbar,
+  Typography,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
   ListItemText,
   Avatar,
   Menu,
@@ -59,9 +59,9 @@ function Layout() {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <AppBar 
-        position="fixed" 
-        sx={{ 
+      <AppBar
+        position="fixed"
+        sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
           background: 'white',
@@ -165,9 +165,9 @@ function Layout() {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               System Status
             </Typography>
-            <Box sx={{ 
-              p: 2, 
-              bgcolor: 'success.light', 
+            <Box sx={{
+              p: 2,
+              bgcolor: 'success.light',
               color: 'success.contrastText',
               borderRadius: 2,
               fontSize: '0.875rem'

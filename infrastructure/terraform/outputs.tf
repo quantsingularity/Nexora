@@ -282,4 +282,3 @@ output "environment_info" {
     aws_provider_version = "~> 5.0"
   }
 }
-

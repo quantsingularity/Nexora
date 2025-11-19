@@ -186,4 +186,3 @@ output "compliance_status" {
     automated_responses     = true
   }
 }
-

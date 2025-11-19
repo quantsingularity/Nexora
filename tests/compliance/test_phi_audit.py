@@ -103,7 +103,7 @@ def test_audit_log_aggregation():
     with DatabaseConnection("phi_audit_logs") as conn:
         stats = conn.execute(
             """
-            SELECT 
+            SELECT
                 access_type,
                 COUNT(*) as count,
                 COUNT(DISTINCT patient_id) as unique_patients

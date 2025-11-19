@@ -15,4 +15,4 @@ describe('Example', () => {
     await element(by.id('login-button')).tap();
     await expect(element(by.id('login-screen'))).toBeVisible();
   });
-}); 
+});

@@ -558,4 +558,3 @@ resource "aws_security_group" "vpc_endpoint" {
     Purpose     = "VPC-Endpoints"
   }
 }
-

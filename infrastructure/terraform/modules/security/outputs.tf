@@ -171,4 +171,3 @@ output "compliance_status" {
     incident_response_ready  = var.enable_guardduty && var.enable_cloudtrail
   }
 }
-

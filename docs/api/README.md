@@ -255,13 +255,13 @@ package readmission;
 service ReadmissionPrediction {
   // Get readmission risk prediction for a patient
   rpc PredictReadmissionRisk(PatientRequest) returns (PredictionResponse);
-  
+
   // Batch prediction for multiple patients
   rpc BatchPredictReadmissionRisk(BatchPatientRequest) returns (BatchPredictionResponse);
-  
+
   // Stream predictions for a list of patients
   rpc StreamPredictions(BatchPatientRequest) returns (stream PredictionResponse);
-  
+
   // Bidirectional streaming for real-time predictions
   rpc RealTimePredictions(stream PatientRequest) returns (stream PredictionResponse);
 }
@@ -314,56 +314,56 @@ from readmission_pb2_grpc import ReadmissionPredictionStub
 
 def get_prediction(patient_id):
     # Create a gRPC channel
-    channel = grpc.secure_channel('grpc.readmission-prediction.org:443', 
+    channel = grpc.secure_channel('grpc.readmission-prediction.org:443',
                                   grpc.ssl_channel_credentials())
-    
+
     # Create a stub (client)
     stub = ReadmissionPredictionStub(channel)
-    
+
     # Create a request
     request = PatientRequest(
         patient_id=patient_id,
         include_risk_factors=True,
         include_interventions=True
     )
-    
+
     # Make the call
     response = stub.PredictReadmissionRisk(request)
-    
+
     print(f"Readmission risk: {response.readmission_risk}")
     print(f"Confidence interval: {response.confidence_interval}")
-    
+
     print("Risk factors:")
     for factor in response.risk_factors:
         print(f"  - {factor.factor}: {factor.importance}")
-    
+
     print("Recommended interventions:")
     for intervention in response.recommended_interventions:
         print(f"  - {intervention.intervention} (Impact: {intervention.impact})")
-    
+
     return response
 
 def batch_prediction(patient_ids):
     # Create a gRPC channel
-    channel = grpc.secure_channel('grpc.readmission-prediction.org:443', 
+    channel = grpc.secure_channel('grpc.readmission-prediction.org:443',
                                   grpc.ssl_channel_credentials())
-    
+
     # Create a stub (client)
     stub = ReadmissionPredictionStub(channel)
-    
+
     # Create a batch request
     request = BatchPatientRequest(
         patient_ids=patient_ids,
         include_risk_factors=True,
         include_interventions=True
     )
-    
+
     # Make the call
     response = stub.BatchPredictReadmissionRisk(request)
-    
+
     for prediction in response.predictions:
         print(f"Patient {prediction.patient_id}: {prediction.readmission_risk}")
-    
+
     return response
 ```
 
@@ -374,7 +374,7 @@ gRPC authentication uses JWT tokens with the following interceptor:
 ```python
 import grpc
 
-class AuthInterceptor(grpc.UnaryUnaryClientInterceptor, 
+class AuthInterceptor(grpc.UnaryUnaryClientInterceptor,
                       grpc.UnaryStreamClientInterceptor,
                       grpc.StreamUnaryClientInterceptor,
                       grpc.StreamStreamClientInterceptor):
@@ -395,7 +395,7 @@ class AuthInterceptor(grpc.UnaryUnaryClientInterceptor,
 # Usage
 token = "your_jwt_token"
 interceptor = AuthInterceptor(token)
-channel = grpc.secure_channel('grpc.readmission-prediction.org:443', 
+channel = grpc.secure_channel('grpc.readmission-prediction.org:443',
                               grpc.ssl_channel_credentials())
 channel = grpc.intercept_channel(channel, interceptor)
 stub = ReadmissionPredictionStub(channel)

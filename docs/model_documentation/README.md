@@ -111,29 +111,29 @@ class DeepFM(tf.keras.Model):
     def __init__(self, feature_columns, hidden_units=[512, 256, 128, 64]):
         super(DeepFM, self).__init__()
         self.dense_feature_columns, self.sparse_feature_columns = feature_columns
-        
+
         # FM part
         self.fm = FM()
-        
+
         # Deep part
         self.dnn = DNN(hidden_units)
-        
+
         # Output layer
         self.output_layer = tf.keras.layers.Dense(1, activation='sigmoid')
-        
+
     def call(self, inputs):
         # FM part
         fm_output = self.fm(inputs)
-        
+
         # Deep part
         dnn_output = self.dnn(inputs)
-        
+
         # Concatenate FM and Deep outputs
         concat_output = tf.concat([fm_output, dnn_output], axis=1)
-        
+
         # Final prediction
         output = self.output_layer(concat_output)
-        
+
         return output
 ```
 
@@ -145,34 +145,34 @@ For patients with extensive clinical notes, the system uses a Clinical BERT mode
 class ClinicalBERT(tf.keras.Model):
     def __init__(self, bert_model_path, hidden_units=[128, 64]):
         super(ClinicalBERT, self).__init__()
-        
+
         # Load pre-trained Clinical BERT
         self.bert = TFBertModel.from_pretrained(bert_model_path)
-        
+
         # Additional layers
         self.pooling = tf.keras.layers.GlobalAveragePooling1D()
-        self.dense_layers = [tf.keras.layers.Dense(units, activation='relu') 
+        self.dense_layers = [tf.keras.layers.Dense(units, activation='relu')
                             for units in hidden_units]
         self.dropout = tf.keras.layers.Dropout(0.2)
         self.output_layer = tf.keras.layers.Dense(1, activation='sigmoid')
-        
+
     def call(self, inputs, training=False):
         # Process through BERT
         bert_outputs = self.bert(inputs)
         sequence_output = bert_outputs.last_hidden_state
-        
+
         # Pooling
         pooled_output = self.pooling(sequence_output)
-        
+
         # Dense layers
         x = pooled_output
         for dense in self.dense_layers:
             x = dense(x)
             x = self.dropout(x, training=training)
-        
+
         # Final prediction
         output = self.output_layer(x)
-        
+
         return output
 ```
 

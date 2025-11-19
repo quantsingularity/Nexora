@@ -119,18 +119,18 @@ resource "aws_db_option_group" "main" {
 # RDS Instance with enhanced security and compliance
 resource "aws_db_instance" "main" {
   identifier = "${var.app_name}-${var.environment}-db"
-  
+
   # Engine configuration
   engine                      = var.engine
   engine_version             = var.engine_version
   instance_class             = var.db_instance_class
-  
+
   # Database configuration
   db_name  = var.db_name
   username = var.db_username
   password = var.db_password != null ? var.db_password : random_password.master_password[0].result
   port     = var.engine == "mysql" ? 3306 : 5432
-  
+
   # Storage configuration with encryption
   allocated_storage     = var.allocated_storage
   max_allocated_storage = var.max_allocated_storage
@@ -138,16 +138,16 @@ resource "aws_db_instance" "main" {
   storage_encrypted     = var.enable_encryption
   kms_key_id           = var.enable_encryption ? var.kms_key_id : null
   iops                 = var.storage_type == "io1" || var.storage_type == "io2" ? var.iops : null
-  
+
   # Network and security configuration
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = var.security_group_ids
   publicly_accessible    = false
-  
+
   # Parameter and option groups
   parameter_group_name = aws_db_parameter_group.main.name
   option_group_name    = var.engine == "mysql" ? aws_db_option_group.main[0].name : null
-  
+
   # High availability and backup configuration
   multi_az                = var.multi_az
   backup_retention_period = var.backup_retention_period
@@ -158,7 +158,7 @@ resource "aws_db_instance" "main" {
   deletion_protection    = var.environment == "prod" ? true : false
   skip_final_snapshot    = var.environment == "prod" ? false : true
   final_snapshot_identifier = var.environment == "prod" ? "${var.app_name}-${var.environment}-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}" : null
-  
+
   # Monitoring and logging
   monitoring_interval                   = var.enable_enhanced_monitoring ? var.monitoring_interval : 0
   monitoring_role_arn                  = var.enable_enhanced_monitoring ? aws_iam_role.rds_enhanced_monitoring[0].arn : null
@@ -166,11 +166,11 @@ resource "aws_db_instance" "main" {
   performance_insights_retention_period = var.enable_performance_insights ? var.performance_insights_retention_period : null
   performance_insights_kms_key_id      = var.enable_performance_insights && var.enable_encryption ? var.kms_key_id : null
   enabled_cloudwatch_logs_exports      = var.enabled_cloudwatch_logs_exports
-  
+
   # Security and compliance
   auto_minor_version_upgrade = false  # Controlled updates for compliance
   apply_immediately         = false   # Changes applied during maintenance window
-  
+
   tags = {
     Name                = "${var.app_name}-${var.environment}-database"
     Environment         = var.environment
@@ -219,28 +219,28 @@ resource "aws_iam_role_policy_attachment" "rds_enhanced_monitoring" {
 # Read Replica for disaster recovery and read scaling
 resource "aws_db_instance" "read_replica" {
   count = var.create_read_replica ? 1 : 0
-  
+
   identifier = "${var.app_name}-${var.environment}-db-replica"
   replicate_source_db = aws_db_instance.main.identifier
-  
+
   instance_class = var.replica_instance_class != null ? var.replica_instance_class : var.db_instance_class
-  
+
   # Network configuration
   publicly_accessible = false
-  
+
   # Monitoring
   monitoring_interval = var.enable_enhanced_monitoring ? var.monitoring_interval : 0
   monitoring_role_arn = var.enable_enhanced_monitoring ? aws_iam_role.rds_enhanced_monitoring[0].arn : null
-  
+
   # Performance Insights
   performance_insights_enabled         = var.enable_performance_insights
   performance_insights_retention_period = var.enable_performance_insights ? var.performance_insights_retention_period : null
   performance_insights_kms_key_id      = var.enable_performance_insights && var.enable_encryption ? var.kms_key_id : null
-  
+
   # Security
   auto_minor_version_upgrade = false
   apply_immediately         = false
-  
+
   tags = {
     Name                = "${var.app_name}-${var.environment}-database-replica"
     Environment         = var.environment
@@ -267,7 +267,7 @@ resource "aws_db_snapshot" "manual_snapshot" {
 # CloudWatch Log Groups for database logs
 resource "aws_cloudwatch_log_group" "database_logs" {
   for_each = toset(var.enabled_cloudwatch_logs_exports)
-  
+
   name              = "/aws/rds/instance/${aws_db_instance.main.id}/${each.value}"
   retention_in_days = var.log_retention_days
   kms_key_id        = var.kms_key_id
@@ -323,9 +323,8 @@ resource "aws_secretsmanager_secret" "db_connection_string" {
 resource "aws_secretsmanager_secret_version" "db_connection_string" {
   secret_id = aws_secretsmanager_secret.db_connection_string.id
   secret_string = jsonencode({
-    connection_string = var.engine == "mysql" ? 
+    connection_string = var.engine == "mysql" ?
       "mysql://${var.db_username}:${var.db_password != null ? var.db_password : random_password.master_password[0].result}@${aws_db_instance.main.endpoint}:${aws_db_instance.main.port}/${var.db_name}" :
       "postgresql://${var.db_username}:${var.db_password != null ? var.db_password : random_password.master_password[0].result}@${aws_db_instance.main.endpoint}:${aws_db_instance.main.port}/${var.db_name}"
   })
 }
-

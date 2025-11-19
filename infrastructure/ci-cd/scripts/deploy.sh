@@ -25,7 +25,7 @@ log() {
     shift
     local message="$*"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    
+
     case $level in
         INFO)
             echo -e "${BLUE}[INFO]${NC} ${message}" | tee -a "$LOG_FILE"
@@ -446,11 +446,11 @@ generate_report() {
     cat > "$report_file" << EOF
 # Infrastructure Deployment Report
 
-**Environment:** $ENVIRONMENT  
-**Action:** $ACTION  
-**Date:** $(date)  
-**User:** $(whoami)  
-**AWS Account:** $(aws sts get-caller-identity --query Account --output text)  
+**Environment:** $ENVIRONMENT
+**Action:** $ACTION
+**Date:** $(date)
+**User:** $(whoami)
+**AWS Account:** $(aws sts get-caller-identity --query Account --output text)
 
 ## Deployment Summary
 
@@ -552,4 +552,3 @@ main() {
 
 # Run main function with all arguments
 main "$@"
-

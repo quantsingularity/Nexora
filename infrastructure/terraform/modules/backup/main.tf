@@ -539,7 +539,6 @@ resource "local_file" "disaster_recovery_runbook" {
     weekly_retention      = var.weekly_backup_retention_days
     monthly_retention     = var.monthly_backup_retention_days
   })
-  
+
   filename = "${path.root}/disaster_recovery_runbook_${var.app_name}_${var.environment}.md"
 }
-
