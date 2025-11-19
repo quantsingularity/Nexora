@@ -31,12 +31,11 @@ import datetime
 import json
 import logging
 import os
-import re
 import socket
 import subprocess
 import sys
 import time
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 
@@ -63,7 +62,7 @@ except ImportError:
     POSTGRES_AVAILABLE = False
 
 try:
-    import kubernetes
+    pass
 
     K8S_AVAILABLE = True
 except ImportError:
@@ -1390,7 +1389,7 @@ class DeploymentValidator:
 
             # Execute validation query
             cursor.execute(validation_query)
-            result = cursor.fetchone()
+            cursor.fetchone()
 
             # Get database version
             cursor.execute("SELECT version();")

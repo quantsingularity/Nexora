@@ -8,20 +8,13 @@ length of stay analysis, and various risk adjustment methodologies.
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import statsmodels.api as sm
-from scipy import stats
 from sklearn.calibration import calibration_curve
-from sklearn.metrics import (
-    average_precision_score,
-    precision_recall_curve,
-    roc_auc_score,
-)
+from sklearn.metrics import average_precision_score, roc_auc_score
 
 logger = logging.getLogger(__name__)
 
@@ -385,7 +378,7 @@ class HealthcareMetrics:
             logger.info(
                 f"Readmission column not found, calculating {window_days}-day readmissions"
             )
-            readmission_rate = self.calculate_readmission_rate(df, window_days)
+            self.calculate_readmission_rate(df, window_days)
             df = df.copy()
             df["is_readmission"] = False
 

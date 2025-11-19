@@ -10,7 +10,8 @@ from typing import Any, Dict, List, Optional
 
 import apache_beam as beam
 
-from ..hipaa_compliance.deidentifier import DeidentificationConfig, PHIDeidentifier
+from ..hipaa_compliance.deidentifier import (DeidentificationConfig,
+                                             PHIDeidentifier)
 from ..hipaa_compliance.phi_detector import PHIDetector
 
 logger = logging.getLogger(__name__)

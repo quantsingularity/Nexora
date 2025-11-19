@@ -8,15 +8,13 @@ proactive model maintenance and retraining.
 """
 
 import logging
-import warnings
-from datetime import datetime, timedelta
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from datetime import datetime
+from typing import Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import stats
-from sklearn.base import BaseEstimator
 from sklearn.decomposition import PCA
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import average_precision_score, f1_score, roc_auc_score

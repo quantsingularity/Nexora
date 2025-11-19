@@ -35,18 +35,15 @@ import json
 import logging
 import os
 import re
-import shutil
-import subprocess
 import sys
-import time
 import uuid
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import yaml
 
 # Try to import optional dependencies
 try:
-    import pandas as pd
+    pass
 
     PANDAS_AVAILABLE = True
 except ImportError:

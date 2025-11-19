@@ -11,16 +11,12 @@ Usage:
 """
 
 import argparse
-import json
 import logging
 import os
 import sys
 import time
-from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional
 
-import joblib
-import numpy as np
 import pandas as pd
 import requests
 

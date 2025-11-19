@@ -1,5 +1,4 @@
 import requests
-from fhir.resources import Observation, Patient
 from fhir.resources.bundle import Bundle
 from pydantic import ValidationError
 

@@ -8,18 +8,16 @@ and HIPAA compliance of the readmission prediction pipeline.
 import json
 import logging
 import os
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import (
-    average_precision_score,
-    precision_recall_curve,
-    roc_auc_score,
-)
+from sklearn.metrics import (average_precision_score, precision_recall_curve,
+                             roc_auc_score)
 from sklearn.model_selection import train_test_split
 
-from ..hipaa_compliance.deidentifier import DeidentificationConfig, PHIDeidentifier
+from ..hipaa_compliance.deidentifier import (DeidentificationConfig,
+                                             PHIDeidentifier)
 from ..hipaa_compliance.phi_detector import PHIDetector
 
 logger = logging.getLogger(__name__)
@@ -449,11 +447,8 @@ class PipelineValidator:
 
         # For regression
         else:
-            from sklearn.metrics import (
-                mean_absolute_error,
-                mean_squared_error,
-                r2_score,
-            )
+            from sklearn.metrics import (mean_absolute_error,
+                                         mean_squared_error, r2_score)
 
             # Calculate MSE
             mse = mean_squared_error(y_true, y_pred)

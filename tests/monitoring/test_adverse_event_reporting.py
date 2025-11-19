@@ -2,7 +2,8 @@ from datetime import date
 
 import pytest
 
-from src.monitoring.adverse_event_reporting import AdverseEvent, report_adverse_event
+from src.monitoring.adverse_event_reporting import (AdverseEvent,
+                                                    report_adverse_event)
 from src.monitoring.model_reviewer import ModelReviewer
 
 

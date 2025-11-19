@@ -9,7 +9,7 @@ time-dependent covariates common in clinical settings.
 
 import logging
 import warnings
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,7 +17,6 @@ import pandas as pd
 from lifelines import CoxPHFitter, KaplanMeierFitter, WeibullAFTFitter
 from lifelines.utils import concordance_index
 from sklearn.base import BaseEstimator
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 logger = logging.getLogger(__name__)

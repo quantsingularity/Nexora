@@ -7,16 +7,14 @@ querying, creating, updating, and deleting FHIR resources, as well as handling
 authentication and pagination.
 """
 
-import base64
 import json
 import logging
 import os
 import time
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
-from urllib.parse import parse_qs, urlencode, urljoin, urlparse
+from typing import Dict, List, Optional
+from urllib.parse import parse_qs, urljoin, urlparse
 
-import jwt
 import pandas as pd
 import requests
 

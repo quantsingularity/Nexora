@@ -97,7 +97,7 @@ def test_audit_log_retention():
 
 
 def test_audit_log_aggregation():
-    logger = PHIAuditLogger()
+    PHIAuditLogger()
 
     # Test log aggregation
     with DatabaseConnection("phi_audit_logs") as conn:

@@ -6,7 +6,6 @@ from apache_beam.testing.test_pipeline import TestPipeline
 from apache_beam.testing.util import assert_that, equal_to
 
 from src.data_pipeline.clinical_etl import HealthcareETL
-from src.utils.fhir_ops import FHIRClinicalConnector
 
 
 @pytest.fixture
