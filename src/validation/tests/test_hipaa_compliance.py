@@ -13,7 +13,9 @@ import unittest
 import pandas as pd
 
 from ...data_pipeline.hipaa_compliance.deidentifier import (
-    DeidentificationConfig, PHIDeidentifier)
+    DeidentificationConfig,
+    PHIDeidentifier,
+)
 from ...data_pipeline.hipaa_compliance.phi_detector import PHIDetector
 from ...validation.pipeline_validator import PipelineValidator
 
