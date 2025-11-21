@@ -1,4 +1,4 @@
-describe('Example', () => {
+describe("Example", () => {
   beforeAll(async () => {
     await device.launchApp();
   });
@@ -7,12 +7,12 @@ describe('Example', () => {
     await device.reloadReactNative();
   });
 
-  it('should show welcome screen', async () => {
-    await expect(element(by.id('welcome'))).toBeVisible();
+  it("should show welcome screen", async () => {
+    await expect(element(by.id("welcome"))).toBeVisible();
   });
 
-  it('should navigate to login screen', async () => {
-    await element(by.id('login-button')).tap();
-    await expect(element(by.id('login-screen'))).toBeVisible();
+  it("should navigate to login screen", async () => {
+    await element(by.id("login-button")).tap();
+    await expect(element(by.id("login-screen"))).toBeVisible();
   });
 });

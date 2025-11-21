@@ -6,33 +6,33 @@ on:
       - main
       - develop
     paths:
-      - 'infrastructure/**'
+      - "infrastructure/**"
   pull_request:
     branches:
       - main
     paths:
-      - 'infrastructure/**'
+      - "infrastructure/**"
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: "Environment to deploy"
         required: true
-        default: 'dev'
+        default: "dev"
         type: choice
         options:
           - dev
           - staging
           - prod
       destroy:
-        description: 'Destroy infrastructure'
+        description: "Destroy infrastructure"
         required: false
         default: false
         type: boolean
 
 env:
-  TF_VERSION: '1.6.0'
-  AWS_REGION: 'us-east-1'
-  TERRAFORM_DIR: './infrastructure/terraform'
+  TF_VERSION: "1.6.0"
+  AWS_REGION: "us-east-1"
+  TERRAFORM_DIR: "./infrastructure/terraform"
 
 jobs:
   security-scan:
@@ -49,16 +49,16 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: "trivy-results.sarif"
 
       - name: Run Checkov static analysis
         uses: bridgecrewio/checkov-action@master
@@ -308,7 +308,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
-          channel: '#infrastructure'
+          channel: "#infrastructure"
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
           fields: repo,message,commit,author,action,eventName,ref,workflow
 

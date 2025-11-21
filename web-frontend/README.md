@@ -81,7 +81,7 @@ This directory contains the main source code for the web application:
 
 - **components/**: Directory containing reusable UI components:
   - **Layout.js**: The main layout component providing consistent structure across different pages.
-  - **__tests__/PatientDashboard.test.js**: Unit tests for the PatientDashboard component.
+  - ****tests**/PatientDashboard.test.js**: Unit tests for the PatientDashboard component.
 
 - **pages/**: Directory containing page components, each representing a distinct view in the application:
   - **Dashboard.js**: The main dashboard page showing key metrics and summaries.
@@ -98,6 +98,7 @@ This directory contains the main source code for the web application:
 To set up the web frontend for development:
 
 1. **Install dependencies**:
+
    ```bash
    cd web-frontend
    npm install
@@ -106,6 +107,7 @@ To set up the web frontend for development:
    ```
 
 2. **Start the development server**:
+
    ```bash
    npm start
    # or
@@ -124,6 +126,7 @@ To set up the web frontend for development:
 The web frontend includes several types of tests:
 
 1. **Unit Tests** (using Jest and React Testing Library):
+
    ```bash
    npm test
    # or

@@ -1,49 +1,106 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Modal, Pressable } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors, Typography, Spacing, GlobalStyles } from '../theme/theme';
-import ScreenWrapper from '../components/ScreenWrapper';
-import Card from '../components/Card';
-import CustomButton from '../components/CustomButton';
-import CustomInput from '../components/CustomInput';
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Modal,
+  Pressable,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Colors, Typography, Spacing, GlobalStyles } from "../theme/theme";
+import ScreenWrapper from "../components/ScreenWrapper";
+import Card from "../components/Card";
+import CustomButton from "../components/CustomButton";
+import CustomInput from "../components/CustomInput";
 
 // Mock API service - replace with actual API calls later
 const mockApiService = {
   getPatients: async () => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     return [
-      { id: 'p001', name: 'John Doe', age: 65, risk: 0.75, last_update: '2024-04-28' },
-      { id: 'p002', name: 'Jane Smith', age: 72, risk: 0.40, last_update: '2024-04-29' },
-      { id: 'p003', name: 'Robert Johnson', age: 58, risk: 0.85, last_update: '2024-04-27' },
-      { id: 'p004', name: 'Emily Davis', age: 81, risk: 0.60, last_update: '2024-04-29' },
-      { id: 'p005', name: 'Michael Brown', age: 55, risk: 0.25, last_update: '2024-04-30' },
-      { id: 'p006', name: 'Sarah Wilson', age: 68, risk: 0.90, last_update: '2024-04-26' },
-      { id: 'p007', name: 'David Lee', age: 75, risk: 0.55, last_update: '2024-04-30' },
-      { id: 'p008', name: 'Laura Martinez', age: 62, risk: 0.30, last_update: '2024-04-28' },
+      {
+        id: "p001",
+        name: "John Doe",
+        age: 65,
+        risk: 0.75,
+        last_update: "2024-04-28",
+      },
+      {
+        id: "p002",
+        name: "Jane Smith",
+        age: 72,
+        risk: 0.4,
+        last_update: "2024-04-29",
+      },
+      {
+        id: "p003",
+        name: "Robert Johnson",
+        age: 58,
+        risk: 0.85,
+        last_update: "2024-04-27",
+      },
+      {
+        id: "p004",
+        name: "Emily Davis",
+        age: 81,
+        risk: 0.6,
+        last_update: "2024-04-29",
+      },
+      {
+        id: "p005",
+        name: "Michael Brown",
+        age: 55,
+        risk: 0.25,
+        last_update: "2024-04-30",
+      },
+      {
+        id: "p006",
+        name: "Sarah Wilson",
+        age: 68,
+        risk: 0.9,
+        last_update: "2024-04-26",
+      },
+      {
+        id: "p007",
+        name: "David Lee",
+        age: 75,
+        risk: 0.55,
+        last_update: "2024-04-30",
+      },
+      {
+        id: "p008",
+        name: "Laura Martinez",
+        age: 62,
+        risk: 0.3,
+        last_update: "2024-04-28",
+      },
     ];
-  }
+  },
 };
 
 const SORT_OPTIONS = {
-  NAME_ASC: { label: 'Name (A-Z)', key: 'name_asc' },
-  NAME_DESC: { label: 'Name (Z-A)', key: 'name_desc' },
-  RISK_DESC: { label: 'Risk (High-Low)', key: 'risk_desc' },
-  RISK_ASC: { label: 'Risk (Low-High)', key: 'risk_asc' },
-  UPDATE_DESC: { label: 'Last Update (Newest)', key: 'update_desc' },
+  NAME_ASC: { label: "Name (A-Z)", key: "name_asc" },
+  NAME_DESC: { label: "Name (Z-A)", key: "name_desc" },
+  RISK_DESC: { label: "Risk (High-Low)", key: "risk_desc" },
+  RISK_ASC: { label: "Risk (Low-High)", key: "risk_asc" },
+  UPDATE_DESC: { label: "Last Update (Newest)", key: "update_desc" },
 };
 
 const FILTER_OPTIONS = {
-  ALL: { label: 'All Patients', key: 'all' },
-  HIGH_RISK: { label: 'High Risk (>70%)', key: 'high_risk' },
-  MEDIUM_RISK: { label: 'Medium Risk (50-70%)', key: 'medium_risk' },
-  LOW_RISK: { label: 'Low Risk (<50%)', key: 'low_risk' },
+  ALL: { label: "All Patients", key: "all" },
+  HIGH_RISK: { label: "High Risk (>70%)", key: "high_risk" },
+  MEDIUM_RISK: { label: "Medium Risk (50-70%)", key: "medium_risk" },
+  LOW_RISK: { label: "Low Risk (<50%)", key: "low_risk" },
 };
 
 const HomeScreen = ({ navigation }) => {
   const [allPatients, setAllPatients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [username, setUsername] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState(SORT_OPTIONS.RISK_DESC.key);
   const [filterOption, setFilterOption] = useState(FILTER_OPTIONS.ALL.key);
   const [isSortModalVisible, setSortModalVisible] = useState(false);
@@ -53,8 +110,8 @@ const HomeScreen = ({ navigation }) => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const storedUsername = await AsyncStorage.getItem('username');
-        setUsername(storedUsername || 'Clinician');
+        const storedUsername = await AsyncStorage.getItem("username");
+        setUsername(storedUsername || "Clinician");
         const patientData = await mockApiService.getPatients();
         setAllPatients(patientData);
       } catch (error) {
@@ -67,8 +124,8 @@ const HomeScreen = ({ navigation }) => {
   }, []);
 
   const handleLogout = async () => {
-    await AsyncStorage.multiRemove(['userToken', 'username']);
-    navigation.replace('Login');
+    await AsyncStorage.multiRemove(["userToken", "username"]);
+    navigation.replace("Login");
   };
 
   const getRiskColor = (risk) => {
@@ -82,21 +139,21 @@ const HomeScreen = ({ navigation }) => {
 
     // Apply search filter
     if (searchTerm.trim()) {
-      patients = patients.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+      patients = patients.filter((p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
     // Apply risk filter
     switch (filterOption) {
       case FILTER_OPTIONS.HIGH_RISK.key:
-        patients = patients.filter(p => p.risk > 0.7);
+        patients = patients.filter((p) => p.risk > 0.7);
         break;
       case FILTER_OPTIONS.MEDIUM_RISK.key:
-        patients = patients.filter(p => p.risk >= 0.5 && p.risk <= 0.7);
+        patients = patients.filter((p) => p.risk >= 0.5 && p.risk <= 0.7);
         break;
       case FILTER_OPTIONS.LOW_RISK.key:
-        patients = patients.filter(p => p.risk < 0.5);
+        patients = patients.filter((p) => p.risk < 0.5);
         break;
       case FILTER_OPTIONS.ALL.key:
       default:
@@ -119,7 +176,9 @@ const HomeScreen = ({ navigation }) => {
         patients.sort((a, b) => b.risk - a.risk);
         break;
       case SORT_OPTIONS.UPDATE_DESC.key:
-        patients.sort((a, b) => new Date(b.last_update) - new Date(a.last_update));
+        patients.sort(
+          (a, b) => new Date(b.last_update) - new Date(a.last_update),
+        );
         break;
       default:
         break;
@@ -130,11 +189,19 @@ const HomeScreen = ({ navigation }) => {
 
   const renderPatient = ({ item }) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('PatientDetail', { patientId: item.id, patientName: item.name })}>
+      onPress={() =>
+        navigation.navigate("PatientDetail", {
+          patientId: item.id,
+          patientName: item.name,
+        })
+      }
+    >
       <Card style={styles.patientCard}>
         <View style={styles.patientInfo}>
           <Text style={styles.patientName}>{item.name}</Text>
-          <Text style={styles.patientDetails}>Age: {item.age} | Last Update: {item.last_update}</Text>
+          <Text style={styles.patientDetails}>
+            Age: {item.age} | Last Update: {item.last_update}
+          </Text>
         </View>
         <View style={styles.riskContainer}>
           <Text style={[styles.riskScore, { color: getRiskColor(item.risk) }]}>
@@ -146,7 +213,14 @@ const HomeScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  const renderOptionModal = (isVisible, setVisible, options, currentOption, setOption, title) => (
+  const renderOptionModal = (
+    isVisible,
+    setVisible,
+    options,
+    currentOption,
+    setOption,
+    title,
+  ) => (
     <Modal
       animationType="fade"
       transparent={true}
@@ -154,9 +228,12 @@ const HomeScreen = ({ navigation }) => {
       onRequestClose={() => setVisible(false)}
     >
       <Pressable style={styles.modalOverlay} onPress={() => setVisible(false)}>
-        <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+        <Pressable
+          style={styles.modalContent}
+          onPress={(e) => e.stopPropagation()}
+        >
           <Text style={styles.modalTitle}>{title}</Text>
-          {Object.values(options).map(opt => (
+          {Object.values(options).map((opt) => (
             <TouchableOpacity
               key={opt.key}
               style={styles.modalOption}
@@ -165,12 +242,21 @@ const HomeScreen = ({ navigation }) => {
                 setVisible(false);
               }}
             >
-              <Text style={[styles.modalOptionText, currentOption === opt.key && styles.modalOptionSelected]}>
+              <Text
+                style={[
+                  styles.modalOptionText,
+                  currentOption === opt.key && styles.modalOptionSelected,
+                ]}
+              >
                 {opt.label}
               </Text>
             </TouchableOpacity>
           ))}
-          <CustomButton title="Close" onPress={() => setVisible(false)} style={styles.modalCloseButton} />
+          <CustomButton
+            title="Close"
+            onPress={() => setVisible(false)}
+            style={styles.modalCloseButton}
+          />
         </Pressable>
       </Pressable>
     </Modal>
@@ -178,14 +264,30 @@ const HomeScreen = ({ navigation }) => {
 
   if (loading && !allPatients.length) {
     return (
-      <ScreenWrapper style={GlobalStyles.centered}><ActivityIndicator size="large" color={Colors.primary} /></ScreenWrapper>
+      <ScreenWrapper style={GlobalStyles.centered}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </ScreenWrapper>
     );
   }
 
   return (
     <ScreenWrapper>
-      {renderOptionModal(isSortModalVisible, setSortModalVisible, SORT_OPTIONS, sortOption, setSortOption, 'Sort Patients By')}
-      {renderOptionModal(isFilterModalVisible, setFilterModalVisible, FILTER_OPTIONS, filterOption, setFilterOption, 'Filter Patients By Risk')}
+      {renderOptionModal(
+        isSortModalVisible,
+        setSortModalVisible,
+        SORT_OPTIONS,
+        sortOption,
+        setSortOption,
+        "Sort Patients By",
+      )}
+      {renderOptionModal(
+        isFilterModalVisible,
+        setFilterModalVisible,
+        FILTER_OPTIONS,
+        filterOption,
+        setFilterOption,
+        "Filter Patients By Risk",
+      )}
 
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome, {username}!</Text>
@@ -206,13 +308,13 @@ const HomeScreen = ({ navigation }) => {
         />
         <View style={styles.buttonRow}>
           <CustomButton
-            title={`Sort: ${SORT_OPTIONS[Object.keys(SORT_OPTIONS).find(key => SORT_OPTIONS[key].key === sortOption)].label}`}
+            title={`Sort: ${SORT_OPTIONS[Object.keys(SORT_OPTIONS).find((key) => SORT_OPTIONS[key].key === sortOption)].label}`}
             onPress={() => setSortModalVisible(true)}
             style={styles.controlButton}
             textStyle={styles.controlButtonText}
           />
           <CustomButton
-            title={`Filter: ${FILTER_OPTIONS[Object.keys(FILTER_OPTIONS).find(key => FILTER_OPTIONS[key].key === filterOption)].label}`}
+            title={`Filter: ${FILTER_OPTIONS[Object.keys(FILTER_OPTIONS).find((key) => FILTER_OPTIONS[key].key === filterOption)].label}`}
             onPress={() => setFilterModalVisible(true)}
             style={styles.controlButton}
             textStyle={styles.controlButtonText}
@@ -223,9 +325,15 @@ const HomeScreen = ({ navigation }) => {
       <FlatList
         data={filteredAndSortedPatients}
         renderItem={renderPatient}
-        keyExtractor={item => item.id}
-        ListHeaderComponent={<Text style={styles.listTitle}>Patient Risk Overview</Text>}
-        ListEmptyComponent={<Text style={styles.emptyListText}>No patients match your criteria.</Text>}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <Text style={styles.listTitle}>Patient Risk Overview</Text>
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyListText}>
+            No patients match your criteria.
+          </Text>
+        }
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
@@ -235,9 +343,9 @@ const HomeScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: Spacing.sm,
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.sm,
@@ -254,7 +362,7 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     ...Typography.caption,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.surface,
   },
   controlsContainer: {
@@ -265,8 +373,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   controlButton: {
     flex: 1, // Make buttons share space
@@ -276,7 +384,7 @@ const styles = StyleSheet.create({
   },
   controlButtonText: {
     ...Typography.caption,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   listContainer: {
     paddingBottom: Spacing.md,
@@ -288,9 +396,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   patientCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginHorizontal: Spacing.md,
   },
   patientInfo: {
@@ -299,7 +407,7 @@ const styles = StyleSheet.create({
   },
   patientName: {
     ...Typography.body1,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.text,
     marginBottom: Spacing.xs,
   },
@@ -308,11 +416,11 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   riskContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   riskScore: {
     ...Typography.h3,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   riskLabel: {
     ...Typography.caption,
@@ -322,24 +430,24 @@ const styles = StyleSheet.create({
   emptyListText: {
     ...Typography.body1,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: Spacing.xxl,
   },
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
     backgroundColor: Colors.surface,
     borderRadius: 12,
     padding: Spacing.lg,
-    width: '85%',
-    maxHeight: '70%',
+    width: "85%",
+    maxHeight: "70%",
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -347,7 +455,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     ...Typography.h4,
     marginBottom: Spacing.md,
-    textAlign: 'center',
+    textAlign: "center",
     color: Colors.primary,
   },
   modalOption: {
@@ -357,11 +465,11 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     ...Typography.body1,
-    textAlign: 'center',
+    textAlign: "center",
     color: Colors.text,
   },
   modalOptionSelected: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.primary,
   },
   modalCloseButton: {

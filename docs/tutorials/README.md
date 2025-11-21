@@ -444,21 +444,21 @@ Create a SMART on FHIR launch file:
 <!-- public/launch.html -->
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Readmission Risk SMART Launch</title>
-  <script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
-  <script>
-    FHIR.oauth2.authorize({
-      clientId: 'readmission_risk_app',
-      scope: 'patient/*.read launch',
-      redirectUri: 'https://app.readmission-risk.org/app',
-      completeInTarget: true
-    });
-  </script>
-</head>
-<body>
-  <h1>Launching Readmission Risk Prediction App...</h1>
-</body>
+  <head>
+    <title>Readmission Risk SMART Launch</title>
+    <script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
+    <script>
+      FHIR.oauth2.authorize({
+        clientId: "readmission_risk_app",
+        scope: "patient/*.read launch",
+        redirectUri: "https://app.readmission-risk.org/app",
+        completeInTarget: true,
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Launching Readmission Risk Prediction App...</h1>
+  </body>
 </html>
 ```
 

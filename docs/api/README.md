@@ -29,9 +29,11 @@ Authorization: Bearer <jwt-token>
 Get readmission risk prediction for a specific patient.
 
 **Parameters:**
+
 - `patient_id` (path): The unique identifier for the patient
 
 **Response:**
+
 ```json
 {
   "patient_id": "12345",
@@ -39,13 +41,13 @@ Get readmission risk prediction for a specific patient.
     "readmission_risk": 0.72,
     "confidence_interval": [0.65, 0.79],
     "risk_factors": [
-      {"factor": "previous_admissions", "importance": 0.35},
-      {"factor": "comorbidities", "importance": 0.28},
-      {"factor": "medication_adherence", "importance": 0.21}
+      { "factor": "previous_admissions", "importance": 0.35 },
+      { "factor": "comorbidities", "importance": 0.28 },
+      { "factor": "medication_adherence", "importance": 0.21 }
     ],
     "recommended_interventions": [
-      {"intervention": "medication_review", "impact": "high"},
-      {"intervention": "follow_up_appointment", "impact": "medium"}
+      { "intervention": "medication_review", "impact": "high" },
+      { "intervention": "follow_up_appointment", "impact": "medium" }
     ]
   },
   "model_version": "2.3.0",
@@ -54,6 +56,7 @@ Get readmission risk prediction for a specific patient.
 ```
 
 **Status Codes:**
+
 - 200: Successful prediction
 - 400: Invalid request
 - 401: Unauthorized
@@ -65,6 +68,7 @@ Get readmission risk prediction for a specific patient.
 Submit a batch prediction request for multiple patients.
 
 **Request Body:**
+
 ```json
 {
   "patient_ids": ["12345", "67890", "54321"],
@@ -74,6 +78,7 @@ Submit a batch prediction request for multiple patients.
 ```
 
 **Response:**
+
 ```json
 {
   "predictions": [
@@ -108,9 +113,11 @@ Submit a batch prediction request for multiple patients.
 Retrieve patient information.
 
 **Parameters:**
+
 - `patient_id` (path): The unique identifier for the patient
 
 **Response:**
+
 ```json
 {
   "patient_id": "12345",
@@ -146,11 +153,13 @@ Retrieve patient information.
 Retrieve model performance metrics.
 
 **Query Parameters:**
+
 - `start_date` (optional): Start date for metrics period (YYYY-MM-DD)
 - `end_date` (optional): End date for metrics period (YYYY-MM-DD)
 - `model_version` (optional): Specific model version to query
 
 **Response:**
+
 ```json
 {
   "overall": {
@@ -192,6 +201,7 @@ Retrieve model performance metrics.
 List available model versions.
 
 **Response:**
+
 ```json
 {
   "models": [
@@ -222,6 +232,7 @@ List available model versions.
 Deploy a new model version.
 
 **Request Body:**
+
 ```json
 {
   "model_version": "2.4.0",
@@ -231,6 +242,7 @@ Deploy a new model version.
 ```
 
 **Response:**
+
 ```json
 {
   "deployment_id": "dep-2025-04-25-001",
@@ -405,16 +417,16 @@ stub = ReadmissionPredictionStub(channel)
 
 Both REST and gRPC APIs use standard error codes:
 
-| HTTP Status | gRPC Status | Description |
-|-------------|-------------|-------------|
-| 200 | OK | Successful operation |
-| 400 | INVALID_ARGUMENT | Invalid request parameters |
-| 401 | UNAUTHENTICATED | Authentication failure |
-| 403 | PERMISSION_DENIED | Authorization failure |
-| 404 | NOT_FOUND | Resource not found |
-| 429 | RESOURCE_EXHAUSTED | Rate limit exceeded |
-| 500 | INTERNAL | Server error |
-| 503 | UNAVAILABLE | Service unavailable |
+| HTTP Status | gRPC Status        | Description                |
+| ----------- | ------------------ | -------------------------- |
+| 200         | OK                 | Successful operation       |
+| 400         | INVALID_ARGUMENT   | Invalid request parameters |
+| 401         | UNAUTHENTICATED    | Authentication failure     |
+| 403         | PERMISSION_DENIED  | Authorization failure      |
+| 404         | NOT_FOUND          | Resource not found         |
+| 429         | RESOURCE_EXHAUSTED | Rate limit exceeded        |
+| 500         | INTERNAL           | Server error               |
+| 503         | UNAVAILABLE        | Service unavailable        |
 
 ## Rate Limiting
 

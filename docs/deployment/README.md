@@ -30,11 +30,11 @@ The system uses containerization (Docker) and orchestration (Kubernetes) to ensu
 
 ### Hardware Requirements
 
-| Environment | CPU | RAM | Storage | GPU |
-|-------------|-----|-----|---------|-----|
-| Development | 4+ cores | 16+ GB | 100+ GB | Optional |
-| Staging | 8+ cores | 32+ GB | 500+ GB | NVIDIA T4+ |
-| Production | 16+ cores | 64+ GB | 1+ TB | NVIDIA A100 |
+| Environment | CPU       | RAM    | Storage | GPU         |
+| ----------- | --------- | ------ | ------- | ----------- |
+| Development | 4+ cores  | 16+ GB | 100+ GB | Optional    |
+| Staging     | 8+ cores  | 32+ GB | 500+ GB | NVIDIA T4+  |
+| Production  | 16+ cores | 64+ GB | 1+ TB   | NVIDIA A100 |
 
 ### Software Requirements
 
@@ -58,12 +58,14 @@ The system uses containerization (Docker) and orchestration (Kubernetes) to ensu
 ### Using Docker Compose
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/abrar2030/Nexora.git
    cd Nexora
    ```
 
 2. Create a `.env` file:
+
    ```
    FHIR_SERVER_URL=https://fhir.example.org/R4
    FHIR_CLIENT_ID=client_id
@@ -73,6 +75,7 @@ The system uses containerization (Docker) and orchestration (Kubernetes) to ensu
    ```
 
 3. Start the services:
+
    ```bash
    docker-compose up -d
    ```
@@ -109,12 +112,14 @@ make deploy CONFIG=local
 ### Using Helm
 
 1. Add the Helm repository:
+
    ```bash
    helm repo add readmission-risk https://charts.readmission-risk.org
    helm repo update
    ```
 
 2. Create a values file (`values.yaml`):
+
    ```yaml
    global:
      environment: production
@@ -145,6 +150,7 @@ make deploy CONFIG=local
    ```
 
 3. Install the Helm chart:
+
    ```bash
    helm install readmission readmission-risk/readmission \
      --namespace readmission-system \
@@ -163,6 +169,7 @@ make deploy CONFIG=local
 For more control over the deployment, you can use the Kubernetes manifests directly:
 
 1. Navigate to the deployment directory:
+
    ```bash
    cd deployments/kubernetes
    ```
@@ -183,6 +190,7 @@ For more control over the deployment, you can use the Kubernetes manifests direc
 ### AWS Deployment
 
 1. Set up infrastructure using Terraform:
+
    ```bash
    cd infrastructure/terraform/aws
    terraform init
@@ -190,11 +198,13 @@ For more control over the deployment, you can use the Kubernetes manifests direc
    ```
 
 2. Configure AWS CLI:
+
    ```bash
    aws configure
    ```
 
 3. Update kubeconfig:
+
    ```bash
    aws eks update-kubeconfig --name readmission-cluster --region us-west-2
    ```
@@ -210,6 +220,7 @@ For more control over the deployment, you can use the Kubernetes manifests direc
 ### Azure Deployment
 
 1. Set up infrastructure using Terraform:
+
    ```bash
    cd infrastructure/terraform/azure
    terraform init
@@ -217,11 +228,13 @@ For more control over the deployment, you can use the Kubernetes manifests direc
    ```
 
 2. Configure Azure CLI:
+
    ```bash
    az login
    ```
 
 3. Get AKS credentials:
+
    ```bash
    az aks get-credentials --resource-group readmission-rg --name readmission-aks
    ```
@@ -237,6 +250,7 @@ For more control over the deployment, you can use the Kubernetes manifests direc
 ### GCP Deployment
 
 1. Set up infrastructure using Terraform:
+
    ```bash
    cd infrastructure/terraform/gcp
    terraform init
@@ -244,11 +258,13 @@ For more control over the deployment, you can use the Kubernetes manifests direc
    ```
 
 2. Configure gcloud CLI:
+
    ```bash
    gcloud auth login
    ```
 
 3. Get GKE credentials:
+
    ```bash
    gcloud container clusters get-credentials readmission-cluster --zone us-central1-a
    ```
@@ -336,6 +352,7 @@ data:
 ### PostgreSQL Setup
 
 1. Create the database:
+
    ```sql
    CREATE DATABASE readmission;
    CREATE USER readmission_user WITH ENCRYPTED PASSWORD 'password';
@@ -350,6 +367,7 @@ data:
 ### FHIR Database Integration
 
 1. Configure FHIR server connection:
+
    ```yaml
    fhir:
      server_url: https://fhir.example.org/R4
@@ -384,13 +402,13 @@ data:
        matchLabels:
          app: readmission
      ingress:
-     - from:
-       - namespaceSelector:
-           matchLabels:
-             name: ingress-nginx
-       ports:
-       - protocol: TCP
-         port: 8000
+       - from:
+           - namespaceSelector:
+               matchLabels:
+                 name: ingress-nginx
+         ports:
+           - protocol: TCP
+             port: 8000
    ```
 
 ### Data Security
@@ -422,6 +440,7 @@ data:
 ### Prometheus Monitoring
 
 1. Deploy Prometheus:
+
    ```bash
    helm install prometheus prometheus-community/prometheus \
      --namespace monitoring \
@@ -432,7 +451,7 @@ data:
    ```yaml
    prometheus:
      scrape_configs:
-       - job_name: 'readmission-metrics'
+       - job_name: "readmission-metrics"
          kubernetes_sd_configs:
            - role: pod
          relabel_configs:
@@ -444,6 +463,7 @@ data:
 ### Grafana Dashboards
 
 1. Deploy Grafana:
+
    ```bash
    helm install grafana grafana/grafana \
      --namespace monitoring \
@@ -451,6 +471,7 @@ data:
    ```
 
 2. Import dashboards:
+
    ```bash
    kubectl apply -f monitoring/dashboards/
    ```
@@ -463,6 +484,7 @@ data:
 ### Logging with ELK Stack
 
 1. Deploy ELK stack:
+
    ```bash
    helm install elk elastic/eck-operator \
      --namespace logging \
@@ -470,6 +492,7 @@ data:
    ```
 
 2. Configure log shipping:
+
    ```yaml
    filebeat:
      inputs:
@@ -488,6 +511,7 @@ data:
 ### Database Backup
 
 1. Set up automated backups:
+
    ```bash
    kubectl apply -f deployments/kubernetes/backup-cronjob.yaml
    ```
@@ -502,6 +526,7 @@ data:
 ### Model Artifacts Backup
 
 1. Back up model registry:
+
    ```bash
    aws s3 sync /mnt/models s3://readmission-models-backup/
    ```
@@ -519,6 +544,7 @@ data:
    - Offsite backup storage
 
 2. Recovery testing script:
+
    ```bash
    #!/bin/bash
    # Test database restore
@@ -537,6 +563,7 @@ data:
 **Problem**: Pods fail to start or crash loop
 
 **Solution**:
+
 1. Check pod logs:
    ```bash
    kubectl logs -n readmission-system pod/readmission-api-xyz
@@ -555,6 +582,7 @@ data:
 **Problem**: Services cannot connect to database
 
 **Solution**:
+
 1. Check database service:
    ```bash
    kubectl get svc -n readmission-system postgres
@@ -574,6 +602,7 @@ data:
 **Problem**: Cannot access API endpoints
 
 **Solution**:
+
 1. Check ingress configuration:
    ```bash
    kubectl get ingress -n readmission-system

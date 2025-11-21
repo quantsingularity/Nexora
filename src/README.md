@@ -136,6 +136,7 @@ This directory contains validation and testing components:
 The source code in this directory is used in various ways:
 
 1. **Data Processing**:
+
    ```python
    from src.data_pipeline.clinical_etl import ClinicalETL
 
@@ -144,6 +145,7 @@ The source code in this directory is used in various ways:
    ```
 
 2. **Model Training**:
+
    ```python
    from src.model_factory.deep_fm import DeepFMModel
 
@@ -153,6 +155,7 @@ The source code in this directory is used in various ways:
    ```
 
 3. **Model Serving**:
+
    ```bash
    # Start the REST API server
    python -m src.serving.rest_api

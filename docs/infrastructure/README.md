@@ -85,17 +85,17 @@ The system can be deployed on major cloud providers (AWS, Azure, GCP) with provi
 
 #### Core Services
 
-| Service | Purpose |
-|---------|---------|
-| EKS | Kubernetes cluster for container orchestration |
-| RDS | PostgreSQL database for application data |
-| S3 | Object storage for model artifacts |
-| ECR | Container registry for application images |
-| CloudWatch | Monitoring and logging |
-| IAM | Identity and access management |
-| VPC | Networking and security |
-| Route53 | DNS management |
-| ACM | TLS certificate management |
+| Service    | Purpose                                        |
+| ---------- | ---------------------------------------------- |
+| EKS        | Kubernetes cluster for container orchestration |
+| RDS        | PostgreSQL database for application data       |
+| S3         | Object storage for model artifacts             |
+| ECR        | Container registry for application images      |
+| CloudWatch | Monitoring and logging                         |
+| IAM        | Identity and access management                 |
+| VPC        | Networking and security                        |
+| Route53    | DNS management                                 |
+| ACM        | TLS certificate management                     |
 
 #### AWS Architecture
 
@@ -130,33 +130,33 @@ The system can be deployed on major cloud providers (AWS, Azure, GCP) with provi
 
 #### Core Services
 
-| Service | Purpose |
-|---------|---------|
-| AKS | Kubernetes cluster for container orchestration |
-| Azure SQL | PostgreSQL database for application data |
-| Blob Storage | Object storage for model artifacts |
-| Container Registry | Container registry for application images |
-| Monitor | Monitoring and logging |
-| Active Directory | Identity and access management |
-| Virtual Network | Networking and security |
-| DNS | DNS management |
-| Key Vault | Secret management |
+| Service            | Purpose                                        |
+| ------------------ | ---------------------------------------------- |
+| AKS                | Kubernetes cluster for container orchestration |
+| Azure SQL          | PostgreSQL database for application data       |
+| Blob Storage       | Object storage for model artifacts             |
+| Container Registry | Container registry for application images      |
+| Monitor            | Monitoring and logging                         |
+| Active Directory   | Identity and access management                 |
+| Virtual Network    | Networking and security                        |
+| DNS                | DNS management                                 |
+| Key Vault          | Secret management                              |
 
 ### GCP Infrastructure
 
 #### Core Services
 
-| Service | Purpose |
-|---------|---------|
-| GKE | Kubernetes cluster for container orchestration |
-| Cloud SQL | PostgreSQL database for application data |
-| Cloud Storage | Object storage for model artifacts |
-| Container Registry | Container registry for application images |
-| Cloud Monitoring | Monitoring and logging |
-| IAM | Identity and access management |
-| VPC | Networking and security |
-| Cloud DNS | DNS management |
-| Secret Manager | Secret management |
+| Service            | Purpose                                        |
+| ------------------ | ---------------------------------------------- |
+| GKE                | Kubernetes cluster for container orchestration |
+| Cloud SQL          | PostgreSQL database for application data       |
+| Cloud Storage      | Object storage for model artifacts             |
+| Container Registry | Container registry for application images      |
+| Cloud Monitoring   | Monitoring and logging                         |
+| IAM                | Identity and access management                 |
+| VPC                | Networking and security                        |
+| Cloud DNS          | DNS management                                 |
+| Secret Manager     | Secret management                              |
 
 ## Kubernetes Setup
 
@@ -166,25 +166,25 @@ The system is deployed on Kubernetes for container orchestration, providing scal
 
 #### Production Cluster Specifications
 
-| Component | Specification |
-|-----------|---------------|
-| Control Plane | Managed by cloud provider |
-| Node Pools | 3 node pools (general, compute, GPU) |
-| General Nodes | 4+ nodes, 8 vCPU, 32GB RAM |
-| Compute Nodes | 2+ nodes, 16 vCPU, 64GB RAM |
-| GPU Nodes | 2+ nodes, 8 vCPU, 32GB RAM, NVIDIA A100 |
-| Autoscaling | Enabled, min 2 nodes, max 10 nodes per pool |
-| Kubernetes Version | 1.25+ |
+| Component          | Specification                               |
+| ------------------ | ------------------------------------------- |
+| Control Plane      | Managed by cloud provider                   |
+| Node Pools         | 3 node pools (general, compute, GPU)        |
+| General Nodes      | 4+ nodes, 8 vCPU, 32GB RAM                  |
+| Compute Nodes      | 2+ nodes, 16 vCPU, 64GB RAM                 |
+| GPU Nodes          | 2+ nodes, 8 vCPU, 32GB RAM, NVIDIA A100     |
+| Autoscaling        | Enabled, min 2 nodes, max 10 nodes per pool |
+| Kubernetes Version | 1.25+                                       |
 
 #### Namespace Structure
 
-| Namespace | Purpose |
-|-----------|---------|
-| readmission-system | Core application components |
-| readmission-monitoring | Monitoring and logging |
-| readmission-database | Database proxies and tools |
-| cert-manager | TLS certificate management |
-| ingress-nginx | Ingress controller |
+| Namespace              | Purpose                     |
+| ---------------------- | --------------------------- |
+| readmission-system     | Core application components |
+| readmission-monitoring | Monitoring and logging      |
+| readmission-database   | Database proxies and tools  |
+| cert-manager           | TLS certificate management  |
+| ingress-nginx          | Ingress controller          |
 
 ### Resource Management
 
@@ -198,26 +198,26 @@ metadata:
   namespace: readmission-system
 spec:
   containers:
-  - name: api
-    image: ghcr.io/health-ai/readmission-api:2.3.0
-    resources:
-      requests:
-        memory: "1Gi"
-        cpu: "500m"
-      limits:
-        memory: "2Gi"
-        cpu: "1000m"
-  - name: model-server
-    image: ghcr.io/health-ai/readmission-model:2.3.0
-    resources:
-      requests:
-        memory: "4Gi"
-        cpu: "1000m"
-        nvidia.com/gpu: 1
-      limits:
-        memory: "8Gi"
-        cpu: "2000m"
-        nvidia.com/gpu: 1
+    - name: api
+      image: ghcr.io/health-ai/readmission-api:2.3.0
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "500m"
+        limits:
+          memory: "2Gi"
+          cpu: "1000m"
+    - name: model-server
+      image: ghcr.io/health-ai/readmission-model:2.3.0
+      resources:
+        requests:
+          memory: "4Gi"
+          cpu: "1000m"
+          nvidia.com/gpu: 1
+        limits:
+          memory: "8Gi"
+          cpu: "2000m"
+          nvidia.com/gpu: 1
 ```
 
 #### Horizontal Pod Autoscaling
@@ -236,18 +236,18 @@ spec:
   minReplicas: 3
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
 ```
 
 ### Deployment Configuration
@@ -276,9 +276,9 @@ spec:
         app: readmission-api
     spec:
       containers:
-      - name: api
-        image: ghcr.io/health-ai/readmission-api:2.3.0
-        # ...
+        - name: api
+          image: ghcr.io/health-ai/readmission-api:2.3.0
+          # ...
 ```
 
 ## Database Infrastructure
@@ -326,16 +326,16 @@ The system uses a PostgreSQL database for storing patient data, model metadata, 
 
 #### Production Database
 
-| Component | Specification |
-|-----------|---------------|
-| Database Type | PostgreSQL 14+ |
-| Instance Size | 8 vCPU, 32GB RAM |
-| Storage | 1TB SSD with auto-scaling |
-| Read Replicas | 2 |
-| Backup | Automated daily backups, 30-day retention |
-| Point-in-Time Recovery | Enabled, 7-day window |
-| Encryption | Enabled for data at rest |
-| Connection Pooling | PgBouncer |
+| Component              | Specification                             |
+| ---------------------- | ----------------------------------------- |
+| Database Type          | PostgreSQL 14+                            |
+| Instance Size          | 8 vCPU, 32GB RAM                          |
+| Storage                | 1TB SSD with auto-scaling                 |
+| Read Replicas          | 2                                         |
+| Backup                 | Automated daily backups, 30-day retention |
+| Point-in-Time Recovery | Enabled, 7-day window                     |
+| Encryption             | Enabled for data at rest                  |
+| Connection Pooling     | PgBouncer                                 |
 
 #### Database Schema
 
@@ -393,11 +393,11 @@ CREATE TABLE model_versions (
 
 #### Routine Maintenance
 
-| Task | Frequency | Description |
-|------|-----------|-------------|
-| Vacuum | Weekly | Reclaim storage and update statistics |
-| Reindex | Monthly | Rebuild indexes to improve performance |
-| Version Upgrade | Yearly | Upgrade to newer PostgreSQL version |
+| Task            | Frequency | Description                            |
+| --------------- | --------- | -------------------------------------- |
+| Vacuum          | Weekly    | Reclaim storage and update statistics  |
+| Reindex         | Monthly   | Rebuild indexes to improve performance |
+| Version Upgrade | Yearly    | Upgrade to newer PostgreSQL version    |
 
 #### Monitoring Queries
 
@@ -424,15 +424,15 @@ The system uses a secure networking architecture to protect patient data and ens
 
 #### VPC Configuration
 
-| Component | CIDR Block | Purpose |
-|-----------|------------|---------|
-| VPC | 10.0.0.0/16 | Main network |
-| Public Subnet 1 | 10.0.1.0/24 | Load balancers, NAT gateways |
-| Public Subnet 2 | 10.0.2.0/24 | Load balancers, NAT gateways |
-| Private Subnet 1 | 10.0.10.0/24 | Kubernetes nodes |
-| Private Subnet 2 | 10.0.11.0/24 | Kubernetes nodes |
-| Database Subnet 1 | 10.0.20.0/24 | Database instances |
-| Database Subnet 2 | 10.0.21.0/24 | Database instances |
+| Component         | CIDR Block   | Purpose                      |
+| ----------------- | ------------ | ---------------------------- |
+| VPC               | 10.0.0.0/16  | Main network                 |
+| Public Subnet 1   | 10.0.1.0/24  | Load balancers, NAT gateways |
+| Public Subnet 2   | 10.0.2.0/24  | Load balancers, NAT gateways |
+| Private Subnet 1  | 10.0.10.0/24 | Kubernetes nodes             |
+| Private Subnet 2  | 10.0.11.0/24 | Kubernetes nodes             |
+| Database Subnet 1 | 10.0.20.0/24 | Database instances           |
+| Database Subnet 2 | 10.0.21.0/24 | Database instances           |
 
 ### Ingress Configuration
 
@@ -453,31 +453,31 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
 spec:
   tls:
-  - hosts:
-    - api.readmission-risk.org
-    - ui.readmission-risk.org
-    secretName: readmission-tls
+    - hosts:
+        - api.readmission-risk.org
+        - ui.readmission-risk.org
+      secretName: readmission-tls
   rules:
-  - host: api.readmission-risk.org
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: readmission-api
-            port:
-              number: 8000
-  - host: ui.readmission-risk.org
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: readmission-ui
-            port:
-              number: 80
+    - host: api.readmission-risk.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: readmission-api
+                port:
+                  number: 8000
+    - host: ui.readmission-risk.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: readmission-ui
+                port:
+                  number: 80
 ```
 
 ### Network Policies
@@ -493,8 +493,8 @@ metadata:
 spec:
   podSelector: {}
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
 ```
 
 #### API Server Policy
@@ -510,31 +510,31 @@ spec:
     matchLabels:
       app: readmission-api
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: ingress-nginx
-    ports:
-    - protocol: TCP
-      port: 8000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
   egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          app: readmission-model
-    ports:
-    - protocol: TCP
-      port: 8001
-  - to:
-    - namespaceSelector:
-        matchLabels:
-          name: readmission-database
-    ports:
-    - protocol: TCP
-      port: 5432
+    - to:
+        - podSelector:
+            matchLabels:
+              app: readmission-model
+      ports:
+        - protocol: TCP
+          port: 8001
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: readmission-database
+      ports:
+        - protocol: TCP
+          port: 5432
 ```
 
 ## Security
@@ -552,12 +552,12 @@ metadata:
   namespace: readmission-system
   name: readmission-api-role
 rules:
-- apiGroups: [""]
-  resources: ["configmaps", "secrets"]
-  verbs: ["get", "list"]
-- apiGroups: ["apps"]
-  resources: ["deployments"]
-  verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -565,9 +565,9 @@ metadata:
   name: readmission-api-rolebinding
   namespace: readmission-system
 subjects:
-- kind: ServiceAccount
-  name: readmission-api
-  namespace: readmission-system
+  - kind: ServiceAccount
+    name: readmission-api
+    namespace: readmission-system
 roleRef:
   kind: Role
   name: readmission-api-role
@@ -578,12 +578,12 @@ roleRef:
 
 #### Data Encryption
 
-| Data Type | Encryption Method |
-|-----------|-------------------|
-| Data at Rest | AES-256 |
-| Data in Transit | TLS 1.3 |
-| Database | Transparent Data Encryption |
-| Secrets | KMS-managed encryption |
+| Data Type       | Encryption Method           |
+| --------------- | --------------------------- |
+| Data at Rest    | AES-256                     |
+| Data in Transit | TLS 1.3                     |
+| Database        | Transparent Data Encryption |
+| Secrets         | KMS-managed encryption      |
 
 #### TLS Configuration
 
@@ -620,31 +620,31 @@ spec:
 
 #### Container Scanning
 
-| Tool | Purpose | Frequency |
-|------|---------|-----------|
-| Trivy | Vulnerability scanning | On every build |
-| Clair | Container image scanning | Daily |
-| Anchore | Policy compliance | Weekly |
+| Tool    | Purpose                  | Frequency      |
+| ------- | ------------------------ | -------------- |
+| Trivy   | Vulnerability scanning   | On every build |
+| Clair   | Container image scanning | Daily          |
+| Anchore | Policy compliance        | Weekly         |
 
 #### Code Scanning
 
-| Tool | Purpose | Frequency |
-|------|---------|-----------|
-| SonarQube | Code quality and security | On every PR |
-| Bandit | Python security linting | On every build |
-| OWASP Dependency Check | Dependency vulnerabilities | Daily |
+| Tool                   | Purpose                    | Frequency      |
+| ---------------------- | -------------------------- | -------------- |
+| SonarQube              | Code quality and security  | On every PR    |
+| Bandit                 | Python security linting    | On every build |
+| OWASP Dependency Check | Dependency vulnerabilities | Daily          |
 
 ### Compliance Controls
 
 #### HIPAA Controls
 
-| Control | Implementation |
-|---------|----------------|
-| Access Control | RBAC, MFA, least privilege |
-| Audit Controls | Comprehensive audit logging |
-| Integrity | Checksums, signatures, immutable infrastructure |
-| Person/Entity Authentication | OAuth2, OIDC, MFA |
-| Transmission Security | TLS, VPN, network policies |
+| Control                      | Implementation                                  |
+| ---------------------------- | ----------------------------------------------- |
+| Access Control               | RBAC, MFA, least privilege                      |
+| Audit Controls               | Comprehensive audit logging                     |
+| Integrity                    | Checksums, signatures, immutable infrastructure |
+| Person/Entity Authentication | OAuth2, OIDC, MFA                               |
+| Transmission Security        | TLS, VPN, network policies                      |
 
 ## Monitoring and Logging
 
@@ -665,23 +665,23 @@ spec:
     matchLabels:
       app: readmission-api
   endpoints:
-  - port: metrics
-    interval: 15s
-    path: /metrics
+    - port: metrics
+      interval: 15s
+      path: /metrics
   namespaceSelector:
     matchNames:
-    - readmission-system
+      - readmission-system
 ```
 
 #### Key Metrics
 
-| Metric | Description | Alert Threshold |
-|--------|-------------|----------------|
-| readmission_api_requests_total | Total number of API requests | N/A |
-| readmission_api_request_duration_seconds | API request duration | p95 > 1s |
-| readmission_model_prediction_duration_seconds | Model prediction time | p95 > 2s |
-| readmission_model_prediction_errors_total | Model prediction errors | > 1% error rate |
-| readmission_database_query_duration_seconds | Database query duration | p95 > 500ms |
+| Metric                                        | Description                  | Alert Threshold |
+| --------------------------------------------- | ---------------------------- | --------------- |
+| readmission_api_requests_total                | Total number of API requests | N/A             |
+| readmission_api_request_duration_seconds      | API request duration         | p95 > 1s        |
+| readmission_model_prediction_duration_seconds | Model prediction time        | p95 > 2s        |
+| readmission_model_prediction_errors_total     | Model prediction errors      | > 1% error rate |
+| readmission_database_query_duration_seconds   | Database query duration      | p95 > 500ms     |
 
 ### Log Management
 
@@ -761,24 +761,24 @@ metadata:
   namespace: readmission-monitoring
 spec:
   groups:
-  - name: readmission
-    rules:
-    - alert: HighErrorRate
-      expr: sum(rate(readmission_api_request_errors_total[5m])) / sum(rate(readmission_api_requests_total[5m])) > 0.01
-      for: 5m
-      labels:
-        severity: critical
-      annotations:
-        summary: "High error rate on API requests"
-        description: "Error rate is above 1% for more than 5 minutes"
-    - alert: SlowAPIResponse
-      expr: histogram_quantile(0.95, sum(rate(readmission_api_request_duration_seconds_bucket[5m])) by (le)) > 1
-      for: 5m
-      labels:
-        severity: warning
-      annotations:
-        summary: "Slow API response time"
-        description: "95th percentile of API response time is above 1 second for more than 5 minutes"
+    - name: readmission
+      rules:
+        - alert: HighErrorRate
+          expr: sum(rate(readmission_api_request_errors_total[5m])) / sum(rate(readmission_api_requests_total[5m])) > 0.01
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High error rate on API requests"
+            description: "Error rate is above 1% for more than 5 minutes"
+        - alert: SlowAPIResponse
+          expr: histogram_quantile(0.95, sum(rate(readmission_api_request_duration_seconds_bucket[5m])) by (le)) > 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Slow API response time"
+            description: "95th percentile of API response time is above 1 second for more than 5 minutes"
 ```
 
 ## Disaster Recovery
@@ -789,13 +789,13 @@ The system implements comprehensive disaster recovery procedures to ensure busin
 
 #### Backup Components
 
-| Component | Backup Method | Frequency | Retention |
-|-----------|---------------|-----------|-----------|
-| Database | Automated snapshots | Daily | 30 days |
-| Database | Transaction logs | Continuous | 7 days |
-| Model Artifacts | S3 replication | Continuous | Indefinite |
-| Configuration | Git repository | On change | Indefinite |
-| Kubernetes State | Velero backups | Daily | 14 days |
+| Component        | Backup Method       | Frequency  | Retention  |
+| ---------------- | ------------------- | ---------- | ---------- |
+| Database         | Automated snapshots | Daily      | 30 days    |
+| Database         | Transaction logs    | Continuous | 7 days     |
+| Model Artifacts  | S3 replication      | Continuous | Indefinite |
+| Configuration    | Git repository      | On change  | Indefinite |
+| Kubernetes State | Velero backups      | Daily      | 14 days    |
 
 ### Recovery Procedures
 
@@ -826,11 +826,11 @@ velero restore create --from-backup readmission-backup-20250424 --include-namesp
 
 ### Disaster Recovery Testing
 
-| Test Type | Frequency | Description |
-|-----------|-----------|-------------|
-| Database Recovery | Quarterly | Restore database to test environment |
+| Test Type            | Frequency   | Description                             |
+| -------------------- | ----------- | --------------------------------------- |
+| Database Recovery    | Quarterly   | Restore database to test environment    |
 | Full System Recovery | Bi-annually | Restore entire system to DR environment |
-| Failover Testing | Quarterly | Test automatic failover capabilities |
+| Failover Testing     | Quarterly   | Test automatic failover capabilities    |
 
 ## Infrastructure as Code
 

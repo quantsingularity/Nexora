@@ -192,13 +192,12 @@ terraform apply -var-file=environments/dev/terraform.tfvars
 - The deployment configurations in the `deployments/` directory use the infrastructure provisioned by the code in this directory.
 - CI/CD pipelines may interact with these infrastructure components for automated deployments.
 
-
-
 ## Security and Compliance Enhancements
 
 To meet financial standards, the infrastructure has been enhanced with the following security and compliance features:
 
 ### Security Enhancements:
+
 - **Identity and Access Management (IAM):** Implement strict role-based access control (RBAC) with least privilege principles across all infrastructure components (cloud, Kubernetes, servers).
 - **Network Segmentation:** Implement granular network segmentation using VPCs, subnets, security groups, and network policies to isolate different environments (dev, staging, prod) and application tiers (web, app, database).
 - **Encryption:** Enforce encryption at rest for all data stores (databases, object storage, persistent volumes) and encryption in transit for all network communication (TLS/SSL).
@@ -208,6 +207,7 @@ To meet financial standards, the infrastructure has been enhanced with the follo
 - **Web Application Firewall (WAF):** Deploy a WAF to protect web applications from common web exploits.
 
 ### Compliance Features:
+
 - **Audit Logging:** Enable comprehensive audit logging across all infrastructure layers (cloud, OS, application, database) to capture all security-relevant events. Logs will be immutable and centrally stored.
 - **Data Residency and Sovereignty:** Ensure data is stored and processed in compliance with relevant data residency and sovereignty regulations.
 - **Regular Audits and Reporting:** Establish processes for regular security and compliance audits, and generate reports to demonstrate adherence to financial regulations.

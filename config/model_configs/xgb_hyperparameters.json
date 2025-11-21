@@ -23,9 +23,24 @@
   "feature_selector": "cyclic",
   "feature_groups": {
     "demographics": ["age", "gender", "race", "ethnicity", "insurance_type"],
-    "comorbidities": ["diabetes", "hypertension", "heart_failure", "copd", "ckd", "cancer"],
-    "utilization": ["previous_admissions", "previous_ed_visits", "previous_outpatient_visits"],
-    "medications": ["medication_count", "high_risk_medications", "adherence_score"],
+    "comorbidities": [
+      "diabetes",
+      "hypertension",
+      "heart_failure",
+      "copd",
+      "ckd",
+      "cancer"
+    ],
+    "utilization": [
+      "previous_admissions",
+      "previous_ed_visits",
+      "previous_outpatient_visits"
+    ],
+    "medications": [
+      "medication_count",
+      "high_risk_medications",
+      "adherence_score"
+    ],
     "labs": ["abnormal_lab_count", "lab_trend_features"]
   },
   "calibration": {

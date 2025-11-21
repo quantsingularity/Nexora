@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useState } from "react";
+import { Outlet } from "react-router-dom";
 import {
   Box,
   Drawer,
@@ -17,8 +17,8 @@ import {
   Menu,
   MenuItem,
   useTheme,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
@@ -27,14 +27,14 @@ import {
   Settings as SettingsIcon,
   Notifications as NotificationsIcon,
   AccountCircle,
-  ChevronLeft as ChevronLeftIcon
-} from '@mui/icons-material';
+  ChevronLeft as ChevronLeftIcon,
+} from "@mui/icons-material";
 
 const drawerWidth = 240;
 
 function Layout() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -51,21 +51,21 @@ function Layout() {
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-    { text: 'Patients', icon: <PeopleIcon />, path: '/patients' },
-    { text: 'Models', icon: <ScienceIcon />, path: '/models' },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
+    { text: "Dashboard", icon: <DashboardIcon />, path: "/" },
+    { text: "Patients", icon: <PeopleIcon />, path: "/patients" },
+    { text: "Models", icon: <ScienceIcon />, path: "/models" },
+    { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
   ];
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: "flex" }}>
       <AppBar
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
-          background: 'white',
-          color: 'primary.main'
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.07)",
+          background: "white",
+          color: "primary.main",
         }}
       >
         <Toolbar>
@@ -78,8 +78,13 @@ function Layout() {
           >
             <MenuIcon />
           </IconButton>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography
+              variant="h6"
+              noWrap
+              component="div"
+              sx={{ fontWeight: "bold" }}
+            >
               NEXORA
             </Typography>
             <Typography variant="subtitle2" sx={{ ml: 1, opacity: 0.7 }}>
@@ -87,7 +92,7 @@ function Layout() {
             </Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
             <IconButton color="inherit" sx={{ mr: 2 }}>
               <NotificationsIcon />
             </IconButton>
@@ -98,7 +103,7 @@ function Layout() {
               onClick={handleProfileMenuOpen}
               color="inherit"
             >
-              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+              <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main" }}>
                 <AccountCircle />
               </Avatar>
             </IconButton>
@@ -106,8 +111,8 @@ function Layout() {
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
               onClose={handleProfileMenuClose}
-              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
               <MenuItem onClick={handleProfileMenuClose}>Profile</MenuItem>
               <MenuItem onClick={handleProfileMenuClose}>My account</MenuItem>
@@ -123,18 +128,18 @@ function Layout() {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
+          "& .MuiDrawer-paper": {
             width: drawerWidth,
-            boxSizing: 'border-box',
+            boxSizing: "border-box",
             background: theme.palette.background.default,
-            borderRight: '1px solid rgba(0, 0, 0, 0.08)',
+            borderRight: "1px solid rgba(0, 0, 0, 0.08)",
           },
         }}
       >
         <Toolbar />
-        <Box sx={{ overflow: 'auto', mt: 2 }}>
+        <Box sx={{ overflow: "auto", mt: 2 }}>
           {!isMobile && (
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 1 }}>
+            <Box sx={{ display: "flex", justifyContent: "flex-end", px: 1 }}>
               <IconButton onClick={handleDrawerToggle}>
                 <ChevronLeftIcon />
               </IconButton>
@@ -145,14 +150,14 @@ function Layout() {
               <ListItem key={item.text} disablePadding>
                 <ListItemButton
                   sx={{
-                    borderRadius: '0 24px 24px 0',
+                    borderRadius: "0 24px 24px 0",
                     mx: 1,
-                    '&:hover': {
-                      backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                    "&:hover": {
+                      backgroundColor: "rgba(25, 118, 210, 0.08)",
                     },
                   }}
                 >
-                  <ListItemIcon sx={{ color: 'primary.main' }}>
+                  <ListItemIcon sx={{ color: "primary.main" }}>
                     {item.icon}
                   </ListItemIcon>
                   <ListItemText primary={item.text} />
@@ -165,13 +170,15 @@ function Layout() {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               System Status
             </Typography>
-            <Box sx={{
-              p: 2,
-              bgcolor: 'success.light',
-              color: 'success.contrastText',
-              borderRadius: 2,
-              fontSize: '0.875rem'
-            }}>
+            <Box
+              sx={{
+                p: 2,
+                bgcolor: "success.light",
+                color: "success.contrastText",
+                borderRadius: 2,
+                fontSize: "0.875rem",
+              }}
+            >
               All systems operational
             </Box>
           </Box>

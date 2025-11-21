@@ -66,12 +66,14 @@ mobile-frontend/
 #### .expo/
 
 Contains Expo-specific configuration files:
+
 - **README.md**: Documentation for Expo configuration.
 - **devices.json**: Configuration for Expo development devices.
 
 #### assets/
 
 Contains static assets used in the application:
+
 - **icon.png**: Main application icon.
 - **adaptive-icon.png**: Adaptive icon for Android devices.
 - **favicon.png**: Favicon for web versions of the app.
@@ -80,6 +82,7 @@ Contains static assets used in the application:
 #### e2e/
 
 Contains end-to-end tests using Detox:
+
 - **firstTest.e2e.js**: Initial test suite for basic app functionality.
 - **patient-workflow.e2e.js**: Tests for patient-related workflows.
 
@@ -87,7 +90,7 @@ Contains end-to-end tests using Detox:
 
 Contains the main source code for the application:
 
-- **__tests__/**: Unit tests for the application components.
+- ****tests**/**: Unit tests for the application components.
   - **App.test.js**: Tests for the main App component.
 
 - **components/**: Reusable UI components.
@@ -95,7 +98,7 @@ Contains the main source code for the application:
   - **CustomButton.js**: Styled button component.
   - **CustomInput.js**: Styled input component.
   - **ScreenWrapper.js**: Wrapper component for consistent screen layouts.
-  - **__tests__/PatientCard.test.js**: Tests for the PatientCard component.
+  - ****tests**/PatientCard.test.js**: Tests for the PatientCard component.
 
 - **navigation/**: Navigation configuration.
   - **AppNavigator.js**: Main navigation structure using React Navigation.
@@ -116,6 +119,7 @@ Contains the main source code for the application:
 To set up the mobile frontend for development:
 
 1. **Install dependencies**:
+
    ```bash
    cd mobile-frontend
    npm install
@@ -124,6 +128,7 @@ To set up the mobile frontend for development:
    ```
 
 2. **Start the development server**:
+
    ```bash
    npm start
    # or
@@ -131,6 +136,7 @@ To set up the mobile frontend for development:
    ```
 
 3. **Run on a device or emulator**:
+
    ```bash
    # For iOS
    npm run ios
@@ -148,6 +154,7 @@ To set up the mobile frontend for development:
 The mobile frontend includes several types of tests:
 
 1. **Unit Tests** (using Jest):
+
    ```bash
    npm test
    # or
@@ -155,6 +162,7 @@ The mobile frontend includes several types of tests:
    ```
 
 2. **End-to-End Tests** (using Detox):
+
    ```bash
    # Build the app for testing
    detox build --configuration ios.sim

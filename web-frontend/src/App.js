@@ -1,16 +1,16 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { Box } from '@mui/material';
-import Dashboard from './pages/Dashboard';
-import PatientList from './pages/PatientList';
-import PatientDetail from './pages/PatientDetail';
-import PredictionModels from './pages/PredictionModels';
-import Settings from './pages/Settings';
-import Layout from './components/Layout';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { Box } from "@mui/material";
+import Dashboard from "./pages/Dashboard";
+import PatientList from "./pages/PatientList";
+import PatientDetail from "./pages/PatientDetail";
+import PredictionModels from "./pages/PredictionModels";
+import Settings from "./pages/Settings";
+import Layout from "./components/Layout";
 
 function App() {
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
+    <Box sx={{ display: "flex", height: "100vh" }}>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />

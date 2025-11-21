@@ -19,6 +19,7 @@ These scripts address key automation needs in the healthcare technology domain, 
 **Purpose**: Monitors and reports on the health of Nexora environments (development, staging, production) by checking system resources, services, databases, API endpoints, and Kubernetes resources.
 
 **Features**:
+
 - Comprehensive environment health monitoring
 - Configurable thresholds and checks
 - Multiple output formats (JSON, HTML, text)
@@ -26,6 +27,7 @@ These scripts address key automation needs in the healthcare technology domain, 
 - Support for multiple environments
 
 **Usage**:
+
 ```bash
 python environment_health_check.py --config /path/to/config.yaml --env [dev|staging|prod] [options]
 
@@ -41,6 +43,7 @@ Options:
 ```
 
 **Example**:
+
 ```bash
 python environment_health_check.py --env prod --format json --output health_report.json
 ```
@@ -50,6 +53,7 @@ python environment_health_check.py --env prod --format json --output health_repo
 **Purpose**: Validates Nexora deployments to ensure they are functioning correctly by checking deployed services, API endpoints, database migrations, and configuration settings.
 
 **Features**:
+
 - Comprehensive deployment validation
 - Kubernetes resource validation
 - Service and API endpoint testing
@@ -59,6 +63,7 @@ python environment_health_check.py --env prod --format json --output health_repo
 - Optional automatic rollback for failed deployments
 
 **Usage**:
+
 ```bash
 python deployment_validation.py --env [dev|staging|prod] [options]
 
@@ -75,6 +80,7 @@ Options:
 ```
 
 **Example**:
+
 ```bash
 python deployment_validation.py --env staging --format html --output validation_report.html
 ```
@@ -84,6 +90,7 @@ python deployment_validation.py --env staging --format html --output validation_
 **Purpose**: Generates comprehensive compliance reports for healthcare regulatory requirements including HIPAA, GDPR, and other healthcare standards by analyzing system logs, access patterns, data handling practices, and configuration settings.
 
 **Features**:
+
 - Support for multiple compliance standards (HIPAA, GDPR, HITECH)
 - Configurable time periods for analysis
 - Multiple output formats (PDF, HTML, JSON)
@@ -92,6 +99,7 @@ python deployment_validation.py --env staging --format html --output validation_
 - Visual charts and statistics
 
 **Usage**:
+
 ```bash
 python compliance_report_generator.py [options]
 
@@ -109,6 +117,7 @@ Options:
 ```
 
 **Example**:
+
 ```bash
 python compliance_report_generator.py --report-type hipaa --period month --format all
 ```
@@ -118,6 +127,7 @@ python compliance_report_generator.py --report-type hipaa --period month --forma
 A test environment setup script (`setup_test_env.sh`) is included to create a testing environment with sample configuration files and logs for validating the scripts. The validation script (`validate_scripts.sh`) can be used to test all three scripts in this environment.
 
 **Usage**:
+
 ```bash
 # Set up test environment
 ./setup_test_env.sh

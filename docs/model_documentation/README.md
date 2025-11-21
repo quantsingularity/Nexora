@@ -20,16 +20,17 @@ The Hospital Readmission Risk Prediction System employs several advanced machine
 
 ### Model Types
 
-| Model Type | Description | Primary Use Case |
-|------------|-------------|------------------|
-| Deep Survival Transformer | Transformer-based model for time-to-event prediction | General readmission risk prediction |
-| DeepFM | Factorization machine with deep neural network | Patients with limited time-series data |
-| Clinical BERT | BERT model fine-tuned on clinical notes | Patients with extensive clinical documentation |
-| Fairness-Constrained Ensemble | Ensemble model with fairness constraints | Ensuring equitable predictions across demographic groups |
+| Model Type                    | Description                                          | Primary Use Case                                         |
+| ----------------------------- | ---------------------------------------------------- | -------------------------------------------------------- |
+| Deep Survival Transformer     | Transformer-based model for time-to-event prediction | General readmission risk prediction                      |
+| DeepFM                        | Factorization machine with deep neural network       | Patients with limited time-series data                   |
+| Clinical BERT                 | BERT model fine-tuned on clinical notes              | Patients with extensive clinical documentation           |
+| Fairness-Constrained Ensemble | Ensemble model with fairness constraints             | Ensuring equitable predictions across demographic groups |
 
 ### Model Selection
 
 The system automatically selects the appropriate model based on:
+
 - Available patient data
 - Patient cohort characteristics
 - Clinical context
@@ -205,6 +206,7 @@ class ClinicalBERT(tf.keras.Model):
    - Optimized for AUC-ROC and fairness metrics
 
 2. **Training Configuration**:
+
    ```yaml
    training:
      epochs: 50
@@ -247,27 +249,27 @@ class ClinicalBERT(tf.keras.Model):
 
 ### Overall Performance
 
-| Metric | Value | 95% CI |
-|--------|-------|--------|
-| AUC-ROC | 0.82 | 0.80-0.84 |
-| Sensitivity | 0.75 | 0.72-0.78 |
-| Specificity | 0.84 | 0.81-0.87 |
-| PPV | 0.68 | 0.65-0.71 |
-| NPV | 0.88 | 0.85-0.91 |
-| Brier Score | 0.11 | 0.10-0.12 |
-| Calibration Slope | 1.02 | 0.97-1.07 |
+| Metric            | Value | 95% CI    |
+| ----------------- | ----- | --------- |
+| AUC-ROC           | 0.82  | 0.80-0.84 |
+| Sensitivity       | 0.75  | 0.72-0.78 |
+| Specificity       | 0.84  | 0.81-0.87 |
+| PPV               | 0.68  | 0.65-0.71 |
+| NPV               | 0.88  | 0.85-0.91 |
+| Brier Score       | 0.11  | 0.10-0.12 |
+| Calibration Slope | 1.02  | 0.97-1.07 |
 
 ### Performance by Cohort
 
-| Cohort | AUC-ROC | Sensitivity | Specificity |
-|--------|---------|-------------|-------------|
-| Age ≥ 65 | 0.79 | 0.72 | 0.88 |
-| Age < 65 | 0.84 | 0.77 | 0.82 |
-| ICU Patients | 0.85 | 0.81 | 0.79 |
-| Non-ICU Patients | 0.80 | 0.73 | 0.86 |
-| Heart Failure | 0.83 | 0.79 | 0.81 |
-| COPD | 0.81 | 0.76 | 0.83 |
-| Diabetes | 0.80 | 0.74 | 0.85 |
+| Cohort           | AUC-ROC | Sensitivity | Specificity |
+| ---------------- | ------- | ----------- | ----------- |
+| Age ≥ 65         | 0.79    | 0.72        | 0.88        |
+| Age < 65         | 0.84    | 0.77        | 0.82        |
+| ICU Patients     | 0.85    | 0.81        | 0.79        |
+| Non-ICU Patients | 0.80    | 0.73        | 0.86        |
+| Heart Failure    | 0.83    | 0.79        | 0.81        |
+| COPD             | 0.81    | 0.76        | 0.83        |
+| Diabetes         | 0.80    | 0.74        | 0.85        |
 
 ### Calibration Curve
 
@@ -292,24 +294,24 @@ Predicted Risk | Observed Readmission Rate | Sample Size
 
 ### Fairness Metrics
 
-| Metric | Overall | By Gender | By Race | By Age |
-|--------|---------|-----------|---------|--------|
-| Equal Opportunity Difference | 0.03 | 0.04 | 0.05 | 0.07 |
-| Demographic Parity Ratio | 0.92 | 0.94 | 0.91 | 0.89 |
-| Treatment Equality Ratio | 0.95 | 0.96 | 0.93 | 0.92 |
+| Metric                       | Overall | By Gender | By Race | By Age |
+| ---------------------------- | ------- | --------- | ------- | ------ |
+| Equal Opportunity Difference | 0.03    | 0.04      | 0.05    | 0.07   |
+| Demographic Parity Ratio     | 0.92    | 0.94      | 0.91    | 0.89   |
+| Treatment Equality Ratio     | 0.95    | 0.96      | 0.93    | 0.92   |
 
 ### Subgroup Performance
 
-| Subgroup | AUC | FPR | FNR | Calibration Slope |
-|----------|-----|-----|-----|-------------------|
-| Male | 0.81 | 0.18 | 0.27 | 1.03 |
-| Female | 0.83 | 0.15 | 0.23 | 1.01 |
-| White | 0.82 | 0.16 | 0.24 | 1.02 |
-| Black | 0.80 | 0.19 | 0.26 | 0.98 |
-| Hispanic | 0.81 | 0.17 | 0.25 | 1.04 |
-| Asian | 0.82 | 0.16 | 0.24 | 1.01 |
-| Age ≥ 65 | 0.79 | 0.12 | 0.28 | 0.97 |
-| Age < 65 | 0.84 | 0.18 | 0.23 | 1.05 |
+| Subgroup | AUC  | FPR  | FNR  | Calibration Slope |
+| -------- | ---- | ---- | ---- | ----------------- |
+| Male     | 0.81 | 0.18 | 0.27 | 1.03              |
+| Female   | 0.83 | 0.15 | 0.23 | 1.01              |
+| White    | 0.82 | 0.16 | 0.24 | 1.02              |
+| Black    | 0.80 | 0.19 | 0.26 | 0.98              |
+| Hispanic | 0.81 | 0.17 | 0.25 | 1.04              |
+| Asian    | 0.82 | 0.16 | 0.24 | 1.01              |
+| Age ≥ 65 | 0.79 | 0.12 | 0.28 | 0.97              |
+| Age < 65 | 0.84 | 0.18 | 0.23 | 1.05              |
 
 ### Fairness Interventions
 
@@ -346,12 +348,12 @@ The system employs several fairness interventions:
 
 ### Validation Results
 
-| Metric | Internal Validation | External Validation |
-|--------|---------------------|---------------------|
-| AUC-ROC | 0.82 | 0.79 |
-| Sensitivity | 0.75 | 0.72 |
-| Specificity | 0.84 | 0.81 |
-| Clinician Agreement | κ=0.62 | κ=0.58 |
+| Metric              | Internal Validation | External Validation |
+| ------------------- | ------------------- | ------------------- |
+| AUC-ROC             | 0.82                | 0.79                |
+| Sensitivity         | 0.75                | 0.72                |
+| Specificity         | 0.84                | 0.81                |
+| Clinician Agreement | κ=0.62              | κ=0.58              |
 
 ### Clinical Impact Assessment
 
@@ -417,14 +419,14 @@ The system includes model cards for specialized models:
 
 ### Version History
 
-| Version | Release Date | Key Changes | Performance (AUC) |
-|---------|--------------|-------------|-------------------|
-| 1.0.0 | 2023-01-15 | Initial release | 0.75 |
-| 1.1.0 | 2023-04-10 | Added medication features | 0.77 |
-| 2.0.0 | 2023-08-22 | Switched to transformer architecture | 0.80 |
-| 2.1.0 | 2023-11-05 | Added fairness constraints | 0.79 |
-| 2.2.0 | 2024-02-18 | Improved temporal features | 0.81 |
-| 2.3.0 | 2024-06-30 | Enhanced calibration | 0.82 |
+| Version | Release Date | Key Changes                          | Performance (AUC) |
+| ------- | ------------ | ------------------------------------ | ----------------- |
+| 1.0.0   | 2023-01-15   | Initial release                      | 0.75              |
+| 1.1.0   | 2023-04-10   | Added medication features            | 0.77              |
+| 2.0.0   | 2023-08-22   | Switched to transformer architecture | 0.80              |
+| 2.1.0   | 2023-11-05   | Added fairness constraints           | 0.79              |
+| 2.2.0   | 2024-02-18   | Improved temporal features           | 0.81              |
+| 2.3.0   | 2024-06-30   | Enhanced calibration                 | 0.82              |
 
 ### Version Control
 

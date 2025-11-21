@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Grid,
@@ -25,8 +25,8 @@ import {
   MenuItem,
   Select,
   InputLabel,
-  FormControl
-} from '@mui/material';
+  FormControl,
+} from "@mui/material";
 import {
   MoreVert as MoreVertIcon,
   Science as ScienceIcon,
@@ -35,14 +35,33 @@ import {
   CloudDownload as CloudDownloadIcon,
   Refresh as RefreshIcon,
   CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon
-} from '@mui/icons-material';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
-import api from '../services/api';
+  Error as ErrorIcon,
+} from "@mui/icons-material";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Line, Bar } from "react-chartjs-2";
+import api from "../services/api";
 
 // Register ChartJS components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
 
 const PredictionModels = () => {
   const [loading, setLoading] = useState(true);
@@ -56,7 +75,7 @@ const PredictionModels = () => {
         const data = await api.getModels();
         setModels(data);
       } catch (error) {
-        console.error('Error fetching models:', error);
+        console.error("Error fetching models:", error);
       } finally {
         setLoading(false);
       }
@@ -71,45 +90,53 @@ const PredictionModels = () => {
 
   if (loading) {
     return (
-      <Box sx={{ width: '100%', mt: 4 }}>
+      <Box sx={{ width: "100%", mt: 4 }}>
         <LinearProgress />
       </Box>
     );
   }
 
   const performanceData = {
-    labels: ['Readmission', 'Mortality', 'LOS', 'Complications', 'ICU Transfer'],
+    labels: [
+      "Readmission",
+      "Mortality",
+      "LOS",
+      "Complications",
+      "ICU Transfer",
+    ],
     datasets: [
       {
-        label: 'Current Model',
+        label: "Current Model",
         data: [0.82, 0.78, 0.75, 0.81, 0.79],
-        backgroundColor: 'rgba(25, 118, 210, 0.7)',
+        backgroundColor: "rgba(25, 118, 210, 0.7)",
         borderRadius: 5,
       },
       {
-        label: 'Previous Version',
+        label: "Previous Version",
         data: [0.79, 0.76, 0.72, 0.78, 0.75],
-        backgroundColor: 'rgba(156, 39, 176, 0.7)',
+        backgroundColor: "rgba(156, 39, 176, 0.7)",
         borderRadius: 5,
       },
     ],
   };
 
   const trainingData = {
-    labels: ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'],
+    labels: ["0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"],
     datasets: [
       {
-        label: 'Training Loss',
-        data: [0.68, 0.58, 0.51, 0.46, 0.42, 0.39, 0.37, 0.35, 0.34, 0.33, 0.32],
-        borderColor: '#f44336',
-        backgroundColor: 'rgba(244, 67, 54, 0.1)',
+        label: "Training Loss",
+        data: [
+          0.68, 0.58, 0.51, 0.46, 0.42, 0.39, 0.37, 0.35, 0.34, 0.33, 0.32,
+        ],
+        borderColor: "#f44336",
+        backgroundColor: "rgba(244, 67, 54, 0.1)",
         tension: 0.4,
       },
       {
-        label: 'Validation Loss',
-        data: [0.69, 0.60, 0.54, 0.50, 0.47, 0.45, 0.44, 0.43, 0.43, 0.42, 0.42],
-        borderColor: '#2196f3',
-        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+        label: "Validation Loss",
+        data: [0.69, 0.6, 0.54, 0.5, 0.47, 0.45, 0.44, 0.43, 0.43, 0.42, 0.42],
+        borderColor: "#2196f3",
+        backgroundColor: "rgba(33, 150, 243, 0.1)",
         tension: 0.4,
       },
     ],
@@ -117,7 +144,14 @@ const PredictionModels = () => {
 
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          mb: 4,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Typography variant="h4" component="h1" gutterBottom>
           Prediction Models
         </Typography>
@@ -132,7 +166,12 @@ const PredictionModels = () => {
             <CardHeader
               title="Available Models"
               action={
-                <IconButton aria-label="refresh" onClick={() => api.getModels().then(data => setModels(data))}>
+                <IconButton
+                  aria-label="refresh"
+                  onClick={() =>
+                    api.getModels().then((data) => setModels(data))
+                  }
+                >
                   <RefreshIcon />
                 </IconButton>
               }
@@ -146,9 +185,17 @@ const PredictionModels = () => {
                     divider={index < models.length - 1}
                     secondaryAction={
                       <Chip
-                        icon={model.status === 'Active' ? <CheckCircleIcon /> : <ErrorIcon />}
+                        icon={
+                          model.status === "Active" ? (
+                            <CheckCircleIcon />
+                          ) : (
+                            <ErrorIcon />
+                          )
+                        }
                         label={model.status}
-                        color={model.status === 'Active' ? 'success' : 'default'}
+                        color={
+                          model.status === "Active" ? "success" : "default"
+                        }
                         size="small"
                       />
                     }
@@ -169,8 +216,12 @@ const PredictionModels = () => {
 
         <Grid item xs={12} md={8}>
           <Card sx={{ mb: 3 }}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={activeTab} onChange={handleTabChange} aria-label="model tabs">
+            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                aria-label="model tabs"
+              >
                 <Tab label="Performance" />
                 <Tab label="Training History" />
                 <Tab label="Configuration" />
@@ -191,12 +242,12 @@ const PredictionModels = () => {
                       maintainAspectRatio: false,
                       plugins: {
                         legend: {
-                          position: 'top',
+                          position: "top",
                         },
                         title: {
                           display: true,
-                          text: 'AUC Score by Prediction Task'
-                        }
+                          text: "AUC Score by Prediction Task",
+                        },
                       },
                       scales: {
                         y: {
@@ -278,12 +329,12 @@ const PredictionModels = () => {
                       maintainAspectRatio: false,
                       plugins: {
                         legend: {
-                          position: 'top',
+                          position: "top",
                         },
                         title: {
                           display: true,
-                          text: 'Loss vs. Epochs'
-                        }
+                          text: "Loss vs. Epochs",
+                        },
                       },
                       scales: {
                         y: {
@@ -292,9 +343,9 @@ const PredictionModels = () => {
                         x: {
                           title: {
                             display: true,
-                            text: 'Epochs'
-                          }
-                        }
+                            text: "Epochs",
+                          },
+                        },
                       },
                     }}
                   />
@@ -346,9 +397,7 @@ const PredictionModels = () => {
                         <Typography variant="subtitle2" color="text.secondary">
                           Last Retrained
                         </Typography>
-                        <Typography variant="body1">
-                          March 15, 2025
-                        </Typography>
+                        <Typography variant="body1">March 15, 2025</Typography>
                       </CardContent>
                     </Card>
                   </Grid>
@@ -380,14 +429,20 @@ const PredictionModels = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <FormControl fullWidth margin="normal">
-                      <InputLabel id="prediction-task-label">Prediction Task</InputLabel>
+                      <InputLabel id="prediction-task-label">
+                        Prediction Task
+                      </InputLabel>
                       <Select
                         labelId="prediction-task-label"
                         value="readmission"
                         label="Prediction Task"
                       >
-                        <MenuItem value="readmission">30-day Readmission</MenuItem>
-                        <MenuItem value="mortality">In-hospital Mortality</MenuItem>
+                        <MenuItem value="readmission">
+                          30-day Readmission
+                        </MenuItem>
+                        <MenuItem value="mortality">
+                          In-hospital Mortality
+                        </MenuItem>
                         <MenuItem value="los">Length of Stay</MenuItem>
                       </Select>
                     </FormControl>
@@ -454,19 +509,22 @@ const PredictionModels = () => {
                   </Grid>
                 </Grid>
 
-                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                  <Button variant="outlined">
-                    Reset to Defaults
-                  </Button>
-                  <Button variant="contained">
-                    Save Configuration
-                  </Button>
+                <Box
+                  sx={{
+                    mt: 3,
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 2,
+                  }}
+                >
+                  <Button variant="outlined">Reset to Defaults</Button>
+                  <Button variant="contained">Save Configuration</Button>
                 </Box>
               </CardContent>
             )}
           </Card>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
             <Button variant="outlined" startIcon={<CloudDownloadIcon />}>
               Export Model
             </Button>

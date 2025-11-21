@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Grid,
@@ -19,8 +19,8 @@ import {
   Snackbar,
   Paper,
   Tabs,
-  Tab
-} from '@mui/material';
+  Tab,
+} from "@mui/material";
 import {
   Settings as SettingsIcon,
   Security as SecurityIcon,
@@ -28,15 +28,15 @@ import {
   Storage as StorageIcon,
   CloudSync as CloudSyncIcon,
   Person as PersonIcon,
-  Save as SaveIcon
-} from '@mui/icons-material';
-import api from '../services/api';
+  Save as SaveIcon,
+} from "@mui/icons-material";
+import api from "../services/api";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -48,13 +48,13 @@ const Settings = () => {
       // await api.saveSettings(settingsData);
 
       // For now, just simulate a successful save
-      setSnackbarMessage('Settings saved successfully');
-      setSnackbarSeverity('success');
+      setSnackbarMessage("Settings saved successfully");
+      setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
-      console.error('Error saving settings:', error);
-      setSnackbarMessage('Error saving settings. Please try again.');
-      setSnackbarSeverity('error');
+      console.error("Error saving settings:", error);
+      setSnackbarMessage("Error saving settings. Please try again.");
+      setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
   };
@@ -66,20 +66,29 @@ const Settings = () => {
   const handleHealthCheck = async () => {
     try {
       const result = await api.checkHealth();
-      setSnackbarMessage(`System is ${result.status}. Last checked: ${new Date(result.timestamp).toLocaleString()}`);
-      setSnackbarSeverity('success');
+      setSnackbarMessage(
+        `System is ${result.status}. Last checked: ${new Date(result.timestamp).toLocaleString()}`,
+      );
+      setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
-      console.error('Health check failed:', error);
-      setSnackbarMessage('System health check failed. Please contact support.');
-      setSnackbarSeverity('error');
+      console.error("Health check failed:", error);
+      setSnackbarMessage("System health check failed. Please contact support.");
+      setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
   };
 
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          mb: 4,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Typography variant="h4" component="h1" gutterBottom>
           Settings
         </Typography>
@@ -373,7 +382,7 @@ const Settings = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 3 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mt: 3 }}>
                   <Button variant="outlined" startIcon={<CloudSyncIcon />}>
                     Sync Now
                   </Button>
@@ -535,7 +544,7 @@ const Settings = () => {
         </Card>
       )}
 
-      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+      <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
         <Button
           variant="contained"
           startIcon={<SaveIcon />}
@@ -549,9 +558,13 @@ const Settings = () => {
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>

@@ -15,6 +15,7 @@ Nexora is an advanced healthcare AI platform that predicts patient readmission r
 > **Note**: This project is under active development and follows strict healthcare compliance standards. All features are continuously validated for clinical accuracy and regulatory compliance.
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Key Features](#key-features)
 - [Model Performance](#model-performance)
@@ -34,40 +35,44 @@ Nexora leverages machine learning to predict patient readmission risk, helping h
 ## Key Features
 
 ### Clinical Decision Support
-* **Readmission Risk Prediction**: 30-day readmission risk assessment
-* **Risk Factor Identification**: Key clinical variables driving readmission risk
-* **Intervention Recommendations**: Evidence-based suggestions for reducing readmission risk
-* **Patient Monitoring**: Continuous risk assessment throughout hospital stay
+
+- **Readmission Risk Prediction**: 30-day readmission risk assessment
+- **Risk Factor Identification**: Key clinical variables driving readmission risk
+- **Intervention Recommendations**: Evidence-based suggestions for reducing readmission risk
+- **Patient Monitoring**: Continuous risk assessment throughout hospital stay
 
 ### Healthcare System Integration
-* **EHR Integration**: Seamless connection with major EHR systems
-* **FHIR Compatibility**: Support for HL7 FHIR R4 standard
-* **Clinical Workflow Integration**: Fits into existing clinical workflows
-* **Alert System**: Configurable alerts for high-risk patients
+
+- **EHR Integration**: Seamless connection with major EHR systems
+- **FHIR Compatibility**: Support for HL7 FHIR R4 standard
+- **Clinical Workflow Integration**: Fits into existing clinical workflows
+- **Alert System**: Configurable alerts for high-risk patients
 
 ### Regulatory Compliance
-* **HIPAA Compliance**: Full adherence to healthcare privacy regulations
-* **Audit Trails**: Comprehensive logging of all system access and actions
-* **Model Documentation**: Detailed model cards for regulatory review
-* **De-identification**: Robust PHI protection mechanisms
+
+- **HIPAA Compliance**: Full adherence to healthcare privacy regulations
+- **Audit Trails**: Comprehensive logging of all system access and actions
+- **Model Documentation**: Detailed model cards for regulatory review
+- **De-identification**: Robust PHI protection mechanisms
 
 ### Explainable AI
-* **Feature Importance**: Clear explanation of factors influencing predictions
-* **Confidence Intervals**: Uncertainty quantification for predictions
-* **Clinical Validation**: Rigorous validation against clinical expertise
-* **Bias Monitoring**: Continuous assessment of algorithmic fairness
+
+- **Feature Importance**: Clear explanation of factors influencing predictions
+- **Confidence Intervals**: Uncertainty quantification for predictions
+- **Clinical Validation**: Rigorous validation against clinical expertise
+- **Bias Monitoring**: Continuous assessment of algorithmic fairness
 
 ## Model Performance
 
 ### Clinical Metrics
 
-| Metric | Overall | Elderly | Comorbidities |
-|--------|---------|---------|---------------|
-| **AUROC** | 0.82 | 0.78 | 0.80 |
-| **AUPRC** | 0.76 | 0.74 | 0.79 |
-| **Sensitivity** | 0.79 | 0.72 | 0.81 |
-| **Specificity** | 0.84 | 0.88 | 0.79 |
-| **Brier Score** | 0.11 | 0.13 | 0.09 |
+| Metric          | Overall | Elderly | Comorbidities |
+| --------------- | ------- | ------- | ------------- |
+| **AUROC**       | 0.82    | 0.78    | 0.80          |
+| **AUPRC**       | 0.76    | 0.74    | 0.79          |
+| **Sensitivity** | 0.79    | 0.72    | 0.81          |
+| **Specificity** | 0.84    | 0.88    | 0.79          |
+| **Brier Score** | 0.11    | 0.13    | 0.09          |
 
 ### Fairness Metrics
 
@@ -164,11 +169,12 @@ The Streamlit-based clinical interface provides an intuitive way for healthcare 
 ![Clinical Dashboard](https://raw.githubusercontent.com/abrar2030/Nexora/main/docs/images/clinical_interface.png)
 
 Key dashboard features:
-* Patient risk stratification
-* Intervention recommendation engine
-* Historical trend visualization
-* Clinical documentation integration
-* Collaborative care planning tools
+
+- Patient risk stratification
+- Intervention recommendation engine
+- Historical trend visualization
+- Clinical documentation integration
+- Collaborative care planning tools
 
 ## Compliance & Security
 
@@ -195,11 +201,12 @@ python -m src.compliance.generate_report \
 ```
 
 ### Security Features
-* End-to-end encryption for all data in transit and at rest
-* Role-based access control with fine-grained permissions
-* Multi-factor authentication for clinical users
-* Automated PHI detection and redaction
-* Regular security audits and penetration testing
+
+- End-to-end encryption for all data in transit and at rest
+- Role-based access control with fine-grained permissions
+- Multi-factor authentication for clinical users
+- Automated PHI detection and redaction
+- Regular security audits and penetration testing
 
 ## Testing
 
@@ -207,40 +214,44 @@ The project includes comprehensive testing to ensure clinical reliability and re
 
 ### Test Coverage
 
-| Component | Coverage | Status |
-|-----------|----------|--------|
-| Core ML Models | 92% | ✅ |
-| Data Processing | 90% | ✅ |
-| API Services | 88% | ✅ |
-| Clinical Logic | 91% | ✅ |
-| Frontend Components | 85% | ✅ |
-| FHIR Integration | 87% | ✅ |
-| Security & Compliance | 93% | ✅ |
-| Overall | 89% | ✅ |
+| Component             | Coverage | Status |
+| --------------------- | -------- | ------ |
+| Core ML Models        | 92%      | ✅     |
+| Data Processing       | 90%      | ✅     |
+| API Services          | 88%      | ✅     |
+| Clinical Logic        | 91%      | ✅     |
+| Frontend Components   | 85%      | ✅     |
+| FHIR Integration      | 87%      | ✅     |
+| Security & Compliance | 93%      | ✅     |
+| Overall               | 89%      | ✅     |
 
 ### Unit Tests
-* Model component tests
-* Data processing pipeline tests
-* API endpoint tests
-* PHI detection and redaction tests
+
+- Model component tests
+- Data processing pipeline tests
+- API endpoint tests
+- PHI detection and redaction tests
 
 ### Integration Tests
-* End-to-end clinical workflows
-* FHIR integration tests
-* EHR alert system tests
-* Cross-system data flow validation
+
+- End-to-end clinical workflows
+- FHIR integration tests
+- EHR alert system tests
+- Cross-system data flow validation
 
 ### Clinical Validation
-* Retrospective cohort validation
-* Prospective clinical evaluation
-* Subgroup performance analysis
-* Clinician feedback incorporation
+
+- Retrospective cohort validation
+- Prospective clinical evaluation
+- Subgroup performance analysis
+- Clinician feedback incorporation
 
 ### Compliance Tests
-* HIPAA compliance verification
-* Audit log validation
-* PHI de-identification testing
-* Access control verification
+
+- HIPAA compliance verification
+- Audit log validation
+- PHI de-identification testing
+- Access control verification
 
 To run tests:
 
@@ -261,12 +272,12 @@ make test-coverage
 
 Nexora uses GitHub Actions for continuous integration and deployment:
 
-* Automated testing on each pull request
-* Model performance validation
-* Code quality checks
-* Docker image building and publishing
-* Automated deployment to staging and production environments
-* HIPAA compliance verification
+- Automated testing on each pull request
+- Model performance validation
+- Code quality checks
+- Docker image building and publishing
+- Automated deployment to staging and production environments
+- HIPAA compliance verification
 
 ## Contributing
 

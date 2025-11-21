@@ -40,17 +40,20 @@ notebooks/
 To run these notebooks, you'll need a Python environment with Jupyter and the required dependencies:
 
 1. **Create and activate a virtual environment**:
+
    ```bash
    python -m venv nexora-env
    source nexora-env/bin/activate  # On Windows: nexora-env\Scripts\activate
    ```
 
 2. **Install dependencies**:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. **Start Jupyter**:
+
    ```bash
    jupyter notebook
    ```
@@ -76,6 +79,7 @@ To run these notebooks, you'll need a Python environment with Jupyter and the re
 ## Data Access
 
 The notebooks typically access data from:
+
 - Local CSV or parquet files in the project's data directory
 - Database connections configured in the project settings
 - FHIR servers via the FHIR connector in `src/utils/fhir_connector.py`

@@ -1,9 +1,9 @@
-import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-import { PatientCard } from '../PatientCard';
-import { mockPatient } from '../../__mocks__/mockData';
+import React from "react";
+import { render, fireEvent } from "@testing-library/react-native";
+import { PatientCard } from "../PatientCard";
+import { mockPatient } from "../../__mocks__/mockData";
 
-describe('PatientCard', () => {
+describe("PatientCard", () => {
   const mockOnPress = jest.fn();
   const mockOnLongPress = jest.fn();
 
@@ -11,80 +11,80 @@ describe('PatientCard', () => {
     jest.clearAllMocks();
   });
 
-  it('renders patient information correctly', () => {
+  it("renders patient information correctly", () => {
     const { getByText, getByTestId } = render(
       <PatientCard
         patient={mockPatient}
         onPress={mockOnPress}
         onLongPress={mockOnLongPress}
-      />
+      />,
     );
 
     expect(getByText(mockPatient.name)).toBeTruthy();
     expect(getByText(`Age: ${mockPatient.age}`)).toBeTruthy();
     expect(getByText(`MRN: ${mockPatient.mrn}`)).toBeTruthy();
-    expect(getByTestId('risk-badge')).toBeTruthy();
+    expect(getByTestId("risk-badge")).toBeTruthy();
   });
 
-  it('handles press events', () => {
+  it("handles press events", () => {
     const { getByTestId } = render(
       <PatientCard
         patient={mockPatient}
         onPress={mockOnPress}
         onLongPress={mockOnLongPress}
-      />
+      />,
     );
 
-    fireEvent.press(getByTestId('patient-card'));
+    fireEvent.press(getByTestId("patient-card"));
     expect(mockOnPress).toHaveBeenCalledWith(mockPatient);
   });
 
-  it('handles long press events', () => {
+  it("handles long press events", () => {
     const { getByTestId } = render(
       <PatientCard
         patient={mockPatient}
         onPress={mockOnPress}
         onLongPress={mockOnLongPress}
-      />
+      />,
     );
 
-    fireEvent(getByTestId('patient-card'), 'longPress');
+    fireEvent(getByTestId("patient-card"), "longPress");
     expect(mockOnLongPress).toHaveBeenCalledWith(mockPatient);
   });
 
-  it('displays risk level with correct color', () => {
+  it("displays risk level with correct color", () => {
     const { getByTestId } = render(
       <PatientCard
-        patient={{ ...mockPatient, riskLevel: 'high' }}
+        patient={{ ...mockPatient, riskLevel: "high" }}
         onPress={mockOnPress}
         onLongPress={mockOnLongPress}
-      />
+      />,
     );
 
-    const riskBadge = getByTestId('risk-badge');
+    const riskBadge = getByTestId("risk-badge");
     expect(riskBadge.props.style).toMatchObject({
-      backgroundColor: expect.stringMatching(/red|#ff0000/i)
+      backgroundColor: expect.stringMatching(/red|#ff0000/i),
     });
   });
 
-  it('displays last updated time', () => {
+  it("displays last updated time", () => {
     const lastUpdated = new Date().toISOString();
     const { getByText } = render(
       <PatientCard
         patient={{ ...mockPatient, lastUpdated }}
         onPress={mockOnPress}
         onLongPress={mockOnLongPress}
-      />
+      />,
     );
 
     expect(getByText(/Last updated:/)).toBeTruthy();
   });
 
-  it('handles missing optional data gracefully', () => {
+  it("handles missing optional data gracefully", () => {
     const minimalPatient = {
-      id: '123',
-      name: 'John Doe',
-      mrn: 'MRN123'
+      id: "123",
+      name: "John Doe",
+      mrn: "MRN123",
     };
 
     const { getByText, queryByText } = render(
@@ -92,15 +92,15 @@ describe('PatientCard', () => {
         patient={minimalPatient}
         onPress={mockOnPress}
         onLongPress={mockOnLongPress}
-      />
+      />,
     );
 
-    expect(getByText('John Doe')).toBeTruthy();
-    expect(getByText('MRN: MRN123')).toBeTruthy();
+    expect(getByText("John Doe")).toBeTruthy();
+    expect(getByText("MRN: MRN123")).toBeTruthy();
     expect(queryByText(/Age:/)).toBeNull();
   });
 
-  it('displays warning for outdated data', () => {
+  it("displays warning for outdated data", () => {
     const oldDate = new Date();
     oldDate.setDate(oldDate.getDate() - 31); // 31 days old
 
@@ -109,48 +109,48 @@ describe('PatientCard', () => {
         patient={{ ...mockPatient, lastUpdated: oldDate.toISOString() }}
         onPress={mockOnPress}
         onLongPress={mockOnLongPress}
-      />
+      />,
     );
 
-    expect(getByTestId('outdated-warning')).toBeTruthy();
+    expect(getByTestId("outdated-warning")).toBeTruthy();
   });
 
-  it('handles different risk level displays', () => {
-    const riskLevels = ['low', 'medium', 'high'];
+  it("handles different risk level displays", () => {
+    const riskLevels = ["low", "medium", "high"];
     const { getByTestId, rerender } = render(
       <PatientCard
-        patient={{ ...mockPatient, riskLevel: 'low' }}
+        patient={{ ...mockPatient, riskLevel: "low" }}
         onPress={mockOnPress}
         onLongPress={mockOnLongPress}
-      />
+      />,
     );
 
-    riskLevels.forEach(level => {
+    riskLevels.forEach((level) => {
       rerender(
         <PatientCard
           patient={{ ...mockPatient, riskLevel: level }}
           onPress={mockOnPress}
           onLongPress={mockOnLongPress}
-        />
+        />,
       );
-      const riskBadge = getByTestId('risk-badge');
+      const riskBadge = getByTestId("risk-badge");
       expect(riskBadge.props.style).toBeTruthy();
     });
   });
 
-  it('displays patient status indicator', () => {
+  it("displays patient status indicator", () => {
     const { getByTestId } = render(
       <PatientCard
-        patient={{ ...mockPatient, status: 'active' }}
+        patient={{ ...mockPatient, status: "active" }}
         onPress={mockOnPress}
         onLongPress={mockOnLongPress}
-      />
+      />,
     );
 
-    const statusIndicator = getByTestId('status-indicator');
+    const statusIndicator = getByTestId("status-indicator");
     expect(statusIndicator).toBeTruthy();
     expect(statusIndicator.props.style).toMatchObject({
-      backgroundColor: expect.stringMatching(/green|#00ff00/i)
+      backgroundColor: expect.stringMatching(/green|#00ff00/i),
     });
   });
 });

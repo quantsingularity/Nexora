@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Paper,
@@ -18,22 +18,22 @@ import {
   Card,
   CardContent,
   Divider,
-  LinearProgress
-} from '@mui/material';
+  LinearProgress,
+} from "@mui/material";
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
   Add as AddIcon,
-  ArrowForward as ArrowForwardIcon
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+  ArrowForward as ArrowForwardIcon,
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 const PatientList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [patients, setPatients] = useState([]);
 
@@ -44,7 +44,7 @@ const PatientList = () => {
         const data = await api.getPatients();
         setPatients(data);
       } catch (error) {
-        console.error('Error fetching patients:', error);
+        console.error("Error fetching patients:", error);
       } finally {
         setLoading(false);
       }
@@ -71,21 +71,30 @@ const PatientList = () => {
     navigate(`/patients/${patientId}`);
   };
 
-  const filteredPatients = patients.filter(patient =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (patient.diagnosis && patient.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredPatients = patients.filter(
+    (patient) =>
+      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (patient.diagnosis &&
+        patient.diagnosis.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   const getRiskColor = (risk) => {
-    if (risk >= 0.7) return 'error';
-    if (risk >= 0.4) return 'warning';
-    return 'success';
+    if (risk >= 0.7) return "error";
+    if (risk >= 0.4) return "warning";
+    return "success";
   };
 
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          mb: 4,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Typography variant="h4" component="h1" gutterBottom>
           Patient List
         </Typography>
@@ -96,7 +105,14 @@ const PatientList = () => {
 
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
             <TextField
               placeholder="Search patients..."
               variant="outlined"
@@ -121,7 +137,7 @@ const PatientList = () => {
           <Divider sx={{ my: 2 }} />
 
           {loading ? (
-            <Box sx={{ width: '100%', mt: 4, mb: 4 }}>
+            <Box sx={{ width: "100%", mt: 4, mb: 4 }}>
               <LinearProgress />
             </Box>
           ) : (
@@ -143,11 +159,16 @@ const PatientList = () => {
                   <TableBody>
                     {filteredPatients.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} align="center">No patients found</TableCell>
+                        <TableCell colSpan={8} align="center">
+                          No patients found
+                        </TableCell>
                       </TableRow>
                     ) : (
                       filteredPatients
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .slice(
+                          page * rowsPerPage,
+                          page * rowsPerPage + rowsPerPage,
+                        )
                         .map((patient) => (
                           <TableRow key={patient.id} hover>
                             <TableCell>{patient.id}</TableCell>
@@ -164,7 +185,10 @@ const PatientList = () => {
                               />
                             </TableCell>
                             <TableCell align="right">
-                              <IconButton size="small" onClick={() => handlePatientClick(patient.id)}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handlePatientClick(patient.id)}
+                              >
                                 <ArrowForwardIcon />
                               </IconButton>
                             </TableCell>

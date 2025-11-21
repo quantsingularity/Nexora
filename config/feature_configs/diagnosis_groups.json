@@ -1,22 +1,22 @@
 {
-    "diagnosis_groups": {
-        "cardiovascular": ["I21", "I22", "I25", "I50", "I10", "I11", "I12", "I13"],
-        "respiratory": ["J44", "J45", "J46", "J18", "J96"],
-        "endocrine": ["E10", "E11", "E78"],
-        "renal": ["N17", "N18", "N19"],
-        "neurological": ["G20", "G35", "G40", "G45", "G46"],
-        "gastrointestinal": ["K70", "K74", "K85", "K86"],
-        "infectious": ["A40", "A41", "B20"],
-        "oncology": ["C00-C97"]
-    },
-    "feature_importance_thresholds": {
-        "high": 0.1,
-        "medium": 0.05,
-        "low": 0.01
-    },
-    "temporal_windows": {
-        "recent": 30,
-        "medium": 90,
-        "long_term": 365
-    }
+  "diagnosis_groups": {
+    "cardiovascular": ["I21", "I22", "I25", "I50", "I10", "I11", "I12", "I13"],
+    "respiratory": ["J44", "J45", "J46", "J18", "J96"],
+    "endocrine": ["E10", "E11", "E78"],
+    "renal": ["N17", "N18", "N19"],
+    "neurological": ["G20", "G35", "G40", "G45", "G46"],
+    "gastrointestinal": ["K70", "K74", "K85", "K86"],
+    "infectious": ["A40", "A41", "B20"],
+    "oncology": ["C00-C97"]
+  },
+  "feature_importance_thresholds": {
+    "high": 0.1,
+    "medium": 0.05,
+    "low": 0.01
+  },
+  "temporal_windows": {
+    "recent": 30,
+    "medium": 90,
+    "long_term": 365
+  }
 }

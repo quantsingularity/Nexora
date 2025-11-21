@@ -1,8 +1,18 @@
-import React from 'react';
-import { TextInput, View, Text, StyleSheet } from 'react-native';
-import { Colors, Typography, Spacing } from '../theme/theme';
+import React from "react";
+import { TextInput, View, Text, StyleSheet } from "react-native";
+import { Colors, Typography, Spacing } from "../theme/theme";
 
-const CustomInput = ({ label, value, onChangeText, placeholder, secureTextEntry, keyboardType, autoCapitalize, style, error }) => {
+const CustomInput = ({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  secureTextEntry,
+  keyboardType,
+  autoCapitalize,
+  style,
+  error,
+}) => {
   return (
     <View style={[styles.container, style]}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -13,8 +23,8 @@ const CustomInput = ({ label, value, onChangeText, placeholder, secureTextEntry,
         placeholder={placeholder}
         placeholderTextColor={Colors.textSecondary}
         secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType || 'default'}
-        autoCapitalize={autoCapitalize || 'sentences'}
+        keyboardType={keyboardType || "default"}
+        autoCapitalize={autoCapitalize || "sentences"}
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>

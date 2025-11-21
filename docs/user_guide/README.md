@@ -33,12 +33,12 @@ The Hospital Readmission Risk Prediction System can be accessed through:
 
 The system supports the following user roles:
 
-| Role | Description | Access Level |
-|------|-------------|--------------|
-| Clinician | Healthcare providers who use predictions for patient care | View predictions, patient data, and recommendations |
-| Care Coordinator | Staff who manage post-discharge care | View predictions, create care plans, track interventions |
-| Administrator | System administrators | Configure system settings, manage users, view audit logs |
-| Researcher | Clinical researchers | Access de-identified data, model performance metrics |
+| Role             | Description                                               | Access Level                                             |
+| ---------------- | --------------------------------------------------------- | -------------------------------------------------------- |
+| Clinician        | Healthcare providers who use predictions for patient care | View predictions, patient data, and recommendations      |
+| Care Coordinator | Staff who manage post-discharge care                      | View predictions, create care plans, track interventions |
+| Administrator    | System administrators                                     | Configure system settings, manage users, view audit logs |
+| Researcher       | Clinical researchers                                      | Access de-identified data, model performance metrics     |
 
 ## Clinician Dashboard
 
@@ -80,11 +80,11 @@ The dashboard includes:
 
 Risk scores range from 0.0 to 1.0, with higher values indicating greater readmission risk:
 
-| Risk Score | Risk Level | Recommended Action |
-|------------|------------|-------------------|
-| 0.0 - 0.3 | Low | Standard discharge process |
-| 0.3 - 0.7 | Medium | Enhanced discharge planning |
-| 0.7 - 1.0 | High | Comprehensive intervention plan |
+| Risk Score | Risk Level | Recommended Action              |
+| ---------- | ---------- | ------------------------------- |
+| 0.0 - 0.3  | Low        | Standard discharge process      |
+| 0.3 - 0.7  | Medium     | Enhanced discharge planning     |
+| 0.7 - 1.0  | High       | Comprehensive intervention plan |
 
 ### Risk Factors
 
@@ -188,11 +188,13 @@ The system provides several standard reports:
 #### Unable to View Patient Data
 
 **Possible causes:**
+
 - Insufficient permissions
 - Patient not in your assigned cohort
 - System synchronization delay
 
 **Resolution:**
+
 1. Check your user role and permissions
 2. Verify patient assignment
 3. Wait 15 minutes and try again
@@ -201,11 +203,13 @@ The system provides several standard reports:
 #### Risk Score Not Available
 
 **Possible causes:**
+
 - Incomplete patient data
 - Recent admission (processing delay)
 - System processing error
 
 **Resolution:**
+
 1. Check for missing data in patient record
 2. For recent admissions, allow 4 hours for processing
 3. Use the "Recalculate Risk" button
@@ -240,6 +244,7 @@ A: No. The risk score is a decision support tool and should be used alongside cl
 
 **Q: How are interventions prioritized?**
 A: Interventions are prioritized based on:
+
 1. Expected impact on readmission risk
 2. Patient-specific factors
 3. Resource availability

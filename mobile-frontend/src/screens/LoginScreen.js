@@ -1,29 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, Image } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors, Typography, Spacing, GlobalStyles } from '../theme/theme';
-import CustomButton from '../components/CustomButton';
-import CustomInput from '../components/CustomInput';
-import ScreenWrapper from '../components/ScreenWrapper';
+import React, { useState } from "react";
+import { View, Text, StyleSheet, Alert, Image } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Colors, Typography, Spacing, GlobalStyles } from "../theme/theme";
+import CustomButton from "../components/CustomButton";
+import CustomInput from "../components/CustomInput";
+import ScreenWrapper from "../components/ScreenWrapper";
 
 const LoginScreen = ({ navigation }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [usernameError, setUsernameError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const validateInput = () => {
     let isValid = true;
-    setUsernameError('');
-    setPasswordError('');
+    setUsernameError("");
+    setPasswordError("");
 
     if (!username.trim()) {
-      setUsernameError('Username is required.');
+      setUsernameError("Username is required.");
       isValid = false;
     }
     if (!password.trim()) {
-      setPasswordError('Password is required.');
+      setPasswordError("Password is required.");
       isValid = false;
     }
     return isValid;
@@ -37,20 +37,23 @@ const LoginScreen = ({ navigation }) => {
     setLoading(true);
     // Mock authentication - replace with actual API call
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    if (username === 'clinician' && password === 'password123') {
+    if (username === "clinician" && password === "password123") {
       try {
-        await AsyncStorage.setItem('userToken', 'mock-token');
-        await AsyncStorage.setItem('username', username);
-        navigation.replace('Home'); // Use replace to prevent going back to Login
+        await AsyncStorage.setItem("userToken", "mock-token");
+        await AsyncStorage.setItem("username", username);
+        navigation.replace("Home"); // Use replace to prevent going back to Login
       } catch (e) {
-        Alert.alert('Login Failed', 'Could not save user session. Please try again.');
+        Alert.alert(
+          "Login Failed",
+          "Could not save user session. Please try again.",
+        );
       } finally {
         setLoading(false);
       }
     } else {
-      Alert.alert('Login Failed', 'Invalid username or password.');
+      Alert.alert("Login Failed", "Invalid username or password.");
       setLoading(false);
     }
   };
@@ -95,11 +98,11 @@ const LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: Spacing.lg, // More padding
   },
   logoContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: Spacing.xxl,
   },
   logo: {
@@ -118,7 +121,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   formContainer: {
-    width: '100%',
+    width: "100%",
   },
   loginButton: {
     marginTop: Spacing.md,

@@ -47,11 +47,13 @@ This subdirectory contains Terraform configurations for provisioning cloud infra
 The deployment configurations in this directory are used to deploy the Nexora system to various environments:
 
 1. **Helm Deployments**:
+
    ```bash
    helm install readmission-service ./helm/readmission-chart -f ./helm/readmission-chart/values.yaml
    ```
 
 2. **Kubernetes Deployments**:
+
    ```bash
    kubectl apply -f ./k8s/feature_server.yaml
    kubectl apply -f ./k8s/model_serving.yaml

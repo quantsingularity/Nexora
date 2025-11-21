@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
   Box,
   Grid,
@@ -19,8 +19,8 @@ import {
   ListItemText,
   ListItemIcon,
   Chip,
-  LinearProgress
-} from '@mui/material';
+  LinearProgress,
+} from "@mui/material";
 import {
   MoreVert as MoreVertIcon,
   ArrowBack as ArrowBackIcon,
@@ -30,15 +30,34 @@ import {
   Assignment as AssignmentIcon,
   Medication as MedicationIcon,
   Timeline as TimelineIcon,
-  Warning as WarningIcon
-} from '@mui/icons-material';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
-import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+  Warning as WarningIcon,
+} from "@mui/icons-material";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Line, Bar } from "react-chartjs-2";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 // Register ChartJS components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
 
 const PatientDetail = () => {
   const { id } = useParams();
@@ -68,12 +87,12 @@ const PatientDetail = () => {
   };
 
   const handleBack = () => {
-    navigate('/patients');
+    navigate("/patients");
   };
 
   if (loading) {
     return (
-      <Box sx={{ width: '100%', mt: 4 }}>
+      <Box sx={{ width: "100%", mt: 4 }}>
         <LinearProgress />
       </Box>
     );
@@ -88,41 +107,43 @@ const PatientDetail = () => {
   }
 
   const getRiskColor = (risk) => {
-    if (risk >= 0.7) return 'error';
-    if (risk >= 0.4) return 'warning';
-    return 'success';
+    if (risk >= 0.7) return "error";
+    if (risk >= 0.4) return "warning";
+    return "success";
   };
 
   const labResultsData = {
-    labels: patient.labResults.map(lab => lab.date),
+    labels: patient.labResults.map((lab) => lab.date),
     datasets: [
       {
-        label: 'Glucose (mg/dL)',
-        data: patient.labResults.map(lab => lab.glucose),
-        borderColor: '#1976d2',
-        backgroundColor: 'rgba(25, 118, 210, 0.1)',
+        label: "Glucose (mg/dL)",
+        data: patient.labResults.map((lab) => lab.glucose),
+        borderColor: "#1976d2",
+        backgroundColor: "rgba(25, 118, 210, 0.1)",
         tension: 0.4,
       },
       {
-        label: 'Hemoglobin (g/dL)',
-        data: patient.labResults.map(lab => lab.hemoglobin),
-        borderColor: '#9c27b0',
-        backgroundColor: 'rgba(156, 39, 176, 0.1)',
+        label: "Hemoglobin (g/dL)",
+        data: patient.labResults.map((lab) => lab.hemoglobin),
+        borderColor: "#9c27b0",
+        backgroundColor: "rgba(156, 39, 176, 0.1)",
         tension: 0.4,
-      }
+      },
     ],
   };
 
   const riskFactorsData = {
-    labels: patient.riskFactors.map(factor => factor.name),
+    labels: patient.riskFactors.map((factor) => factor.name),
     datasets: [
       {
-        label: 'Impact on Risk',
-        data: patient.riskFactors.map(factor => factor.impact),
-        backgroundColor: patient.riskFactors.map(factor =>
-          factor.impact > 0.2 ? 'rgba(244, 67, 54, 0.7)' :
-          factor.impact > 0.1 ? 'rgba(255, 152, 0, 0.7)' :
-          'rgba(76, 175, 80, 0.7)'
+        label: "Impact on Risk",
+        data: patient.riskFactors.map((factor) => factor.impact),
+        backgroundColor: patient.riskFactors.map((factor) =>
+          factor.impact > 0.2
+            ? "rgba(244, 67, 54, 0.7)"
+            : factor.impact > 0.1
+              ? "rgba(255, 152, 0, 0.7)"
+              : "rgba(76, 175, 80, 0.7)",
         ),
         borderRadius: 5,
       },
@@ -131,7 +152,7 @@ const PatientDetail = () => {
 
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ mb: 4, display: "flex", alignItems: "center" }}>
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon />}
@@ -149,17 +170,20 @@ const PatientDetail = () => {
         <Grid item xs={12} md={4}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <Avatar
                   sx={{
                     width: 64,
                     height: 64,
-                    bgcolor: 'primary.main',
-                    fontSize: '1.5rem',
-                    mr: 2
+                    bgcolor: "primary.main",
+                    fontSize: "1.5rem",
+                    mr: 2,
                   }}
                 >
-                  {patient.name.split(' ').map(n => n[0]).join('')}
+                  {patient.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
                 </Avatar>
                 <Box>
                   <Typography variant="h5" component="div">
@@ -187,10 +211,7 @@ const PatientDetail = () => {
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <AssignmentIcon fontSize="small" />
                   </ListItemIcon>
-                  <ListItemText
-                    primary="Gender"
-                    secondary={patient.gender}
-                  />
+                  <ListItemText primary="Gender" secondary={patient.gender} />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon sx={{ minWidth: 36 }}>
@@ -239,8 +260,12 @@ const PatientDetail = () => {
 
         <Grid item xs={12} md={8}>
           <Card sx={{ mb: 3 }}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={activeTab} onChange={handleTabChange} aria-label="patient tabs">
+            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                aria-label="patient tabs"
+              >
                 <Tab label="Clinical Data" />
                 <Tab label="Risk Analysis" />
                 <Tab label="Medications" />
@@ -262,7 +287,7 @@ const PatientDetail = () => {
                       maintainAspectRatio: false,
                       plugins: {
                         legend: {
-                          position: 'top',
+                          position: "top",
                         },
                       },
                       scales: {
@@ -279,7 +304,10 @@ const PatientDetail = () => {
                 </Typography>
                 <List>
                   {patient.diagnoses.map((diagnosis, index) => (
-                    <ListItem key={index} divider={index < patient.diagnoses.length - 1}>
+                    <ListItem
+                      key={index}
+                      divider={index < patient.diagnoses.length - 1}
+                    >
                       <ListItemIcon>
                         <HospitalIcon />
                       </ListItemIcon>
@@ -303,7 +331,7 @@ const PatientDetail = () => {
                   <Bar
                     data={riskFactorsData}
                     options={{
-                      indexAxis: 'y',
+                      indexAxis: "y",
                       responsive: true,
                       maintainAspectRatio: false,
                       plugins: {
@@ -316,8 +344,8 @@ const PatientDetail = () => {
                           beginAtZero: true,
                           title: {
                             display: true,
-                            text: 'Impact on Risk Score'
-                          }
+                            text: "Impact on Risk Score",
+                          },
                         },
                       },
                     }}
@@ -329,7 +357,10 @@ const PatientDetail = () => {
                 </Typography>
                 <List>
                   {patient.interventions.map((intervention, index) => (
-                    <ListItem key={index} divider={index < patient.interventions.length - 1}>
+                    <ListItem
+                      key={index}
+                      divider={index < patient.interventions.length - 1}
+                    >
                       <ListItemIcon>
                         <ScienceIcon />
                       </ListItemIcon>
@@ -340,9 +371,11 @@ const PatientDetail = () => {
                       <Chip
                         label={intervention.priority}
                         color={
-                          intervention.priority === 'High' ? 'error' :
-                          intervention.priority === 'Medium' ? 'warning' :
-                          'success'
+                          intervention.priority === "High"
+                            ? "error"
+                            : intervention.priority === "Medium"
+                              ? "warning"
+                              : "success"
                         }
                         size="small"
                       />
@@ -360,7 +393,10 @@ const PatientDetail = () => {
                 </Typography>
                 <List>
                   {patient.medications.map((medication, index) => (
-                    <ListItem key={index} divider={index < patient.medications.length - 1}>
+                    <ListItem
+                      key={index}
+                      divider={index < patient.medications.length - 1}
+                    >
                       <ListItemIcon>
                         <MedicationIcon />
                       </ListItemIcon>
@@ -382,7 +418,10 @@ const PatientDetail = () => {
                 </Typography>
                 <List>
                   {patient.timeline.map((event, index) => (
-                    <ListItem key={index} divider={index < patient.timeline.length - 1}>
+                    <ListItem
+                      key={index}
+                      divider={index < patient.timeline.length - 1}
+                    >
                       <ListItemIcon>
                         <TimelineIcon />
                       </ListItemIcon>
@@ -397,13 +436,9 @@ const PatientDetail = () => {
             )}
           </Card>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button variant="outlined">
-              Download Records
-            </Button>
-            <Button variant="contained">
-              Schedule Follow-up
-            </Button>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+            <Button variant="outlined">Download Records</Button>
+            <Button variant="contained">Schedule Follow-up</Button>
           </Box>
         </Grid>
       </Grid>

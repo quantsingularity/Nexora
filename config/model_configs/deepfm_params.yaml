@@ -53,4 +53,4 @@ feature_columns:
         sequence_length: 10
         embedding_dim: 32
 prediction_task: readmission
-prediction_window: 30  # days
+prediction_window: 30 # days

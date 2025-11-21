@@ -26,23 +26,27 @@ This guide provides comprehensive information for developers working on the Hosp
 ### Initial Setup
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/abrar2030/Nexora.git
    cd Nexora
    ```
 
 2. Set up a virtual environment:
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. Install dependencies:
+
    ```bash
    pip install -r requirements-dev.txt
    ```
 
 4. Install pre-commit hooks:
+
    ```bash
    pre-commit install
    ```
@@ -56,11 +60,13 @@ This guide provides comprehensive information for developers working on the Hosp
 ### Configuration
 
 1. Create a local configuration file:
+
    ```bash
    cp config/config.example.yaml config/config.local.yaml
    ```
 
 2. Update the configuration with your local settings:
+
    ```yaml
    environment: development
 
@@ -89,11 +95,13 @@ This guide provides comprehensive information for developers working on the Hosp
 ### Running Locally
 
 1. Start the development server:
+
    ```bash
    make dev-server
    ```
 
 2. Run the clinician UI:
+
    ```bash
    make clinician-ui
    ```
@@ -230,6 +238,7 @@ def process_patient_data(patient_id: str) -> None:
 ### Feature Development
 
 1. **Create a feature branch**:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -240,6 +249,7 @@ def process_patient_data(patient_id: str) -> None:
    - Document the code
 
 3. **Run local tests**:
+
    ```bash
    make test
    ```
@@ -268,6 +278,7 @@ def process_patient_data(patient_id: str) -> None:
 ### Version Control Practices
 
 1. **Commit messages**: Follow conventional commits
+
    ```
    feat(model): add transformer-based survival analysis
    fix(api): resolve race condition in batch processing
@@ -287,16 +298,19 @@ def process_patient_data(patient_id: str) -> None:
 ### Test Types
 
 1. **Unit Tests**: Test individual components in isolation
+
    ```bash
    pytest tests/unit
    ```
 
 2. **Integration Tests**: Test component interactions
+
    ```bash
    pytest tests/integration
    ```
 
 3. **Clinical Tests**: Validate clinical correctness
+
    ```bash
    pytest tests/clinical_tests
    ```
@@ -342,6 +356,7 @@ def test_icd10_encoder_invalid_code():
 ### Test Data
 
 1. **Synthetic Data**: Use synthetic data for most tests
+
    ```python
    from src.data.synthetic_clinical_data import generate_synthetic_patients
 
@@ -351,6 +366,7 @@ def test_icd10_encoder_invalid_code():
    ```
 
 2. **Test Fixtures**: Use pytest fixtures for common test setups
+
    ```python
    @pytest.fixture
    def trained_model():
@@ -436,6 +452,7 @@ The CI configuration is defined in `.github/workflows/`:
 **Problem**: CUDA version mismatch or GPU not detected
 
 **Solution**:
+
 1. Check CUDA installation:
    ```bash
    nvcc --version
@@ -450,6 +467,7 @@ The CI configuration is defined in `.github/workflows/`:
 **Problem**: FHIR connection issues
 
 **Solution**:
+
 1. Check FHIR server status:
    ```bash
    curl -I http://localhost:8080/fhir/metadata
@@ -465,6 +483,7 @@ The CI configuration is defined in `.github/workflows/`:
 **Problem**: Out of memory during training
 
 **Solution**:
+
 1. Reduce batch size in config
 2. Enable gradient accumulation
 3. Use mixed precision training:

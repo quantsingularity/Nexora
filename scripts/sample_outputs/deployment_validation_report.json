@@ -59,9 +59,7 @@
         "status": "FAIL",
         "type": "env",
         "message": "Environment variables validation failed",
-        "missing_vars": [
-          "NEXORA_ENV"
-        ],
+        "missing_vars": ["NEXORA_ENV"],
         "invalid_vars": []
       }
     }
