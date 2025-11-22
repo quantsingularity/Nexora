@@ -90,7 +90,7 @@ Contains end-to-end tests using Detox:
 
 Contains the main source code for the application:
 
-- ****tests**/**: Unit tests for the application components.
+- \***\*tests**/\*\*: Unit tests for the application components.
   - **App.test.js**: Tests for the main App component.
 
 - **components/**: Reusable UI components.
@@ -98,7 +98,7 @@ Contains the main source code for the application:
   - **CustomButton.js**: Styled button component.
   - **CustomInput.js**: Styled input component.
   - **ScreenWrapper.js**: Wrapper component for consistent screen layouts.
-  - ****tests**/PatientCard.test.js**: Tests for the PatientCard component.
+  - \***\*tests**/PatientCard.test.js\*\*: Tests for the PatientCard component.
 
 - **navigation/**: Navigation configuration.
   - **AppNavigator.js**: Main navigation structure using React Navigation.

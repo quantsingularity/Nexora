@@ -81,7 +81,7 @@ This directory contains the main source code for the web application:
 
 - **components/**: Directory containing reusable UI components:
   - **Layout.js**: The main layout component providing consistent structure across different pages.
-  - ****tests**/PatientDashboard.test.js**: Unit tests for the PatientDashboard component.
+  - \***\*tests**/PatientDashboard.test.js\*\*: Unit tests for the PatientDashboard component.
 
 - **pages/**: Directory containing page components, each representing a distinct view in the application:
   - **Dashboard.js**: The main dashboard page showing key metrics and summaries.
