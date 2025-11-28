@@ -628,11 +628,3 @@ helm rollback readmission 1 -n readmission-system
 # Kubernetes rollback
 kubectl rollout undo deployment/readmission-api -n readmission-system
 ```
-
-### Support Resources
-
-For additional help:
-
-1. Check the project's GitHub issues
-2. Join the Slack support channel
-3. Contact the development team at support@readmission-risk-system.org
