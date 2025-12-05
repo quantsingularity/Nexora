@@ -1,0 +1,37 @@
+# Updated Requirements for Nexora
+# Consolidated and verified dependencies based on code review and existing project files.
+
+# Core Framework & Web
+fastapi
+uvicorn
+pydantic
+requests
+grpcio # Assumed for gRPC server
+grpcio-tools # Assumed for gRPC server
+
+# Data Processing & ML/AI
+numpy
+pandas
+scipy
+scikit-learn
+tensorflow
+torch
+joblib
+faker # For synthetic data generation
+synthgauge # For synthetic data generation
+lifelines # For survival analysis
+apache-beam # For ETL pipeline
+openlineage-python # For data lineage
+
+# Healthcare Specific
+fhir.resources # For FHIR operations
+
+# Visualization & UI
+streamlit
+altair
+plotly
+
+# Utilities
+pytest
+pyyaml
+sqlite3 # For PHI audit logger
