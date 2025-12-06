@@ -40,7 +40,6 @@ from typing import Dict, List, Optional, Tuple
 import yaml
 
 try:
-    pass
     PANDAS_AVAILABLE = True
 except ImportError:
     PANDAS_AVAILABLE = False

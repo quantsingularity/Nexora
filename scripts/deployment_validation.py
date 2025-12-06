@@ -58,7 +58,6 @@ try:
 except ImportError:
     POSTGRES_AVAILABLE = False
 try:
-    pass
     K8S_AVAILABLE = True
 except ImportError:
     K8S_AVAILABLE = False
