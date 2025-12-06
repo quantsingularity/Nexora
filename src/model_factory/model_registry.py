@@ -3,8 +3,6 @@ import json
 from typing import Dict, Any, Optional
 from .base_model import BaseModel
 
-# Removed BaseModel class, now in base_model.py
-
 
 class ModelRegistry:
     """
@@ -12,17 +10,16 @@ class ModelRegistry:
     In a real-world scenario, this would interact with a persistent model store (e.g., MLflow, S3).
     """
 
-    def __init__(self, registry_path: str = "model_registry.json"):
+    def __init__(self, registry_path: str = "model_registry.json") -> Any:
         self.registry_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), registry_path
         )
         self.models: Dict[str, Dict[str, BaseModel]] = {}
         self._load_registry()
 
-    def _load_registry(self):
+    def _load_registry(self) -> Any:
         """Loads the model metadata from a JSON file."""
         if not os.path.exists(self.registry_path):
-            # Create a dummy registry for initial setup
             self.metadata = {
                 "deep_fm": {
                     "latest": {
@@ -45,11 +42,10 @@ class ModelRegistry:
             }
             self._save_registry()
             return
-
         with open(self.registry_path, "r") as f:
             self.metadata = json.load(f)
 
-    def _save_registry(self):
+    def _save_registry(self) -> Any:
         """Saves the model metadata to a JSON file."""
         os.makedirs(os.path.dirname(self.registry_path), exist_ok=True)
         with open(self.registry_path, "w") as f:
@@ -57,7 +53,7 @@ class ModelRegistry:
 
     def register_model(
         self, model_name: str, version: str, path: str, config: Dict[str, Any]
-    ):
+    ) -> Any:
         """Registers a new model version."""
         if model_name not in self.metadata:
             self.metadata[model_name] = {}
@@ -74,12 +70,9 @@ class ModelRegistry:
             raise ValueError(
                 f"Model {model_name} version {version} not found in registry."
             )
-
         model_info = self.metadata[model_name][version]
         model_info["path"]
         model_config = model_info["config"]
-
-        # Dynamic import of the specific model class
         if model_name == "deep_fm":
             from .deep_fm import DeepFMModel
 
@@ -96,21 +89,12 @@ class ModelRegistry:
             raise NotImplementedError(
                 f"Model class for {model_name} is not implemented."
             )
-
-        # Check if the model is already loaded in memory
         if model_name in self.models and version in self.models[model_name]:
             return self.models[model_name][version]
-
-        # Load the model
         model_instance = model_class(model_config)
-        # In a real system, model_instance.load(model_path) would be called here.
-        # For this exercise, we'll just initialize the instance.
-        # model_instance.load(model_path)
-
         if model_name not in self.models:
             self.models[model_name] = {}
         self.models[model_name][version] = model_instance
-
         return model_instance
 
     def list_models(self) -> Dict[str, Any]:
@@ -125,7 +109,5 @@ class ModelRegistry:
         }
 
 
-# Create a dummy model registry file for the rest_api to use
-# This is a placeholder for a real model store
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "model_registry.json")):
     ModelRegistry()

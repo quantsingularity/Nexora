@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Batch Scoring Script for Nexora Clinical Models
 
@@ -16,15 +15,12 @@ import os
 import sys
 import time
 from typing import Optional
-
 import pandas as pd
 import requests
 
-# Add the src directory to the path for imports
 sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
 )
-
 from data.clinical_data_loader import ClinicalDataLoader
 from data_pipeline.feature_engineering import FeatureEngineer
 from serving.model_registry import ModelRegistry
@@ -37,7 +33,7 @@ logger = logging.getLogger(__name__)
 class BatchScorer:
     """Handles batch scoring for clinical prediction models"""
 
-    def __init__(self, model_id: str, config_path: Optional[str] = None):
+    def __init__(self, model_id: str, config_path: Optional[str] = None) -> Any:
         """
         Initialize the batch scorer
 
@@ -47,23 +43,16 @@ class BatchScorer:
         """
         self.model_id = model_id
         setup_logging()
-
-        # Load configuration
         self.config = (
             ConfigLoader(config_path).load_config()
             if config_path
             else ConfigLoader().load_config()
         )
         self.batch_config = self.config.get("batch_scoring", {})
-
-        # Initialize model registry and load model
         self.model_registry = ModelRegistry(self.config.get("model_registry", {}))
         self.model, self.model_metadata = self.model_registry.load_model(model_id)
-
         logger.info(f"Initialized batch scorer for model: {model_id}")
         logger.info(f"Model metadata: {self.model_metadata}")
-
-        # Initialize feature engineer
         self.feature_engineer = FeatureEngineer(
             self.config.get("feature_engineering", {})
         )
@@ -79,21 +68,15 @@ class BatchScorer:
             DataFrame containing patient data
         """
         logger.info(f"Loading data from {input_path}")
-
         data_loader = ClinicalDataLoader(self.config.get("data_sources", {}))
-
         if input_path.startswith("fhir://"):
-            # Load from FHIR server
             data = data_loader.load_from_fhir(input_path)
         elif input_path.endswith(".csv"):
-            # Load from CSV
             data = data_loader.load_from_csv(input_path)
         elif input_path.endswith(".parquet"):
-            # Load from Parquet
             data = data_loader.load_from_parquet(input_path)
         else:
             raise ValueError(f"Unsupported input format: {input_path}")
-
         logger.info(f"Loaded {len(data)} records")
         return data
 
@@ -108,25 +91,16 @@ class BatchScorer:
             Preprocessed data ready for model input
         """
         logger.info("Preprocessing data")
-
-        # Apply feature engineering
         processed_data = self.feature_engineer.transform(data)
-
-        # Ensure all required features are present
         required_features = self.model_metadata.get("features", [])
         missing_features = [
             f for f in required_features if f not in processed_data.columns
         ]
-
         if missing_features:
             logger.warning(f"Missing required features: {missing_features}")
-            # Add missing features with default values
             for feature in missing_features:
                 processed_data[feature] = 0
-
-        # Select only the features needed by the model
         model_features = processed_data[required_features]
-
         logger.info(f"Preprocessed data shape: {model_features.shape}")
         return model_features
 
@@ -141,42 +115,29 @@ class BatchScorer:
             DataFrame with original data and predictions
         """
         logger.info("Generating predictions")
-
         start_time = time.time()
-
-        # Check if we should use local model or API endpoint
         if self.batch_config.get("use_api", False):
-            # Use API endpoint for predictions
             api_url = self.batch_config.get("api_endpoint")
             logger.info(f"Using API endpoint for predictions: {api_url}")
-
-            # Split into batches to avoid overwhelming the API
             batch_size = self.batch_config.get("api_batch_size", 1000)
             results = []
-
             for i in range(0, len(features), batch_size):
                 batch = features.iloc[i : i + batch_size]
                 payload = batch.to_dict(orient="records")
-
                 response = requests.post(
                     api_url,
                     json={"instances": payload},
                     headers={"Content-Type": "application/json"},
                 )
-
                 if response.status_code != 200:
                     logger.error(f"API request failed: {response.text}")
                     raise RuntimeError(
                         f"API request failed with status {response.status_code}"
                     )
-
                 batch_results = response.json()["predictions"]
                 results.extend(batch_results)
-
             predictions = pd.DataFrame(results)
-
         else:
-            # Use local model for predictions
             predictions = pd.DataFrame(
                 self.model.predict_proba(features),
                 columns=(
@@ -185,23 +146,17 @@ class BatchScorer:
                     else ["probability"]
                 ),
             )
-
-            # Add predicted class if applicable
             if hasattr(self.model, "predict"):
                 predictions["prediction"] = self.model.predict(features)
-
-        # Add patient identifiers
         if "patient_id" in features.index.names:
             predictions.index = features.index
-
         end_time = time.time()
         logger.info(
             f"Generated predictions for {len(features)} records in {end_time - start_time:.2f} seconds"
         )
-
         return predictions
 
-    def save_results(self, predictions: pd.DataFrame, output_path: str):
+    def save_results(self, predictions: pd.DataFrame, output_path: str) -> Any:
         """
         Save prediction results to the specified output path
 
@@ -210,11 +165,7 @@ class BatchScorer:
             output_path: Path to save results
         """
         logger.info(f"Saving results to {output_path}")
-
-        # Create output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
-        # Save based on file extension
         if output_path.endswith(".csv"):
             predictions.to_csv(output_path, index=True)
         elif output_path.endswith(".parquet"):
@@ -223,10 +174,9 @@ class BatchScorer:
             predictions.to_json(output_path, orient="records", lines=True)
         else:
             raise ValueError(f"Unsupported output format: {output_path}")
-
         logger.info(f"Results saved successfully")
 
-    def run(self, input_path: str, output_path: str):
+    def run(self, input_path: str, output_path: str) -> Any:
         """
         Run the full batch scoring pipeline
 
@@ -235,28 +185,18 @@ class BatchScorer:
             output_path: Path to save results
         """
         logger.info(f"Starting batch scoring run for model {self.model_id}")
-
         try:
-            # Load data
             data = self.load_data(input_path)
-
-            # Preprocess data
             features = self.preprocess_data(data)
-
-            # Generate predictions
             predictions = self.score_batch(features)
-
-            # Save results
             self.save_results(predictions, output_path)
-
             logger.info("Batch scoring completed successfully")
-
         except Exception as e:
             logger.error(f"Batch scoring failed: {str(e)}", exc_info=True)
             raise
 
 
-def parse_args():
+def parse_args() -> Any:
     """Parse command line arguments"""
     parser = argparse.ArgumentParser(
         description="Batch scoring for clinical prediction models"
@@ -268,12 +208,10 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> Any:
     """Main entry point"""
     args = parse_args()
-
     try:
-        # Initialize and run batch scorer
         scorer = BatchScorer(args.model_id, args.config)
         scorer.run(args.input_path, args.output_path)
         return 0

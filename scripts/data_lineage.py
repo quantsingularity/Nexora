@@ -3,10 +3,11 @@ from openlineage.facet import DataQualityMetrics
 
 
 class ClinicalLineageTracker:
-    def __init__(self):
+
+    def __init__(self) -> Any:
         self.client = OpenLineageClient(url="http://marquez:5000")
 
-    def log_pipeline_run(self, dataset, model_version):
+    def log_pipeline_run(self, dataset: Any, model_version: Any) -> Any:
         lineage_event = {
             "eventType": "START",
             "eventTime": datetime.now().isoformat(),

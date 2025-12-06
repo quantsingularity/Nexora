@@ -12,10 +12,8 @@ import logging
 import os
 import time
 from datetime import datetime, timedelta
-
 from urllib.parse import parse_qs, urljoin, urlparse
 from typing import Dict, Any, List, Optional
-
 import pandas as pd
 import requests
 
@@ -30,7 +28,6 @@ class FHIRConnector:
     conversion between FHIR resources and pandas DataFrames.
     """
 
-    # FHIR resource types
     RESOURCE_TYPES = [
         "Patient",
         "Observation",
@@ -68,7 +65,7 @@ class FHIRConnector:
         max_retries: int = 3,
         retry_delay: int = 2,
         page_size: int = 100,
-    ):
+    ) -> Any:
         """
         Initialize the FHIR connector.
 
@@ -88,10 +85,7 @@ class FHIRConnector:
             retry_delay: Delay between retries in seconds
             page_size: Number of resources to request per page
         """
-        # Ensure base URL ends with a slash
         self.base_url = base_url if base_url.endswith("/") else base_url + "/"
-
-        # Authentication settings
         self.auth_type = auth_type.lower()
         self.client_id = client_id
         self.client_secret = client_secret
@@ -100,71 +94,47 @@ class FHIRConnector:
         self.password = password
         self.token_url = token_url
         self.scope = scope
-
-        # Request settings
         self.verify_ssl = verify_ssl
         self.timeout = timeout
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.page_size = page_size
-
-        # Token management
         self.token_expiry = None
         self.refresh_token = None
-
-        # Initialize session
         self.session = requests.Session()
         self.session.verify = verify_ssl
-
-        # Set up authentication
         self._setup_auth()
-
         logger.info(
             f"Initialized FHIR connector for {base_url} with {auth_type} authentication"
         )
 
-    def _setup_auth(self):
+    def _setup_auth(self) -> Any:
         """Set up authentication for the FHIR server."""
         if self.auth_type == "none":
-            # No authentication
             pass
-
         elif self.auth_type == "basic":
-            # Basic authentication
             if not self.username or not self.password:
                 raise ValueError(
                     "Username and password are required for basic authentication"
                 )
-
             self.session.auth = (self.username, self.password)
             logger.info("Set up basic authentication")
-
         elif self.auth_type == "token":
-            # Token-based authentication
             if not self.token:
                 raise ValueError("Token is required for token authentication")
-
             self.session.headers.update({"Authorization": f"Bearer {self.token}"})
             logger.info("Set up token authentication")
-
         elif self.auth_type == "oauth2":
-            # OAuth2 authentication
             if not self.client_id or not self.client_secret:
                 raise ValueError(
                     "Client ID and client secret are required for OAuth2 authentication"
                 )
-
             if not self.token_url:
-                # Try to discover token URL from metadata
                 self.token_url = self._discover_token_url()
-
             if not self.token_url:
                 raise ValueError("Token URL is required for OAuth2 authentication")
-
-            # Get initial token
             self._refresh_oauth2_token()
             logger.info("Set up OAuth2 authentication")
-
         else:
             raise ValueError(f"Unsupported authentication type: {self.auth_type}")
 
@@ -182,10 +152,7 @@ class FHIRConnector:
                 timeout=self.timeout,
             )
             response.raise_for_status()
-
             metadata = response.json()
-
-            # Look for token URL in security extensions
             if "rest" in metadata:
                 for rest in metadata["rest"]:
                     if "security" in rest and "extension" in rest["security"]:
@@ -197,62 +164,42 @@ class FHIRConnector:
                                 for uri_ext in ext.get("extension", []):
                                     if uri_ext.get("url") == "token":
                                         return uri_ext.get("valueUri")
-
             return None
-
         except Exception as e:
             logger.warning(f"Failed to discover token URL: {str(e)}")
             return None
 
-    def _refresh_oauth2_token(self):
+    def _refresh_oauth2_token(self) -> Any:
         """Refresh the OAuth2 token."""
         try:
-            # Prepare token request
             data = {
                 "grant_type": "client_credentials",
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
             }
-
             if self.scope:
                 data["scope"] = self.scope
-
-            # Request token
             response = requests.post(
                 self.token_url, data=data, verify=self.verify_ssl, timeout=self.timeout
             )
             response.raise_for_status()
-
-            # Parse response
             token_data = response.json()
             self.token = token_data.get("access_token")
-
             if not self.token:
                 raise ValueError("No access token in response")
-
-            # Set token expiry
             expires_in = token_data.get("expires_in", 3600)
-            self.token_expiry = datetime.now() + timedelta(
-                seconds=expires_in - 60
-            )  # Buffer of 60 seconds
-
-            # Store refresh token if provided
+            self.token_expiry = datetime.now() + timedelta(seconds=expires_in - 60)
             self.refresh_token = token_data.get("refresh_token")
-
-            # Update session headers
             self.session.headers.update({"Authorization": f"Bearer {self.token}"})
-
             logger.info(f"Refreshed OAuth2 token, expires in {expires_in} seconds")
-
         except Exception as e:
             logger.error(f"Failed to refresh OAuth2 token: {str(e)}")
             raise
 
-    def _check_token_expiry(self):
+    def _check_token_expiry(self) -> Any:
         """Check if the OAuth2 token needs to be refreshed."""
         if self.auth_type != "oauth2":
             return
-
         if not self.token_expiry or datetime.now() >= self.token_expiry:
             logger.info("OAuth2 token expired, refreshing")
             self._refresh_oauth2_token()
@@ -278,20 +225,13 @@ class FHIRConnector:
         Returns:
             Response object
         """
-        # Check token expiry for OAuth2
         self._check_token_expiry()
-
-        # Prepare request
         url = urljoin(self.base_url, endpoint)
         request_headers = {"Accept": "application/fhir+json"}
-
         if data:
             request_headers["Content-Type"] = "application/fhir+json"
-
         if headers:
             request_headers.update(headers)
-
-        # Retry logic
         retries = 0
         while retries <= self.max_retries:
             try:
@@ -303,8 +243,6 @@ class FHIRConnector:
                     headers=request_headers,
                     timeout=self.timeout,
                 )
-
-                # Check for rate limiting
                 if response.status_code == 429:
                     retry_after = int(
                         response.headers.get("Retry-After", self.retry_delay)
@@ -315,30 +253,22 @@ class FHIRConnector:
                     time.sleep(retry_after)
                     retries += 1
                     continue
-
-                # Check for server errors
                 if response.status_code >= 500:
                     logger.warning(f"Server error {response.status_code}, retrying")
                     time.sleep(self.retry_delay)
                     retries += 1
                     continue
-
-                # Check for authentication errors
                 if response.status_code == 401 and self.auth_type == "oauth2":
                     logger.warning("Authentication error, refreshing token")
                     self._refresh_oauth2_token()
                     retries += 1
                     continue
-
-                # Raise for other errors
                 response.raise_for_status()
-
                 return response
-
             except requests.exceptions.RequestException as e:
                 if retries < self.max_retries:
                     logger.warning(
-                        f"Request failed: {str(e)}, retrying ({retries+1}/{self.max_retries})"
+                        f"Request failed: {str(e)}, retrying ({retries + 1}/{self.max_retries})"
                     )
                     time.sleep(self.retry_delay)
                     retries += 1
@@ -377,56 +307,34 @@ class FHIRConnector:
         """
         if resource_type not in self.RESOURCE_TYPES:
             logger.warning(f"Unknown resource type: {resource_type}")
-
-        # Initialize parameters
         search_params = params.copy() if params else {}
         search_params["_count"] = (
             min(self.page_size, max_count) if max_count else self.page_size
         )
-
-        # Initialize results
         all_resources = []
-
-        # Make initial request
         response = self._make_request("GET", resource_type, params=search_params)
         bundle = response.json()
-
-        # Extract resources
         if "entry" in bundle:
             resources = [entry["resource"] for entry in bundle["entry"]]
             all_resources.extend(resources)
-
-        # Check if we need to paginate
         while "link" in bundle:
             next_link = None
             for link in bundle["link"]:
                 if link.get("relation") == "next":
                     next_link = link.get("url")
                     break
-
             if not next_link or (max_count and len(all_resources) >= max_count):
                 break
-
-            # Extract query parameters from next link
             parsed_url = urlparse(next_link)
             next_params = parse_qs(parsed_url.query)
-
-            # Convert list values to single values
             next_params = {k: v[0] for k, v in next_params.items()}
-
-            # Make next request
             response = self._make_request("GET", resource_type, params=next_params)
             bundle = response.json()
-
-            # Extract resources
             if "entry" in bundle:
                 resources = [entry["resource"] for entry in bundle["entry"]]
                 all_resources.extend(resources)
-
-        # Truncate if max_count is specified
         if max_count and len(all_resources) > max_count:
             all_resources = all_resources[:max_count]
-
         logger.info(f"Retrieved {len(all_resources)} {resource_type} resources")
         return all_resources
 
@@ -443,7 +351,6 @@ class FHIRConnector:
         """
         if resource_type not in self.RESOURCE_TYPES:
             logger.warning(f"Unknown resource type: {resource_type}")
-
         endpoint = f"{resource_type}/{resource_id}"
         response = self._make_request("GET", endpoint)
         return response.json()
@@ -459,13 +366,10 @@ class FHIRConnector:
             Created resource as a dictionary
         """
         resource_type = resource.get("resourceType")
-
         if not resource_type:
             raise ValueError("Resource must have a resourceType")
-
         if resource_type not in self.RESOURCE_TYPES:
             logger.warning(f"Unknown resource type: {resource_type}")
-
         response = self._make_request("POST", resource_type, data=resource)
         return response.json()
 
@@ -481,13 +385,10 @@ class FHIRConnector:
         """
         resource_type = resource.get("resourceType")
         resource_id = resource.get("id")
-
         if not resource_type or not resource_id:
             raise ValueError("Resource must have resourceType and id")
-
         if resource_type not in self.RESOURCE_TYPES:
             logger.warning(f"Unknown resource type: {resource_type}")
-
         endpoint = f"{resource_type}/{resource_id}"
         response = self._make_request("PUT", endpoint, data=resource)
         return response.json()
@@ -502,7 +403,6 @@ class FHIRConnector:
         """
         if resource_type not in self.RESOURCE_TYPES:
             logger.warning(f"Unknown resource type: {resource_type}")
-
         endpoint = f"{resource_type}/{resource_id}"
         self._make_request("DELETE", endpoint)
         logger.info(f"Deleted {resource_type}/{resource_id}")
@@ -519,10 +419,8 @@ class FHIRConnector:
         """
         if bundle.get("resourceType") != "Bundle":
             raise ValueError("Resource must be a Bundle")
-
         if bundle.get("type") not in ["batch", "transaction"]:
             raise ValueError("Bundle type must be 'batch' or 'transaction'")
-
         response = self._make_request("POST", "", data=bundle)
         return response.json()
 
@@ -537,29 +435,19 @@ class FHIRConnector:
             DataFrame with patient data
         """
         data = []
-
         for patient in patients:
-            # Extract basic information
             patient_id = patient.get("id", "")
-
-            # Extract name
             name = patient.get("name", [{}])[0]
             family = name.get("family", "")
             given = " ".join(name.get("given", []))
-
-            # Extract other fields
             gender = patient.get("gender", "")
             birth_date = patient.get("birthDate", "")
-
-            # Extract address
             address = patient.get("address", [{}])[0]
             address_line = ", ".join(address.get("line", []))
             city = address.get("city", "")
             state = address.get("state", "")
             postal_code = address.get("postalCode", "")
             country = address.get("country", "")
-
-            # Extract contact information
             telecom = patient.get("telecom", [])
             phone = next(
                 (t.get("value", "") for t in telecom if t.get("system") == "phone"), ""
@@ -567,8 +455,6 @@ class FHIRConnector:
             email = next(
                 (t.get("value", "") for t in telecom if t.get("system") == "email"), ""
             )
-
-            # Extract identifiers
             identifiers = patient.get("identifier", [])
             mrn = next(
                 (
@@ -586,8 +472,6 @@ class FHIRConnector:
                 ),
                 "",
             )
-
-            # Create row
             row = {
                 "patient_id": patient_id,
                 "family_name": family,
@@ -604,9 +488,7 @@ class FHIRConnector:
                 "mrn": mrn,
                 "ssn": ssn,
             }
-
             data.append(row)
-
         return pd.DataFrame(data)
 
     def observations_to_dataframe(self, observations: List[Dict]) -> pd.DataFrame:
@@ -620,30 +502,21 @@ class FHIRConnector:
             DataFrame with observation data
         """
         data = []
-
         for obs in observations:
-            # Extract basic information
             obs_id = obs.get("id", "")
             patient_id = (
                 obs.get("subject", {}).get("reference", "").replace("Patient/", "")
             )
-
-            # Extract date
             effective_date = obs.get("effectiveDateTime", "")
             if not effective_date:
                 effective_period = obs.get("effectivePeriod", {})
                 effective_date = effective_period.get("start", "")
-
-            # Extract code
             coding = obs.get("code", {}).get("coding", [{}])[0]
             code = coding.get("code", "")
             system = coding.get("system", "")
             display = coding.get("display", "")
-
-            # Extract value
             value = None
             value_type = None
-
             if "valueQuantity" in obs:
                 value = obs["valueQuantity"].get("value", "")
                 value_type = "quantity"
@@ -678,16 +551,13 @@ class FHIRConnector:
                 value_type = "ratio"
                 unit = obs["valueRatio"].get("numerator", {}).get("unit", "")
             elif "component" in obs:
-                # Handle component-based observations separately
                 for component in obs["component"]:
                     comp_coding = component.get("code", {}).get("coding", [{}])[0]
                     comp_code = comp_coding.get("code", "")
                     comp_display = comp_coding.get("display", "")
-
                     comp_value = None
                     comp_value_type = None
                     comp_unit = ""
-
                     if "valueQuantity" in component:
                         comp_value = component["valueQuantity"].get("value", "")
                         comp_value_type = "quantity"
@@ -699,7 +569,6 @@ class FHIRConnector:
                         comp_value = comp_value_coding.get("code", "")
                         comp_value_type = "code"
                         comp_unit = comp_value_coding.get("display", "")
-
                     if comp_value is not None:
                         comp_row = {
                             "observation_id": obs_id,
@@ -714,11 +583,7 @@ class FHIRConnector:
                             "status": obs.get("status", ""),
                         }
                         data.append(comp_row)
-
-                # Skip the main row for component-based observations
                 continue
-
-            # Create row
             row = {
                 "observation_id": obs_id,
                 "patient_id": patient_id,
@@ -731,9 +596,7 @@ class FHIRConnector:
                 "unit": unit,
                 "status": obs.get("status", ""),
             }
-
             data.append(row)
-
         return pd.DataFrame(data)
 
     def conditions_to_dataframe(self, conditions: List[Dict]) -> pd.DataFrame:
@@ -747,44 +610,31 @@ class FHIRConnector:
             DataFrame with condition data
         """
         data = []
-
         for condition in conditions:
-            # Extract basic information
             condition_id = condition.get("id", "")
             patient_id = (
                 condition.get("subject", {})
                 .get("reference", "")
                 .replace("Patient/", "")
             )
-
-            # Extract dates
             onset_date = ""
             if "onsetDateTime" in condition:
                 onset_date = condition["onsetDateTime"]
             elif "onsetPeriod" in condition:
                 onset_date = condition["onsetPeriod"].get("start", "")
-
             abatement_date = ""
             if "abatementDateTime" in condition:
                 abatement_date = condition["abatementDateTime"]
             elif "abatementPeriod" in condition:
                 abatement_date = condition["abatementPeriod"].get("end", "")
-
-            # Extract code
             coding = condition.get("code", {}).get("coding", [{}])[0]
             code = coding.get("code", "")
             system = coding.get("system", "")
             display = coding.get("display", "")
-
-            # Extract severity
             severity_coding = condition.get("severity", {}).get("coding", [{}])[0]
             severity = severity_coding.get("display", "")
-
-            # Extract category
             category_coding = condition.get("category", [{}])[0].get("coding", [{}])[0]
             category = category_coding.get("display", "")
-
-            # Create row
             row = {
                 "condition_id": condition_id,
                 "patient_id": patient_id,
@@ -802,9 +652,7 @@ class FHIRConnector:
                 .get("coding", [{}])[0]
                 .get("code", ""),
             }
-
             data.append(row)
-
         return pd.DataFrame(data)
 
     def procedures_to_dataframe(self, procedures: List[Dict]) -> pd.DataFrame:
@@ -818,39 +666,27 @@ class FHIRConnector:
             DataFrame with procedure data
         """
         data = []
-
         for procedure in procedures:
-            # Extract basic information
             procedure_id = procedure.get("id", "")
             patient_id = (
                 procedure.get("subject", {})
                 .get("reference", "")
                 .replace("Patient/", "")
             )
-
-            # Extract date
             performed_date = ""
             if "performedDateTime" in procedure:
                 performed_date = procedure["performedDateTime"]
             elif "performedPeriod" in procedure:
                 performed_date = procedure["performedPeriod"].get("start", "")
-
-            # Extract code
             coding = procedure.get("code", {}).get("coding", [{}])[0]
             code = coding.get("code", "")
             system = coding.get("system", "")
             display = coding.get("display", "")
-
-            # Extract category
             category_coding = procedure.get("category", {}).get("coding", [{}])[0]
             category = category_coding.get("display", "")
-
-            # Extract performer
             performer = (
                 procedure.get("performer", [{}])[0].get("actor", {}).get("display", "")
             )
-
-            # Create row
             row = {
                 "procedure_id": procedure_id,
                 "patient_id": patient_id,
@@ -862,9 +698,7 @@ class FHIRConnector:
                 "performer": performer,
                 "status": procedure.get("status", ""),
             }
-
             data.append(row)
-
         return pd.DataFrame(data)
 
     def medications_to_dataframe(self, medications: List[Dict]) -> pd.DataFrame:
@@ -878,23 +712,16 @@ class FHIRConnector:
             DataFrame with medication data
         """
         data = []
-
         for med in medications:
-            # Extract basic information
             med_id = med.get("id", "")
             patient_id = (
                 med.get("subject", {}).get("reference", "").replace("Patient/", "")
             )
-
-            # Extract dates
             authored_date = med.get("authoredOn", "")
-
-            # Extract medication
             medication_reference = med.get("medicationReference", {}).get(
                 "reference", ""
             )
             medication_display = med.get("medicationReference", {}).get("display", "")
-
             if not medication_display and "medicationCodeableConcept" in med:
                 medication_coding = med["medicationCodeableConcept"].get(
                     "coding", [{}]
@@ -905,26 +732,19 @@ class FHIRConnector:
             else:
                 code = ""
                 system = ""
-
-            # Extract dosage
             dosage = med.get("dosageInstruction", [{}])[0]
             text = dosage.get("text", "")
-
             dose = ""
             if "doseAndRate" in dosage:
                 dose_quantity = dosage["doseAndRate"][0].get("doseQuantity", {})
                 dose = (
                     f"{dose_quantity.get('value', '')} {dose_quantity.get('unit', '')}"
                 )
-
             frequency = ""
             if "timing" in dosage:
                 timing_repeat = dosage["timing"].get("repeat", {})
                 frequency = f"{timing_repeat.get('frequency', '')} times per {timing_repeat.get('period', '')} {timing_repeat.get('periodUnit', '')}"
-
             route = dosage.get("route", {}).get("coding", [{}])[0].get("display", "")
-
-            # Create row
             row = {
                 "medication_id": med_id,
                 "patient_id": patient_id,
@@ -939,9 +759,7 @@ class FHIRConnector:
                 "route": route,
                 "status": med.get("status", ""),
             }
-
             data.append(row)
-
         return pd.DataFrame(data)
 
     def encounters_to_dataframe(self, encounters: List[Dict]) -> pd.DataFrame:
@@ -955,41 +773,27 @@ class FHIRConnector:
             DataFrame with encounter data
         """
         data = []
-
         for encounter in encounters:
-            # Extract basic information
             encounter_id = encounter.get("id", "")
             patient_id = (
                 encounter.get("subject", {})
                 .get("reference", "")
                 .replace("Patient/", "")
             )
-
-            # Extract dates
             period = encounter.get("period", {})
             start_date = period.get("start", "")
             end_date = period.get("end", "")
-
-            # Extract type
             type_coding = encounter.get("type", [{}])[0].get("coding", [{}])[0]
             type_code = type_coding.get("code", "")
             type_display = type_coding.get("display", "")
-
-            # Extract class
             class_code = encounter.get("class", {}).get("code", "")
             class_display = encounter.get("class", {}).get("display", "")
-
-            # Extract location
             location = (
                 encounter.get("location", [{}])[0]
                 .get("location", {})
                 .get("display", "")
             )
-
-            # Extract service provider
             service_provider = encounter.get("serviceProvider", {}).get("display", "")
-
-            # Create row
             row = {
                 "encounter_id": encounter_id,
                 "patient_id": patient_id,
@@ -1003,9 +807,7 @@ class FHIRConnector:
                 "service_provider": service_provider,
                 "status": encounter.get("status", ""),
             }
-
             data.append(row)
-
         return pd.DataFrame(data)
 
     def dataframe_to_patients(self, df: pd.DataFrame) -> List[Dict]:
@@ -1019,9 +821,7 @@ class FHIRConnector:
             List of Patient resources
         """
         patients = []
-
         for _, row in df.iterrows():
-            # Create basic structure
             patient = {
                 "resourceType": "Patient",
                 "id": row.get("patient_id", ""),
@@ -1053,19 +853,14 @@ class FHIRConnector:
                 "telecom": [],
                 "identifier": [],
             }
-
-            # Add telecom
             if row.get("phone"):
                 patient["telecom"].append(
                     {"system": "phone", "value": row.get("phone", "")}
                 )
-
             if row.get("email"):
                 patient["telecom"].append(
                     {"system": "email", "value": row.get("email", "")}
                 )
-
-            # Add identifiers
             if row.get("mrn"):
                 patient["identifier"].append(
                     {
@@ -1081,7 +876,6 @@ class FHIRConnector:
                         "value": row.get("mrn", ""),
                     }
                 )
-
             if row.get("ssn"):
                 patient["identifier"].append(
                     {
@@ -1089,9 +883,7 @@ class FHIRConnector:
                         "value": row.get("ssn", ""),
                     }
                 )
-
             patients.append(patient)
-
         return patients
 
     def dataframe_to_observations(self, df: pd.DataFrame) -> List[Dict]:
@@ -1105,9 +897,7 @@ class FHIRConnector:
             List of Observation resources
         """
         observations = []
-
         for _, row in df.iterrows():
-            # Create basic structure
             observation = {
                 "resourceType": "Observation",
                 "id": row.get("observation_id", ""),
@@ -1124,15 +914,12 @@ class FHIRConnector:
                 "subject": {"reference": f"Patient/{row.get('patient_id', '')}"},
                 "effectiveDateTime": row.get("date", ""),
             }
-
-            # Add value based on type
             value_type = row.get("value_type", "")
             value = row.get("value", "")
             unit = row.get("unit", "")
-
             if value_type == "quantity":
                 observation["valueQuantity"] = {
-                    "value": float(value) if value and not pd.isna(value) else None,
+                    "value": float(value) if value and (not pd.isna(value)) else None,
                     "unit": unit,
                     "system": "http://unitsofmeasure.org",
                     "code": unit,
@@ -1145,15 +932,13 @@ class FHIRConnector:
                 observation["valueString"] = value
             elif value_type == "boolean":
                 observation["valueBoolean"] = (
-                    bool(value) if value and not pd.isna(value) else None
+                    bool(value) if value and (not pd.isna(value)) else None
                 )
             elif value_type == "integer":
                 observation["valueInteger"] = (
-                    int(value) if value and not pd.isna(value) else None
+                    int(value) if value and (not pd.isna(value)) else None
                 )
-
             observations.append(observation)
-
         return observations
 
     def dataframe_to_conditions(self, df: pd.DataFrame) -> List[Dict]:
@@ -1167,9 +952,7 @@ class FHIRConnector:
             List of Condition resources
         """
         conditions = []
-
         for _, row in df.iterrows():
-            # Create basic structure
             condition = {
                 "resourceType": "Condition",
                 "id": row.get("condition_id", ""),
@@ -1184,8 +967,6 @@ class FHIRConnector:
                     ]
                 },
             }
-
-            # Add clinical status
             if row.get("clinical_status"):
                 condition["clinicalStatus"] = {
                     "coding": [
@@ -1195,8 +976,6 @@ class FHIRConnector:
                         }
                     ]
                 }
-
-            # Add verification status
             if row.get("verification_status"):
                 condition["verificationStatus"] = {
                     "coding": [
@@ -1206,29 +985,19 @@ class FHIRConnector:
                         }
                     ]
                 }
-
-            # Add category
             if row.get("category"):
                 condition["category"] = [
                     {"coding": [{"display": row.get("category", "")}]}
                 ]
-
-            # Add severity
             if row.get("severity"):
                 condition["severity"] = {
                     "coding": [{"display": row.get("severity", "")}]
                 }
-
-            # Add onset date
             if row.get("onset_date"):
                 condition["onsetDateTime"] = row.get("onset_date", "")
-
-            # Add abatement date
             if row.get("abatement_date"):
                 condition["abatementDateTime"] = row.get("abatement_date", "")
-
             conditions.append(condition)
-
         return conditions
 
     def bulk_export(
@@ -1245,45 +1014,27 @@ class FHIRConnector:
         Returns:
             Dictionary mapping resource types to file paths
         """
-        # Create output directory if it doesn't exist
         os.makedirs(output_dir, exist_ok=True)
-
-        # Initialize result
         result = {}
-
-        # Export each resource type
         for resource_type in resource_types:
-            # Search for resources
             resources = self.search(resource_type)
-
             if not resources:
                 logger.warning(f"No {resource_type} resources found")
                 continue
-
-            # Determine file path
             file_path = os.path.join(output_dir, f"{resource_type}.{format_type}")
-
-            # Write to file
             if format_type == "json":
-                # Write as JSON array
                 with open(file_path, "w") as f:
                     json.dump(resources, f, indent=2)
-
             elif format_type == "ndjson":
-                # Write as newline-delimited JSON
                 with open(file_path, "w") as f:
                     for resource in resources:
                         f.write(json.dumps(resource) + "\n")
-
             else:
                 raise ValueError(f"Unsupported format type: {format_type}")
-
-            # Add to result
             result[resource_type] = file_path
             logger.info(
                 f"Exported {len(resources)} {resource_type} resources to {file_path}"
             )
-
         return result
 
     def bulk_import(
@@ -1299,70 +1050,47 @@ class FHIRConnector:
         Returns:
             Dictionary with import statistics
         """
-        # Initialize statistics
         stats = {"total": 0, "created": 0, "updated": 0, "failed": 0}
-
-        # Determine file format
         if file_path.endswith(".json"):
-            # Read JSON array
             with open(file_path, "r") as f:
                 resources = json.load(f)
-
                 if not isinstance(resources, list):
                     resources = [resources]
-
         elif file_path.endswith(".ndjson"):
-            # Read newline-delimited JSON
             resources = []
             with open(file_path, "r") as f:
                 for line in f:
                     line = line.strip()
                     if line:
                         resources.append(json.loads(line))
-
         else:
             raise ValueError(f"Unsupported file format: {file_path}")
-
-        # Update statistics
         stats["total"] = len(resources)
-
-        # Process resources
         for resource in resources:
             try:
                 resource_type = resource.get("resourceType")
                 resource_id = resource.get("id")
-
                 if not resource_type:
                     logger.warning("Resource missing resourceType, skipping")
                     stats["failed"] += 1
                     continue
-
                 if resource_id and update_if_exists:
-                    # Check if resource exists
                     try:
                         self.get(resource_type, resource_id)
-
-                        # Update existing resource
                         self.update(resource)
                         stats["updated"] += 1
-
                     except requests.exceptions.HTTPError as e:
                         if e.response.status_code == 404:
-                            # Resource doesn't exist, create it
                             self.create(resource)
                             stats["created"] += 1
                         else:
                             raise
-
                 else:
-                    # Create new resource
                     self.create(resource)
                     stats["created"] += 1
-
             except Exception as e:
                 logger.error(f"Failed to import resource: {str(e)}")
                 stats["failed"] += 1
-
         logger.info(f"Import statistics: {stats}")
         return stats
 
@@ -1378,30 +1106,19 @@ class FHIRConnector:
             A dictionary representing the PatientData structure.
         """
         logger.info(f"Fetching and formatting data for patient ID: {patient_id}")
-
-        # 1. Get Patient Resource
         try:
             patient_resource = self.get("Patient", patient_id)
         except Exception as e:
             raise ValueError(f"Patient {patient_id} not found or error: {e}")
-
-        # 2. Get related resources
-        # Search for Observations, Conditions, and MedicationRequests linked to the patient
         search_params = {"patient": patient_id}
-
         observations = self.search("Observation", params=search_params)
         conditions = self.search("Condition", params=search_params)
         medication_requests = self.search("MedicationRequest", params=search_params)
-
-        # 3. Extract and format demographics
         demographics = {
             "gender": patient_resource.get("gender"),
             "birthDate": patient_resource.get("birthDate"),
             "maritalStatus": patient_resource.get("maritalStatus", {}).get("text"),
-            # Add more demographics as needed
         }
-
-        # 4. Extract and format clinical events (simplified for this implementation)
         clinical_events = []
         for condition in conditions:
             clinical_events.append(
@@ -1415,8 +1132,6 @@ class FHIRConnector:
                     "description": condition.get("code", {}).get("text"),
                 }
             )
-
-        # 5. Extract and format lab results (Observations)
         lab_results = []
         for obs in observations:
             if (
@@ -1431,8 +1146,6 @@ class FHIRConnector:
                         "date": obs.get("effectiveDateTime"),
                     }
                 )
-
-        # 6. Extract and format medications
         medications = []
         for med_req in medication_requests:
             medications.append(
@@ -1442,8 +1155,6 @@ class FHIRConnector:
                     "status": med_req.get("status"),
                 }
             )
-
-        # 7. Construct the final PatientData object
         patient_data = {
             "patient_id": patient_id,
             "demographics": demographics,
@@ -1451,5 +1162,4 @@ class FHIRConnector:
             "lab_results": lab_results,
             "medications": medications,
         }
-
         return patient_data

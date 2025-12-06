@@ -1,14 +1,12 @@
 from datetime import datetime, timedelta
-
 import pytest
-
 from src.compliance.deid_rules import DeidentificationRules
 from src.compliance.phi_audit_logger import PHIAuditLogger
 from src.database.database_connection import DatabaseConnection
 
 
 @pytest.fixture
-def sample_phi_data():
+def sample_phi_data() -> Any:
     return {
         "patient_id": "12345",
         "name": "John Doe",
@@ -22,27 +20,22 @@ def sample_phi_data():
 
 
 @pytest.fixture
-def deid_rules():
+def deid_rules() -> Any:
     return DeidentificationRules.from_yaml("config/deid_rules.yaml")
 
 
-def test_phi_audit_logging(sample_phi_data):
+def test_phi_audit_logging(sample_phi_data: Any) -> Any:
     logger = PHIAuditLogger()
-
-    # Test logging of prediction request
     log_entry = logger.log_prediction_request(
         patient_id=sample_phi_data["patient_id"],
         model_name="readmission_risk",
         timestamp=datetime.now(),
     )
-
     assert log_entry is not None
     assert "timestamp" in log_entry
     assert "patient_id" in log_entry
     assert "model_name" in log_entry
     assert "access_type" in log_entry
-
-    # Verify log was stored
     with DatabaseConnection("phi_audit_logs") as conn:
         cursor = conn.execute(
             "SELECT * FROM audit_logs WHERE patient_id = ?",
@@ -53,42 +46,27 @@ def test_phi_audit_logging(sample_phi_data):
         assert stored_log["access_type"] == "prediction_request"
 
 
-def test_deidentification_rules(deid_rules, sample_phi_data):
-    # Test application of de-identification rules
+def test_deidentification_rules(deid_rules: Any, sample_phi_data: Any) -> Any:
     deidentified_data = deid_rules.apply(sample_phi_data)
-
-    # Verify PHI elements are removed
     assert "name" not in deidentified_data
     assert "ssn" not in deidentified_data
     assert "address" not in deidentified_data
     assert "phone" not in deidentified_data
     assert "email" not in deidentified_data
-
-    # Verify date shifting
     assert deidentified_data["dob"] != sample_phi_data["dob"]
-
-    # Verify age handling
     if "age" in deidentified_data:
         assert deidentified_data["age"] >= 0
         assert deidentified_data["age"] <= 90
 
 
-def test_audit_log_retention():
+def test_audit_log_retention() -> Any:
     logger = PHIAuditLogger()
-
-    # Test log retention policy
-    retention_period = 365  # days
+    retention_period = 365
     old_date = datetime.now() - timedelta(days=retention_period + 1)
-
-    # Create old log entry
     logger.log_prediction_request(
         patient_id="old_patient", model_name="readmission_risk", timestamp=old_date
     )
-
-    # Run retention cleanup
     logger.cleanup_old_logs(retention_period)
-
-    # Verify old logs are removed
     with DatabaseConnection("phi_audit_logs") as conn:
         cursor = conn.execute(
             "SELECT * FROM audit_logs WHERE patient_id = ?", ("old_patient",)
@@ -96,22 +74,12 @@ def test_audit_log_retention():
         assert cursor.fetchone() is None
 
 
-def test_audit_log_aggregation():
+def test_audit_log_aggregation() -> Any:
     PHIAuditLogger()
-
-    # Test log aggregation
     with DatabaseConnection("phi_audit_logs") as conn:
         stats = conn.execute(
-            """
-            SELECT
-                access_type,
-                COUNT(*) as count,
-                COUNT(DISTINCT patient_id) as unique_patients
-            FROM audit_logs
-            GROUP BY access_type
-        """
+            "\n            SELECT\n                access_type,\n                COUNT(*) as count,\n                COUNT(DISTINCT patient_id) as unique_patients\n            FROM audit_logs\n            GROUP BY access_type\n        "
         ).fetchall()
-
         assert len(stats) > 0
         for stat in stats:
             assert "access_type" in stat
@@ -120,10 +88,8 @@ def test_audit_log_aggregation():
             assert stat["count"] >= stat["unique_patients"]
 
 
-def test_phi_access_controls():
+def test_phi_access_controls() -> Any:
     logger = PHIAuditLogger()
-
-    # Test access control validation
     with pytest.raises(PermissionError):
         logger.log_prediction_request(
             patient_id="12345",
@@ -133,17 +99,14 @@ def test_phi_access_controls():
         )
 
 
-def test_phi_audit_trail():
+def test_phi_audit_trail() -> Any:
     logger = PHIAuditLogger()
-
-    # Test complete audit trail
     patient_id = "12345"
     events = [
         ("prediction_request", "readmission_risk"),
         ("data_access", "patient_records"),
         ("model_update", "readmission_risk"),
     ]
-
     for event_type, resource in events:
         logger.log_event(
             patient_id=patient_id,
@@ -151,8 +114,6 @@ def test_phi_audit_trail():
             resource=resource,
             timestamp=datetime.now(),
         )
-
-    # Verify complete trail
     with DatabaseConnection("phi_audit_logs") as conn:
         cursor = conn.execute(
             "SELECT * FROM audit_logs WHERE patient_id = ? ORDER BY timestamp",

@@ -3,10 +3,7 @@ import logging
 import os
 import sys
 
-# Add the parent directory to the path to allow imports from src
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-
-# Import the necessary components
 from src.data_pipeline.clinical_etl import ClinicalETL
 from src.model_factory.model_registry import ModelRegistry
 from src.utils.fhir_connector import FHIRConnector
@@ -22,8 +19,7 @@ class TestCoreComponents(unittest.TestCase):
     A comprehensive test suite to validate the core components of Nexora.
     """
 
-    def setUp(self):
-        # Mock data for testing
+    def setUp(self) -> Any:
         self.mock_patient_data = {
             "patient_id": "test_patient_123",
             "demographics": {"age": 65, "gender": "male"},
@@ -33,7 +29,7 @@ class TestCoreComponents(unittest.TestCase):
                     "date": "2024-11-15",
                     "code": "I10",
                     "description": "Hypertension",
-                },
+                }
             ],
             "lab_results": [
                 {
@@ -41,11 +37,10 @@ class TestCoreComponents(unittest.TestCase):
                     "value": 1.2,
                     "unit": "mg/dL",
                     "date": "2024-11-01",
-                },
+                }
             ],
             "medications": [],
         }
-
         self.mock_survival_data = pd.DataFrame(
             {
                 "age": [65],
@@ -55,7 +50,7 @@ class TestCoreComponents(unittest.TestCase):
             }
         )
 
-    def test_01_fhir_connector_data_retrieval(self):
+    def test_01_fhir_connector_data_retrieval(self) -> Any:
         """Test FHIR connector can retrieve and format patient data."""
         logger.info("--- Testing FHIR Connector ---")
         connector = FHIRConnector(base_url="mock")
@@ -66,12 +61,11 @@ class TestCoreComponents(unittest.TestCase):
         )
         logger.info("FHIR Connector data retrieval successful.")
 
-    def test_02_etl_pipeline_run(self):
+    def test_02_etl_pipeline_run(self) -> Any:
         """Test the Clinical ETL pipeline can run without crashing."""
         logger.info("--- Testing ETL Pipeline Run ---")
         try:
             etl = ClinicalETL()
-            # Use a mock patient ID that the FHIR connector is set up to handle
             patient_ids = ["patient_mock_123", "patient_mock_456"]
             feature_df = etl.run_pipeline(patient_ids)
             self.assertFalse(
@@ -86,15 +80,13 @@ class TestCoreComponents(unittest.TestCase):
         except Exception as e:
             self.fail(f"ETL pipeline failed with exception: {e}")
 
-    def test_03_model_registry_and_prediction(self):
+    def test_03_model_registry_and_prediction(self) -> Any:
         """Test model registry loads and models can make predictions."""
         logger.info("--- Testing Model Registry and Prediction ---")
         try:
             registry = ModelRegistry()
             models = registry.list_models()
             self.assertTrue(models, "Model registry is empty.")
-
-            # Test DeepFM and Transformer (expect dict input)
             for model_name in ["deep_fm", "transformer_model"]:
                 model = registry.get_model(model_name)
                 prediction = model.predict(self.mock_patient_data)
@@ -106,11 +98,8 @@ class TestCoreComponents(unittest.TestCase):
                 logger.info(
                     f"Model {model_name} prediction successful. Risk: {prediction['risk_score']:.2f}"
                 )
-
-            # Test Survival Analysis (expects DataFrame input)
             model_name = "survival_analysis"
             model = registry.get_model(model_name)
-            # Mock a minimal training step to initialize the CPH model
             model.train(self.mock_survival_data)
             prediction = model.predict(
                 self.mock_survival_data.drop(
@@ -125,11 +114,10 @@ class TestCoreComponents(unittest.TestCase):
             logger.info(
                 f"Model {model_name} prediction successful. Median Survival: {prediction['median_survival_time']:.2f}"
             )
-
         except Exception as e:
             self.fail(f"Model registry or prediction failed with exception: {e}")
 
-    def test_04_phi_audit_logger(self):
+    def test_04_phi_audit_logger(self) -> Any:
         """Test PHI Audit Logger functionality."""
         logger.info("--- Testing PHI Audit Logger ---")
         try:
@@ -151,18 +139,12 @@ class TestCoreComponents(unittest.TestCase):
             self.fail(f"PHI Audit Logger failed with exception: {e}")
 
 
-def run_all_tests():
+def run_all_tests() -> Any:
     """Runs all tests in the suite."""
-    # Create a test suite
     suite = unittest.TestSuite()
-
-    # Add tests from TestCoreComponents
     suite.addTest(unittest.makeSuite(TestCoreComponents))
-
-    # Run the tests
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
-
     if result.wasSuccessful():
         logger.info("\n*** ALL CORE COMPONENT TESTS PASSED SUCCESSFULLY ***")
     else:

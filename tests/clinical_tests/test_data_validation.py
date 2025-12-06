@@ -2,22 +2,18 @@ import os
 import sys
 import unittest
 from datetime import timedelta
-
 import numpy as np
 import pandas as pd
 
-# Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
-
 from src.data_pipeline.data_validation import DataValidator
 
 
 class TestDataValidation(unittest.TestCase):
     """Test suite for data validation functionality."""
 
-    def setUp(self):
+    def setUp(self) -> Any:
         """Set up test fixtures."""
-        # Create a sample dataset for testing
         self.sample_data = pd.DataFrame(
             {
                 "patient_id": ["P001", "P002", "P003", "P004", "P005"],
@@ -44,19 +40,13 @@ class TestDataValidation(unittest.TestCase):
                 "mortality": [0, 0, 0, 1, 0],
             }
         )
-
-        # Convert date strings to datetime objects
         self.sample_data["admission_date"] = pd.to_datetime(
             self.sample_data["admission_date"]
         )
         self.sample_data["discharge_date"] = pd.to_datetime(
             self.sample_data["discharge_date"]
         )
-
-        # Create a validator instance
         self.validator = DataValidator()
-
-        # Define schema for validation
         self.schema = {
             "patient_id": {"type": "string", "required": True, "unique": True},
             "age": {"type": "integer", "required": True, "min": 0, "max": 120},
@@ -68,7 +58,7 @@ class TestDataValidation(unittest.TestCase):
             "diagnosis_code": {
                 "type": "string",
                 "required": True,
-                "pattern": r"^[A-Z][0-9]{2}(\.[0-9]{1,2})?$",
+                "pattern": "^[A-Z][0-9]{2}(\\.[0-9]{1,2})?$",
             },
             "admission_date": {"type": "datetime", "required": True},
             "discharge_date": {"type": "datetime", "required": True},
@@ -77,8 +67,6 @@ class TestDataValidation(unittest.TestCase):
             "readmission": {"type": "boolean", "required": True},
             "mortality": {"type": "boolean", "required": True},
         }
-
-        # Define relationships for validation
         self.relationships = [
             {
                 "type": "temporal",
@@ -93,51 +81,39 @@ class TestDataValidation(unittest.TestCase):
             },
         ]
 
-    def test_validate_schema(self):
+    def test_validate_schema(self) -> Any:
         """Test schema validation functionality."""
-        # Test valid data
         result = self.validator.validate_schema(self.sample_data, self.schema)
         self.assertTrue(result["valid"])
         self.assertEqual(len(result["errors"]), 0)
-
-        # Test invalid data - wrong data type
         invalid_data = self.sample_data.copy()
-        invalid_data.loc[0, "age"] = "forty-five"  # String instead of integer
+        invalid_data.loc[0, "age"] = "forty-five"
+        result = self.validator.validate_schema(invalid_data, self.schema)
+        self.assertFalse(result["valid"])
+        self.assertGreater(len(result["errors"]), 0)
+        invalid_data = self.sample_data.copy()
+        invalid_data.loc[0, "age"] = 150
+        result = self.validator.validate_schema(invalid_data, self.schema)
+        self.assertFalse(result["valid"])
+        self.assertGreater(len(result["errors"]), 0)
+        invalid_data = self.sample_data.copy()
+        invalid_data.loc[0, "gender"] = "X"
+        result = self.validator.validate_schema(invalid_data, self.schema)
+        self.assertFalse(result["valid"])
+        self.assertGreater(len(result["errors"]), 0)
+        invalid_data = self.sample_data.copy()
+        invalid_data.loc[0, "diagnosis_code"] = "12345"
         result = self.validator.validate_schema(invalid_data, self.schema)
         self.assertFalse(result["valid"])
         self.assertGreater(len(result["errors"]), 0)
 
-        # Test invalid data - out of range
-        invalid_data = self.sample_data.copy()
-        invalid_data.loc[0, "age"] = 150  # Above maximum age
-        result = self.validator.validate_schema(invalid_data, self.schema)
-        self.assertFalse(result["valid"])
-        self.assertGreater(len(result["errors"]), 0)
-
-        # Test invalid data - invalid category
-        invalid_data = self.sample_data.copy()
-        invalid_data.loc[0, "gender"] = "X"  # Not in allowed categories
-        result = self.validator.validate_schema(invalid_data, self.schema)
-        self.assertFalse(result["valid"])
-        self.assertGreater(len(result["errors"]), 0)
-
-        # Test invalid data - pattern mismatch
-        invalid_data = self.sample_data.copy()
-        invalid_data.loc[0, "diagnosis_code"] = "12345"  # Doesn't match ICD-10 pattern
-        result = self.validator.validate_schema(invalid_data, self.schema)
-        self.assertFalse(result["valid"])
-        self.assertGreater(len(result["errors"]), 0)
-
-    def test_validate_relationships(self):
+    def test_validate_relationships(self) -> Any:
         """Test relationship validation functionality."""
-        # Test valid data
         result = self.validator.validate_relationships(
             self.sample_data, self.relationships
         )
         self.assertTrue(result["valid"])
         self.assertEqual(len(result["errors"]), 0)
-
-        # Test invalid data - temporal relationship violation
         invalid_data = self.sample_data.copy()
         invalid_data.loc[0, "discharge_date"] = invalid_data.loc[
             0, "admission_date"
@@ -145,20 +121,15 @@ class TestDataValidation(unittest.TestCase):
         result = self.validator.validate_relationships(invalid_data, self.relationships)
         self.assertFalse(result["valid"])
         self.assertGreater(len(result["errors"]), 0)
-
-        # Test invalid data - logical relationship violation
         invalid_data = self.sample_data.copy()
         invalid_data.loc[3, "mortality"] = 1
-        invalid_data.loc[3, "readmission"] = (
-            1  # Logical contradiction: dead patients can't be readmitted
-        )
+        invalid_data.loc[3, "readmission"] = 1
         result = self.validator.validate_relationships(invalid_data, self.relationships)
         self.assertFalse(result["valid"])
         self.assertGreater(len(result["errors"]), 0)
 
-    def test_detect_outliers(self):
+    def test_detect_outliers(self) -> Any:
         """Test outlier detection functionality."""
-        # Test with default settings
         result = self.validator.detect_outliers(
             self.sample_data, ["age", "lab_value", "medication_count"]
         )
@@ -167,8 +138,6 @@ class TestDataValidation(unittest.TestCase):
         self.assertTrue("age" in result["outliers"])
         self.assertTrue("lab_value" in result["outliers"])
         self.assertTrue("medication_count" in result["outliers"])
-
-        # Test with custom z-score threshold
         result = self.validator.detect_outliers(
             self.sample_data,
             ["age", "lab_value", "medication_count"],
@@ -176,8 +145,6 @@ class TestDataValidation(unittest.TestCase):
             threshold=3.0,
         )
         self.assertIsInstance(result, dict)
-
-        # Test with IQR method
         result = self.validator.detect_outliers(
             self.sample_data,
             ["age", "lab_value", "medication_count"],
@@ -186,14 +153,11 @@ class TestDataValidation(unittest.TestCase):
         )
         self.assertIsInstance(result, dict)
 
-    def test_check_missing_values(self):
+    def test_check_missing_values(self) -> Any:
         """Test missing value detection functionality."""
-        # Create data with missing values
         data_with_missing = self.sample_data.copy()
         data_with_missing.loc[0, "lab_value"] = np.nan
         data_with_missing.loc[1, "medication_count"] = np.nan
-
-        # Test missing value detection
         result = self.validator.check_missing_values(data_with_missing)
         self.assertIsInstance(result, dict)
         self.assertTrue("missing_counts" in result)
@@ -201,9 +165,8 @@ class TestDataValidation(unittest.TestCase):
         self.assertEqual(result["missing_counts"]["lab_value"], 1)
         self.assertEqual(result["missing_counts"]["medication_count"], 1)
 
-    def test_validate_icd10_codes(self):
+    def test_validate_icd10_codes(self) -> Any:
         """Test ICD-10 code validation functionality."""
-        # Test valid ICD-10 codes
         valid_codes = pd.Series(
             [
                 "A01.0",
@@ -220,16 +183,13 @@ class TestDataValidation(unittest.TestCase):
         result = self.validator.validate_icd10_codes(valid_codes)
         self.assertTrue(result["valid"])
         self.assertEqual(len(result["invalid_codes"]), 0)
-
-        # Test invalid ICD-10 codes
         invalid_codes = pd.Series(["A01.0", "XYZ", "123.45", "B20.ABC", "I25.999"])
         result = self.validator.validate_icd10_codes(invalid_codes)
         self.assertFalse(result["valid"])
         self.assertEqual(len(result["invalid_codes"]), 4)
 
-    def test_validate_date_ranges(self):
+    def test_validate_date_ranges(self) -> Any:
         """Test date range validation functionality."""
-        # Test valid date ranges
         result = self.validator.validate_date_ranges(
             self.sample_data,
             "admission_date",
@@ -238,8 +198,6 @@ class TestDataValidation(unittest.TestCase):
         )
         self.assertTrue(result["valid"])
         self.assertEqual(len(result["out_of_range"]), 0)
-
-        # Test invalid date ranges
         result = self.validator.validate_date_ranges(
             self.sample_data,
             "admission_date",
@@ -249,22 +207,18 @@ class TestDataValidation(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertGreater(len(result["out_of_range"]), 0)
 
-    def test_check_duplicates(self):
+    def test_check_duplicates(self) -> Any:
         """Test duplicate detection functionality."""
-        # Test data without duplicates
         result = self.validator.check_duplicates(self.sample_data, ["patient_id"])
         self.assertFalse(result["has_duplicates"])
         self.assertEqual(len(result["duplicate_indices"]), 0)
-
-        # Test data with duplicates
         data_with_duplicates = pd.concat([self.sample_data, self.sample_data.iloc[0:2]])
         result = self.validator.check_duplicates(data_with_duplicates, ["patient_id"])
         self.assertTrue(result["has_duplicates"])
         self.assertEqual(len(result["duplicate_indices"]), 2)
 
-    def test_validate_consistency(self):
+    def test_validate_consistency(self) -> Any:
         """Test data consistency validation functionality."""
-        # Define consistency rules
         consistency_rules = [
             {
                 "condition": "age >= 65",
@@ -277,27 +231,19 @@ class TestDataValidation(unittest.TestCase):
                 "name": "mortality_age_correlation",
             },
         ]
-
-        # Test valid data
         result = self.validator.validate_consistency(
             self.sample_data, consistency_rules
         )
-
-        # We expect some violations in our sample data
         self.assertIsInstance(result, dict)
         self.assertTrue("rule_results" in result)
-
-        # Create data that satisfies all rules
         consistent_data = self.sample_data.copy()
         consistent_data.loc[consistent_data["age"] >= 65, "medication_count"] = 5
         consistent_data.loc[consistent_data["mortality"] == 1, "age"] = 80
-
         result = self.validator.validate_consistency(consistent_data, consistency_rules)
-        self.assertTrue(all(r["valid"] for r in result["rule_results"].values()))
+        self.assertTrue(all((r["valid"] for r in result["rule_results"].values())))
 
-    def test_generate_validation_report(self):
+    def test_generate_validation_report(self) -> Any:
         """Test validation report generation functionality."""
-        # Run a full validation
         report = self.validator.generate_validation_report(
             self.sample_data,
             schema=self.schema,
@@ -316,8 +262,6 @@ class TestDataValidation(unittest.TestCase):
                 },
             ],
         )
-
-        # Check report structure
         self.assertIsInstance(report, dict)
         self.assertTrue("schema_validation" in report)
         self.assertTrue("relationship_validation" in report)
@@ -326,18 +270,12 @@ class TestDataValidation(unittest.TestCase):
         self.assertTrue("duplicates" in report)
         self.assertTrue("consistency" in report)
         self.assertTrue("summary" in report)
-
-        # Check summary
         self.assertTrue("valid" in report["summary"])
         self.assertTrue("error_count" in report["summary"])
         self.assertTrue("warning_count" in report["summary"])
 
-    def test_integration_with_fhir(self):
+    def test_integration_with_fhir(self) -> Any:
         """Test integration with FHIR connector."""
-        # This is a mock test since we don't have a real FHIR server
-        # In a real environment, we would use a test FHIR server
-
-        # Create a mock FHIR dataset
         fhir_data = {
             "Patient": [
                 {
@@ -372,8 +310,8 @@ class TestDataValidation(unittest.TestCase):
             ],
         }
 
-        # Mock the FHIR connector
         class MockFHIRConnector:
+
             def patients_to_dataframe(self, patients):
                 return pd.DataFrame(
                     {
@@ -395,14 +333,10 @@ class TestDataValidation(unittest.TestCase):
                 )
 
         mock_connector = MockFHIRConnector()
-
-        # Convert mock FHIR data to DataFrames
         patients_df = mock_connector.patients_to_dataframe(fhir_data["Patient"])
         observations_df = mock_connector.observations_to_dataframe(
             fhir_data["Observation"]
         )
-
-        # Validate the converted data
         patient_schema = {
             "patient_id": {"type": "string", "required": True, "unique": True},
             "gender": {
@@ -412,7 +346,6 @@ class TestDataValidation(unittest.TestCase):
             },
             "birth_date": {"type": "string", "required": True},
         }
-
         result = self.validator.validate_schema(patients_df, patient_schema)
         self.assertTrue(result["valid"])
 

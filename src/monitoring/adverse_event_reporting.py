@@ -12,8 +12,7 @@ class AdverseEventReporter:
     or reported by clinicians.
     """
 
-    def __init__(self):
-        # In a real system, this would connect to a database or a dedicated safety system
+    def __init__(self) -> Any:
         self.event_log = []
         logger.info("AdverseEventReporter initialized.")
 
@@ -36,18 +35,14 @@ class AdverseEventReporter:
             "status": "Reported",
             **event_details,
         }
-
         self.event_log.append(event_record)
         logger.warning(
             f"Adverse event reported for patient {patient_id}: {event_details.get('type', 'Unknown Event')}. ID: {event_id}"
         )
-
-        # Mock: Trigger an alert in a real system
         self._trigger_alert(event_record)
-
         return event_id
 
-    def _trigger_alert(self, event_record: Dict[str, Any]):
+    def _trigger_alert(self, event_record: Dict[str, Any]) -> Any:
         """Mock function to simulate triggering an external alert."""
         logger.info(
             f"ALERT: New adverse event {event_record['event_id']} requires immediate review."

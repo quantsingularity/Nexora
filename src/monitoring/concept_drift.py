@@ -15,7 +15,7 @@ class ConceptDriftDetector:
     and model performance metrics.
     """
 
-    def __init__(self, model_name: str, sensitivity: float = 0.05):
+    def __init__(self, model_name: str, sensitivity: float = 0.05) -> Any:
         self.model_name = model_name
         self.sensitivity = sensitivity
         self.baseline_metrics = self._load_baseline()
@@ -43,14 +43,10 @@ class ConceptDriftDetector:
         """
         if not latest_data:
             return {"status": self.drift_status, "details": "No new data to check."}
-
-        # Mock feature drift check (e.g., mean age change)
         latest_ages = [d.get("age", 0) for d in latest_data]
         if latest_ages:
             latest_mean_age = np.mean(latest_ages)
             baseline_mean_age = self.baseline_metrics["feature_mean"]["age"]
-
-            # Simple check: if mean age shifts by more than sensitivity
             if (
                 abs(latest_mean_age - baseline_mean_age) / baseline_mean_age
                 > self.sensitivity
@@ -59,14 +55,10 @@ class ConceptDriftDetector:
                 logger.warning(
                     f"Drift detected in 'age' feature. Baseline: {baseline_mean_age}, Latest: {latest_mean_age}"
                 )
-
-        # Mock prediction drift check (e.g., mean prediction score change)
         latest_predictions = [d.get("prediction", 0) for d in latest_data]
         if latest_predictions:
             latest_mean_pred = np.mean(latest_predictions)
             baseline_mean_pred = self.baseline_metrics["prediction_mean"]
-
-            # Simple check: if mean prediction shifts by more than sensitivity
             if (
                 abs(latest_mean_pred - baseline_mean_pred) / baseline_mean_pred
                 > self.sensitivity
@@ -75,10 +67,8 @@ class ConceptDriftDetector:
                 logger.warning(
                     f"Drift detected in prediction mean. Baseline: {baseline_mean_pred}, Latest: {latest_mean_pred}"
                 )
-
         if self.drift_status == "Stable":
             logger.info("No significant concept drift detected.")
-
         return {
             "model": self.model_name,
             "status": self.drift_status,

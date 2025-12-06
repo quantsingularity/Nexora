@@ -1,15 +1,13 @@
 import json
-
 import apache_beam as beam
 import pytest
 from apache_beam.testing.test_pipeline import TestPipeline
 from apache_beam.testing.util import assert_that, equal_to
-
 from src.data_pipeline.clinical_etl import HealthcareETL
 
 
 @pytest.fixture
-def sample_fhir_bundle():
+def sample_fhir_bundle() -> Any:
     return {
         "resourceType": "Bundle",
         "type": "searchset",
@@ -33,13 +31,12 @@ def sample_fhir_bundle():
     }
 
 
-def test_parse_fhir_bundle():
+def test_parse_fhir_bundle() -> Any:
     with TestPipeline() as p:
         input_data = [json.dumps(sample_fhir_bundle())]
         output = (
             p | beam.Create(input_data) | "ParseFHIR" >> beam.Map(parse_fhir_bundle)
         )
-
         expected_output = [
             {
                 "patient_id": "123",
@@ -48,11 +45,10 @@ def test_parse_fhir_bundle():
                 "observations": [{"code": "A1C", "value": 6.5, "unit": "%"}],
             }
         ]
-
         assert_that(output, equal_to(expected_output))
 
 
-def test_validate_clinical_data():
+def test_validate_clinical_data() -> Any:
     with TestPipeline() as p:
         input_data = [
             {
@@ -62,17 +58,15 @@ def test_validate_clinical_data():
                 "observations": [{"code": "A1C", "value": 6.5, "unit": "%"}],
             }
         ]
-
         output = (
             p
             | beam.Create(input_data)
             | "ValidateClinicalData" >> beam.Map(ClinicalValidator().validate)
         )
-
         assert_that(output, equal_to(input_data))
 
 
-def test_encode_medical_concepts():
+def test_encode_medical_concepts() -> Any:
     with TestPipeline() as p:
         input_data = [
             {
@@ -81,25 +75,22 @@ def test_encode_medical_concepts():
                 "procedures": ["99213"],
             }
         ]
-
         output = (
             p
             | beam.Create(input_data)
             | "EncodeMedicalConcepts" >> beam.ParDo(ICD10Encoder())
         )
-
         expected_output = [
             {
                 "patient_id": "123",
-                "diagnosis_codes": [1001, 1002],  # Encoded ICD-10 codes
-                "procedure_codes": [2001],  # Encoded CPT codes
+                "diagnosis_codes": [1001, 1002],
+                "procedure_codes": [2001],
             }
         ]
-
         assert_that(output, equal_to(expected_output))
 
 
-def test_feature_generation():
+def test_feature_generation() -> Any:
     with TestPipeline() as p:
         input_data = [
             {
@@ -113,13 +104,11 @@ def test_feature_generation():
                 ],
             }
         ]
-
         output = (
             p
             | beam.Create(input_data)
             | "FeatureGeneration" >> beam.ParDo(ClinicalFeatureGenerator())
         )
-
         expected_output = [
             {
                 "patient_id": "123",
@@ -134,23 +123,21 @@ def test_feature_generation():
                 },
             }
         ]
-
         assert_that(output, equal_to(expected_output))
 
 
-def test_full_pipeline():
+def test_full_pipeline() -> Any:
     with TestPipeline() as p:
         input_data = [json.dumps(sample_fhir_bundle())]
-
         output = p | beam.Create(input_data) | HealthcareETL()
-
-        # Verify the output structure
         assert_that(
             output,
             lambda results: all(
-                "patient_id" in result
-                and "features" in result
-                and "timestamp" in result
-                for result in results
+                (
+                    "patient_id" in result
+                    and "features" in result
+                    and ("timestamp" in result)
+                    for result in results
+                )
             ),
         )

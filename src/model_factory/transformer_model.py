@@ -5,21 +5,17 @@ from typing import Dict, Any, Optional
 import logging
 import numpy as np
 import os
-
 from .base_model import BaseModel
 
 logger = logging.getLogger(__name__)
-
-# --- Transformer Model Components ---
 
 
 class PositionalEncoding(nn.Module):
     """Injects some information about the relative or absolute position of the tokens in the sequence."""
 
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
+    def __init__(self, d_model: Any, dropout: Any = 0.1, max_len: Any = 5000) -> Any:
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
-
         pe = torch.zeros(max_len, d_model)
         position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
         div_term = torch.exp(
@@ -30,7 +26,7 @@ class PositionalEncoding(nn.Module):
         pe = pe.unsqueeze(0).transpose(0, 1)
         self.register_buffer("pe", pe)
 
-    def forward(self, x):
+    def forward(self, x: Any) -> Any:
         """
         Args:
             x: Tensor, shape [seq_len, batch_size, embedding_dim]
@@ -46,65 +42,48 @@ class ClinicalTransformer(nn.Module):
 
     def __init__(
         self,
-        vocab_size,
-        d_model,
-        nhead,
-        num_layers,
-        dim_feedforward,
-        dropout=0.1,
-        num_classes=1,
-    ):
+        vocab_size: Any,
+        d_model: Any,
+        nhead: Any,
+        num_layers: Any,
+        dim_feedforward: Any,
+        dropout: Any = 0.1,
+        num_classes: Any = 1,
+    ) -> Any:
         super(ClinicalTransformer, self).__init__()
         self.model_type = "Transformer"
         self.pos_encoder = PositionalEncoding(d_model, dropout)
-
-        # Use PyTorch's standard TransformerEncoderLayer
         self.encoder_layer = nn.TransformerEncoderLayer(
             d_model=d_model,
             nhead=nhead,
             dim_feedforward=dim_feedforward,
             dropout=dropout,
-            batch_first=False,  # Sequence length first
+            batch_first=False,
         )
         self.transformer_encoder = nn.TransformerEncoder(self.encoder_layer, num_layers)
-
-        # Embedding layer for categorical features (e.g., ICD codes, procedure codes)
         self.embedding = nn.Embedding(vocab_size, d_model)
         self.d_model = d_model
-
-        # Final classification head
         self.decoder = nn.Linear(d_model, num_classes)
         self.init_weights()
 
-    def init_weights(self):
+    def init_weights(self) -> Any:
         initrange = 0.1
         self.embedding.weight.data.uniform_(-initrange, initrange)
         self.decoder.bias.data.zero_()
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
-    def forward(self, src, src_mask=None):
+    def forward(self, src: Any, src_mask: Any = None) -> Any:
         """
         Args:
             src: Tensor, shape [seq_len, batch_size] (indices of concepts)
             src_mask: Tensor, shape [seq_len, seq_len]
         """
-        # 1. Embedding and Positional Encoding
         src = self.embedding(src) * np.sqrt(self.d_model)
         src = self.pos_encoder(src)
-
-        # 2. Transformer Encoding
         output = self.transformer_encoder(src, src_mask)
-
-        # 3. Global average pooling over the sequence dimension for classification
-        # output shape: [seq_len, batch_size, d_model] -> [batch_size, d_model]
         output = output.mean(dim=0)
-
-        # 4. Final classification
         output = self.decoder(output)
-        return torch.sigmoid(output)  # Binary classification output
-
-
-# --- TransformerModel Wrapper ---
+        return torch.sigmoid(output)
 
 
 class TransformerModel(BaseModel):
@@ -112,7 +91,7 @@ class TransformerModel(BaseModel):
     Wrapper for the ClinicalTransformer model, adhering to the BaseModel interface.
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any]) -> Any:
         super().__init__(config)
         self.vocab_size = config.get("vocab_size", 10000)
         self.d_model = config.get("d_model", 128)
@@ -123,7 +102,6 @@ class TransformerModel(BaseModel):
         self.model_path = config.get(
             "model_path", f"models/{self.name}_{self.version}.pt"
         )
-
         self.model = ClinicalTransformer(
             self.vocab_size,
             self.d_model,
@@ -133,7 +111,7 @@ class TransformerModel(BaseModel):
             self.num_classes,
         )
         self.optimizer = optim.Adam(
-            self.model.parameters(), lr=config.get("learning_rate", 1e-4)
+            self.model.parameters(), lr=config.get("learning_rate", 0.0001)
         )
         self.criterion = nn.BCELoss()
 
@@ -141,7 +119,7 @@ class TransformerModel(BaseModel):
         self,
         train_data: Dict[str, Any],
         validation_data: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> Any:
         """
         Trains the Transformer model.
 
@@ -150,23 +128,17 @@ class TransformerModel(BaseModel):
         """
         logger.info(f"Training Transformer model {self.name} v{self.version}...")
         self.model.train()
-
-        # Mock training loop
         num_epochs = self.config.get("epochs", 5)
         batch_size = self.config.get("batch_size", 32)
-
-        # Mock input: sequence length 50, batch size 32
         mock_input = torch.randint(0, self.vocab_size, (50, batch_size))
         mock_target = torch.rand(batch_size, self.num_classes)
-
         for epoch in range(num_epochs):
             self.optimizer.zero_grad()
             output = self.model(mock_input)
             loss = self.criterion(output, mock_target)
             loss.backward()
             self.optimizer.step()
-            logger.info(f"Epoch {epoch+1}/{num_epochs}, Loss: {loss.item():.4f}")
-
+            logger.info(f"Epoch {epoch + 1}/{num_epochs}, Loss: {loss.item():.4f}")
         logger.info("Transformer training complete.")
 
     def predict(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -180,31 +152,24 @@ class TransformerModel(BaseModel):
             A dictionary with prediction results.
         """
         self.model.eval()
-
-        # Mock input data (batch size 1)
-        # Sequence length 50, batch size 1
         mock_input = torch.randint(0, self.vocab_size, (50, 1))
-
         with torch.no_grad():
             prediction_proba = self.model(mock_input).item()
-
-        # Mock uncertainty calculation
         uncertainty = np.random.uniform(0.05, 0.15)
-
         return {
             "risk_score": float(prediction_proba),
             "prediction_class": "High Risk" if prediction_proba > 0.5 else "Low Risk",
             "uncertainty": {"std_dev": float(uncertainty)},
         }
 
-    def save(self, path: Optional[str] = None):
+    def save(self, path: Optional[str] = None) -> Any:
         """Saves the model state dictionary to the specified path."""
         save_path = path or self.model_path
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         torch.save(self.model.state_dict(), save_path)
         logger.info(f"Transformer model saved to {save_path}")
 
-    def load(self, path: Optional[str] = None):
+    def load(self, path: Optional[str] = None) -> Any:
         """Loads the model state dictionary from the specified path."""
         load_path = path or self.model_path
         self.model.load_state_dict(torch.load(load_path))
@@ -215,12 +180,11 @@ class TransformerModel(BaseModel):
         """
         Generates explanations for the prediction.
         """
-        # Mock explanation: return attention weights for key concepts
         explanation = {
             "explanation_method": "Mock Attention Weights",
             "attention_scores": [
                 {"concept": "Diagnosis: I10 (Hypertension)", "weight": 0.45},
-                {"concept": "Medication: Lisinopril", "weight": 0.30},
+                {"concept": "Medication: Lisinopril", "weight": 0.3},
                 {"concept": "Age: 65+", "weight": 0.15},
             ],
             "details": "This is a mock explanation based on the transformer's attention mechanism.",

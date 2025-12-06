@@ -9,9 +9,7 @@ import os
 import shutil
 import tempfile
 import unittest
-
 import pandas as pd
-
 from ...data_pipeline.hipaa_compliance.deidentifier import (
     DeidentificationConfig,
     PHIDeidentifier,
@@ -20,19 +18,14 @@ from ...data_pipeline.hipaa_compliance.phi_detector import PHIDetector
 from ...validation.pipeline_validator import PipelineValidator
 
 
-# Mock the ETL class for testing purposes
 class MockHIPAACompliantHealthcareETL:
     """A mock ETL class that simulates the de-identification step."""
 
-    def __init__(self, deidentifier):
+    def __init__(self, deidentifier: Any) -> Any:
         self.deidentifier = deidentifier
 
     def process_data(self, data: pd.DataFrame) -> pd.DataFrame:
         """Simulates the ETL process, focusing on de-identification."""
-        # In a real scenario, this would involve more steps (parsing, validation, feature gen)
-        # For this test, we only focus on the de-identification step
-
-        # Assume the data is passed through the de-identifier
         deidentified_data = self.deidentifier.deidentify_dataframe(
             data,
             patient_id_col="patient_id",
@@ -47,16 +40,14 @@ class MockHIPAACompliantHealthcareETL:
                 "discharge_date",
             ],
         )
-
         return deidentified_data
 
 
 class TestHIPAACompliance(unittest.TestCase):
     """Test HIPAA compliance of the de-identification module."""
 
-    def setUp(self):
+    def setUp(self) -> Any:
         """Set up test fixtures."""
-        # Create sample data with PHI
         self.sample_data = pd.DataFrame(
             {
                 "patient_id": ["P001", "P002", "P003", "P004", "P005"],
@@ -120,8 +111,6 @@ class TestHIPAACompliance(unittest.TestCase):
                 "readmission_risk": [0.2, 0.7, 0.4, 0.1, 0.8],
             }
         )
-
-        # Create de-identification config
         self.config = DeidentificationConfig(
             hash_patient_ids=True,
             remove_names=True,
@@ -134,41 +123,26 @@ class TestHIPAACompliance(unittest.TestCase):
             age_threshold=89,
             shift_dates=True,
         )
-
-        # Create de-identifier
         self.deidentifier = PHIDeidentifier(self.config)
-
-        # Create PHI detector
         self.phi_detector = PHIDetector()
-
-        # Create temporary directory for test outputs
         self.temp_dir = tempfile.mkdtemp()
 
-    def tearDown(self):
+    def tearDown(self) -> Any:
         """Tear down test fixtures."""
-        # Clean up temporary directory
         shutil.rmtree(self.temp_dir)
 
-    def test_phi_detection(self):
+    def test_phi_detection(self) -> Any:
         """Test PHI detection functionality."""
-        # Detect PHI in sample data
         phi_report = self.phi_detector.generate_phi_report(self.sample_data)
-
-        # Verify PHI detection results
         self.assertGreater(len(phi_report["summary"]["phi_columns"]), 0)
         self.assertIn("name", phi_report["column_details"])
         self.assertIn("ssn", phi_report["column_details"])
         self.assertIn("address", phi_report["column_details"])
 
-    def test_deidentification(self):
+    def test_deidentification(self) -> Any:
         """Test de-identification functionality."""
-        # De-identify sample data
         deidentified_data = self.deidentifier.deidentify_dataframe(self.sample_data)
-
-        # Verify de-identification results
         self.assertEqual(len(deidentified_data), len(self.sample_data))
-
-        # Check that PHI has been removed or transformed
         self.assertNotEqual(
             deidentified_data["patient_id"].iloc[0],
             self.sample_data["patient_id"].iloc[0],
@@ -178,8 +152,6 @@ class TestHIPAACompliance(unittest.TestCase):
         self.assertEqual(deidentified_data["address"].iloc[0], "[REDACTED]")
         self.assertEqual(deidentified_data["phone"].iloc[0], "[REDACTED]")
         self.assertEqual(deidentified_data["email"].iloc[0], "[REDACTED]")
-
-        # Check that dates have been shifted
         self.assertNotEqual(
             deidentified_data["admission_date"].iloc[0],
             self.sample_data["admission_date"].iloc[0],
@@ -188,8 +160,6 @@ class TestHIPAACompliance(unittest.TestCase):
             deidentified_data["discharge_date"].iloc[0],
             self.sample_data["discharge_date"].iloc[0],
         )
-
-        # Check that non-PHI data is preserved
         self.assertEqual(
             deidentified_data["diagnosis"].iloc[0],
             self.sample_data["diagnosis"].iloc[0],
@@ -199,36 +169,23 @@ class TestHIPAACompliance(unittest.TestCase):
             self.sample_data["readmission_risk"].iloc[0],
         )
 
-    def test_phi_leakage(self):
+    def test_phi_leakage(self) -> Any:
         """Test for PHI leakage after de-identification."""
-        # De-identify sample data
         deidentified_data = self.deidentifier.deidentify_dataframe(self.sample_data)
-
-        # Detect PHI in de-identified data
         phi_report = self.phi_detector.generate_phi_report(deidentified_data)
-
-        # Verify no high-risk PHI remains
         high_risk_columns = [
             col
             for col, details in phi_report["column_details"].items()
             if details["risk_level"] == "high"
         ]
-
         self.assertEqual(len(high_risk_columns), 0)
 
-    def test_validation_pipeline(self):
+    def test_validation_pipeline(self) -> Any:
         """Test the validation pipeline."""
-        # Save sample data to temporary file
         data_path = os.path.join(self.temp_dir, "sample_data.csv")
         self.sample_data.to_csv(data_path, index=False)
-
-        # Create validator
         validator = PipelineValidator(output_dir=self.temp_dir)
-
-        # Validate de-identification
         results = validator.validate_deidentification(self.sample_data, self.config)
-
-        # Verify validation results
         self.assertIn("original_phi_columns", results)
         self.assertIn("remaining_phi_columns", results)
         self.assertIn("phi_types_detected", results)
@@ -238,9 +195,8 @@ class TestHIPAACompliance(unittest.TestCase):
 class TestFHIRDeidentification(unittest.TestCase):
     """Test de-identification of FHIR resources."""
 
-    def setUp(self):
+    def setUp(self) -> Any:
         """Set up test fixtures."""
-        # Create sample FHIR bundle
         self.fhir_bundle = {
             "resourceType": "Bundle",
             "type": "collection",
@@ -315,8 +271,6 @@ class TestFHIRDeidentification(unittest.TestCase):
                 },
             ],
         }
-
-        # Create de-identification config
         self.config = DeidentificationConfig(
             hash_patient_ids=True,
             remove_names=True,
@@ -329,51 +283,36 @@ class TestFHIRDeidentification(unittest.TestCase):
             age_threshold=89,
             shift_dates=True,
         )
-
-        # Create de-identifier
         self.deidentifier = PHIDeidentifier(self.config)
 
-    def test_fhir_deidentification(self):
+    def test_fhir_deidentification(self) -> Any:
         """Test de-identification of FHIR bundle."""
-        # De-identify FHIR bundle
         deidentified_bundle = self.deidentifier.deidentify_fhir_bundle(self.fhir_bundle)
-
-        # Verify Patient resource de-identification
         patient = None
         for entry in deidentified_bundle["entry"]:
             if entry["resource"]["resourceType"] == "Patient":
                 patient = entry["resource"]
                 break
-
         self.assertIsNotNone(patient)
-
-        # Check that PHI has been removed or transformed
         self.assertNotIn("name", patient)
         self.assertNotIn("telecom", patient)
         self.assertNotIn("birthDate", patient)
         self.assertNotIn("address", patient)
-
-        # Check that identifiers are hashed
         original_mrn = self.fhir_bundle["entry"][0]["resource"]["identifier"][0][
             "value"
         ]
         deidentified_mrn = patient["identifier"][0]["value"]
         self.assertNotEqual(original_mrn, deidentified_mrn)
-
-        # Check that dates in other resources are shifted
         encounter = deidentified_bundle["entry"][1]["resource"]
         original_start_date = self.fhir_bundle["entry"][1]["resource"]["period"][
             "start"
         ]
         deidentified_start_date = encounter["period"]["start"]
         self.assertNotEqual(original_start_date, deidentified_start_date)
-
-        # Check that non-PHI data is preserved
         self.assertEqual(patient["gender"], "male")
 
-    def test_pipeline_integration(self):
+    def test_pipeline_integration(self) -> Any:
         """Test integration with the clinical data pipeline."""
-        # Create de-identification config
         config = DeidentificationConfig(
             hash_patient_ids=True,
             remove_names=True,
@@ -387,15 +326,9 @@ class TestFHIRDeidentification(unittest.TestCase):
             shift_dates=True,
         )
         deidentifier = PHIDeidentifier(config)
-
-        # Use the mock ETL class to simulate the pipeline
         etl_mock = MockHIPAACompliantHealthcareETL(deidentifier)
         deidentified_data = etl_mock.process_data(self.sample_data)
-
-        # Verify de-identification results
         self.assertEqual(len(deidentified_data), len(self.sample_data))
-
-        # Check that PHI has been removed or transformed
         self.assertNotEqual(
             deidentified_data["patient_id"].iloc[0],
             self.sample_data["patient_id"].iloc[0],
@@ -405,8 +338,6 @@ class TestFHIRDeidentification(unittest.TestCase):
         self.assertEqual(deidentified_data["address"].iloc[0], "[REDACTED]")
         self.assertEqual(deidentified_data["phone"].iloc[0], "[REDACTED]")
         self.assertEqual(deidentified_data["email"].iloc[0], "[REDACTED]")
-
-        # Check that dates have been shifted
         self.assertNotEqual(
             deidentified_data["admission_date"].iloc[0],
             self.sample_data["admission_date"].iloc[0],
@@ -415,8 +346,6 @@ class TestFHIRDeidentification(unittest.TestCase):
             deidentified_data["discharge_date"].iloc[0],
             self.sample_data["discharge_date"].iloc[0],
         )
-
-        # Verify that non-PHI data is preserved
         self.assertEqual(
             deidentified_data["diagnosis"].iloc[0],
             self.sample_data["diagnosis"].iloc[0],
