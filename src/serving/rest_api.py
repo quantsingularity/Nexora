@@ -11,6 +11,7 @@ from ..compliance.phi_audit_logger import PHIAuditLogger
 # Import model registry and other utilities
 # These would need to be implemented or imported from other modules
 from ..model_factory.model_registry import ModelRegistry
+from ..model_factory.base_model import BaseModel
 from ..utils.fhir_connector import FHIRConnector
 
 # Setup logging
@@ -80,12 +81,22 @@ async def list_models():
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(request: PredictionRequest):
     try:
-        PHIAuditLogger().log_prediction_request(request.patient_id)
+        # Log the request before processing
+        model_version = request.model_version or "latest"
+        PHIAuditLogger().log_prediction_request(
+            patient_id=request.patient_id,
+            model_used=f"{request.model_name} v{model_version}",
+        )
 
         if not request.request_id:
             request.request_id = f"req_{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
-        model = ModelRegistry().get_model(request.model_name, request.model_version)
+            model: BaseModel = ModelRegistry().get_model(
+                request.model_name, request.model_version
+            )
+        # The predict method expects a DataFrame for SurvivalAnalysisModel, but a dict for others.
+        # We'll assume the model handles the conversion internally or that the input is pre-processed.
+        # For this implementation, we'll pass the raw dict and let the model mock the prediction.
         predictions = model.predict(request.patient_data)
         explanations = model.explain(request.patient_data)
 

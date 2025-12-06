@@ -41,6 +41,21 @@ class PHIAuditLogger:
         )
         self.conn.commit()
 
+    def log_prediction_request(
+        self, patient_id: str, user_id: str = "API_USER", model_used: str = "UNKNOWN"
+    ):
+        """
+        Logs a prediction request which involves accessing PHI.
+        """
+        self.log_access(
+            user_id=user_id,
+            patient_id=patient_id,
+            resource_type="PredictionRequest",
+            operation="READ",
+            justification="Clinical Decision Support",
+            model=model_used,
+        )
+
     def generate_report(self, start_date, end_date):
         cursor = self.conn.execute(
             """SELECT * FROM access_logs

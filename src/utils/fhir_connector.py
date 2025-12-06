@@ -12,8 +12,9 @@ import logging
 import os
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+
 from urllib.parse import parse_qs, urljoin, urlparse
+from typing import Dict, Any, List, Optional
 
 import pandas as pd
 import requests
@@ -1364,3 +1365,91 @@ class FHIRConnector:
 
         logger.info(f"Import statistics: {stats}")
         return stats
+
+    def get_patient_data(self, patient_id: str) -> Dict[str, Any]:
+        """
+        Retrieves a FHIR Bundle containing all relevant clinical data for a patient
+        and formats it into the PatientData structure expected by the prediction API.
+
+        Args:
+            patient_id: The unique identifier for the patient.
+
+        Returns:
+            A dictionary representing the PatientData structure.
+        """
+        logger.info(f"Fetching and formatting data for patient ID: {patient_id}")
+
+        # 1. Get Patient Resource
+        try:
+            patient_resource = self.get("Patient", patient_id)
+        except Exception as e:
+            raise ValueError(f"Patient {patient_id} not found or error: {e}")
+
+        # 2. Get related resources
+        # Search for Observations, Conditions, and MedicationRequests linked to the patient
+        search_params = {"patient": patient_id}
+
+        observations = self.search("Observation", params=search_params)
+        conditions = self.search("Condition", params=search_params)
+        medication_requests = self.search("MedicationRequest", params=search_params)
+
+        # 3. Extract and format demographics
+        demographics = {
+            "gender": patient_resource.get("gender"),
+            "birthDate": patient_resource.get("birthDate"),
+            "maritalStatus": patient_resource.get("maritalStatus", {}).get("text"),
+            # Add more demographics as needed
+        }
+
+        # 4. Extract and format clinical events (simplified for this implementation)
+        clinical_events = []
+        for condition in conditions:
+            clinical_events.append(
+                {
+                    "type": "diagnosis",
+                    "date": condition.get("onsetDateTime")
+                    or condition.get("recordedDate"),
+                    "code": condition.get("code", {})
+                    .get("coding", [{}])[0]
+                    .get("code"),
+                    "description": condition.get("code", {}).get("text"),
+                }
+            )
+
+        # 5. Extract and format lab results (Observations)
+        lab_results = []
+        for obs in observations:
+            if (
+                obs.get("category", [{}])[0].get("coding", [{}])[0].get("code")
+                == "laboratory"
+            ):
+                lab_results.append(
+                    {
+                        "name": obs.get("code", {}).get("text"),
+                        "value": obs.get("valueQuantity", {}).get("value"),
+                        "unit": obs.get("valueQuantity", {}).get("unit"),
+                        "date": obs.get("effectiveDateTime"),
+                    }
+                )
+
+        # 6. Extract and format medications
+        medications = []
+        for med_req in medication_requests:
+            medications.append(
+                {
+                    "name": med_req.get("medicationCodeableConcept", {}).get("text"),
+                    "dosage": med_req.get("dosage", [{}])[0].get("text"),
+                    "status": med_req.get("status"),
+                }
+            )
+
+        # 7. Construct the final PatientData object
+        patient_data = {
+            "patient_id": patient_id,
+            "demographics": demographics,
+            "clinical_events": clinical_events,
+            "lab_results": lab_results,
+            "medications": medications,
+        }
+
+        return patient_data

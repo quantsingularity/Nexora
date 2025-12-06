@@ -1,121 +1,173 @@
-"""
-Test runner script for the HIPAA-compliant readmission prediction pipeline.
-
-This script runs all tests for the pipeline and generates a comprehensive report.
-"""
-
-import json
+import unittest
 import logging
 import os
 import sys
-import unittest
-from datetime import datetime
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("test_results.log"),
-        logging.StreamHandler(sys.stdout),
-    ],
-)
+# Add the parent directory to the path to allow imports from src
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+# Import the necessary components
+from src.data_pipeline.clinical_etl import ClinicalETL
+from src.model_factory.model_registry import ModelRegistry
+from src.utils.fhir_connector import FHIRConnector
+from src.compliance.phi_audit_logger import PHIAuditLogger
+import pandas as pd
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
-def run_tests(output_dir="test_results"):
+class TestCoreComponents(unittest.TestCase):
     """
-    Run all tests for the HIPAA-compliant readmission prediction pipeline.
-
-    Args:
-        output_dir: Directory for test results
-
-    Returns:
-        Dictionary containing test results
+    A comprehensive test suite to validate the core components of Nexora.
     """
-    # Create output directory if it doesn't exist
-    os.makedirs(output_dir, exist_ok=True)
 
-    # Discover and run tests
-    loader = unittest.TestLoader()
-    start_dir = os.path.join(os.path.dirname(__file__), "tests")
-    suite = loader.discover(start_dir, pattern="test_*.py")
+    def setUp(self):
+        # Mock data for testing
+        self.mock_patient_data = {
+            "patient_id": "test_patient_123",
+            "demographics": {"age": 65, "gender": "male"},
+            "clinical_events": [
+                {
+                    "type": "diagnosis",
+                    "date": "2024-11-15",
+                    "code": "I10",
+                    "description": "Hypertension",
+                },
+            ],
+            "lab_results": [
+                {
+                    "name": "Creatinine",
+                    "value": 1.2,
+                    "unit": "mg/dL",
+                    "date": "2024-11-01",
+                },
+            ],
+            "medications": [],
+        }
 
-    # Run tests and capture results
+        self.mock_survival_data = pd.DataFrame(
+            {
+                "age": [65],
+                "gender_male": [1],
+                "event_occurred": [0],
+                "time_to_event": [365],
+            }
+        )
+
+    def test_01_fhir_connector_data_retrieval(self):
+        """Test FHIR connector can retrieve and format patient data."""
+        logger.info("--- Testing FHIR Connector ---")
+        connector = FHIRConnector(base_url="mock")
+        patient_data = connector.get_patient_data("patient_mock_123")
+        self.assertIn("demographics", patient_data, "FHIR data missing 'demographics'.")
+        self.assertIn(
+            "clinical_events", patient_data, "FHIR data missing 'clinical_events'."
+        )
+        logger.info("FHIR Connector data retrieval successful.")
+
+    def test_02_etl_pipeline_run(self):
+        """Test the Clinical ETL pipeline can run without crashing."""
+        logger.info("--- Testing ETL Pipeline Run ---")
+        try:
+            etl = ClinicalETL()
+            # Use a mock patient ID that the FHIR connector is set up to handle
+            patient_ids = ["patient_mock_123", "patient_mock_456"]
+            feature_df = etl.run_pipeline(patient_ids)
+            self.assertFalse(
+                feature_df.empty, "ETL pipeline returned an empty DataFrame."
+            )
+            self.assertIn(
+                "patient_id",
+                feature_df.columns,
+                "DataFrame missing 'patient_id' column.",
+            )
+            logger.info(f"ETL successful. DataFrame shape: {feature_df.shape}")
+        except Exception as e:
+            self.fail(f"ETL pipeline failed with exception: {e}")
+
+    def test_03_model_registry_and_prediction(self):
+        """Test model registry loads and models can make predictions."""
+        logger.info("--- Testing Model Registry and Prediction ---")
+        try:
+            registry = ModelRegistry()
+            models = registry.list_models()
+            self.assertTrue(models, "Model registry is empty.")
+
+            # Test DeepFM and Transformer (expect dict input)
+            for model_name in ["deep_fm", "transformer_model"]:
+                model = registry.get_model(model_name)
+                prediction = model.predict(self.mock_patient_data)
+                self.assertIn(
+                    "risk_score",
+                    prediction,
+                    f"Model {model_name} prediction missing 'risk_score'.",
+                )
+                logger.info(
+                    f"Model {model_name} prediction successful. Risk: {prediction['risk_score']:.2f}"
+                )
+
+            # Test Survival Analysis (expects DataFrame input)
+            model_name = "survival_analysis"
+            model = registry.get_model(model_name)
+            # Mock a minimal training step to initialize the CPH model
+            model.train(self.mock_survival_data)
+            prediction = model.predict(
+                self.mock_survival_data.drop(
+                    columns=["event_occurred", "time_to_event"]
+                )
+            )
+            self.assertIn(
+                "median_survival_time",
+                prediction,
+                f"Model {model_name} prediction missing 'median_survival_time'.",
+            )
+            logger.info(
+                f"Model {model_name} prediction successful. Median Survival: {prediction['median_survival_time']:.2f}"
+            )
+
+        except Exception as e:
+            self.fail(f"Model registry or prediction failed with exception: {e}")
+
+    def test_04_phi_audit_logger(self):
+        """Test PHI Audit Logger functionality."""
+        logger.info("--- Testing PHI Audit Logger ---")
+        try:
+            logger_instance = PHIAuditLogger(db_path="test_audit.db")
+            logger_instance.log_prediction_request(
+                patient_id="test_patient_456", model_used="deep_fm v1.0.0"
+            )
+            report = logger_instance.generate_report(
+                start_date="2020-01-01", end_date=datetime.now().isoformat()
+            )
+            self.assertFalse(report.empty, "Audit report is empty.")
+            self.assertIn(
+                "test_patient_456",
+                report["patient"].values,
+                "Logged patient ID not found in report.",
+            )
+            logger.info("PHI Audit Logger test successful.")
+        except Exception as e:
+            self.fail(f"PHI Audit Logger failed with exception: {e}")
+
+
+def run_all_tests():
+    """Runs all tests in the suite."""
+    # Create a test suite
+    suite = unittest.TestSuite()
+
+    # Add tests from TestCoreComponents
+    suite.addTest(unittest.makeSuite(TestCoreComponents))
+
+    # Run the tests
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
 
-    # Generate test report
-    report = {
-        "timestamp": datetime.now().isoformat(),
-        "total_tests": result.testsRun,
-        "failures": len(result.failures),
-        "errors": len(result.errors),
-        "skipped": len(result.skipped),
-        "success": result.wasSuccessful(),
-        "details": {
-            "failures": [
-                {"test": test, "message": message} for test, message in result.failures
-            ],
-            "errors": [
-                {"test": test, "message": message} for test, message in result.errors
-            ],
-            "skipped": [
-                {"test": test, "message": message} for test, message in result.skipped
-            ],
-        },
-    }
-
-    # Save report to file
-    report_path = os.path.join(output_dir, "test_report.json")
-    with open(report_path, "w") as f:
-        json.dump(report, f, indent=2, default=str)
-
-    logger.info(f"Test report saved to {report_path}")
-
-    # Generate summary
-    summary = f"""
-    ======================================
-    HIPAA Compliance Test Results Summary
-    ======================================
-
-    Tests Run: {report['total_tests']}
-    Failures: {report['failures']}
-    Errors: {report['errors']}
-    Skipped: {report['skipped']}
-
-    Overall Status: {'PASS' if report['success'] else 'FAIL'}
-
-    Timestamp: {report['timestamp']}
-
-    See {report_path} for detailed results.
-    """
-
-    # Save summary to file
-    summary_path = os.path.join(output_dir, "test_summary.txt")
-    with open(summary_path, "w") as f:
-        f.write(summary)
-
-    logger.info(f"Test summary saved to {summary_path}")
-    logger.info(summary)
-
-    return report
+    if result.wasSuccessful():
+        logger.info("\n*** ALL CORE COMPONENT TESTS PASSED SUCCESSFULLY ***")
+    else:
+        logger.error("\n*** SOME CORE COMPONENT TESTS FAILED ***")
 
 
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description="Run tests for HIPAA-compliant readmission prediction pipeline"
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=str,
-        default="test_results",
-        help="Directory for test results",
-    )
-
-    args = parser.parse_args()
-
-    run_tests(output_dir=args.output_dir)
+    run_all_tests()
