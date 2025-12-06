@@ -22,6 +22,10 @@ from sklearn.model_selection import train_test_split
 from ..hipaa_compliance.deidentifier import DeidentificationConfig, PHIDeidentifier
 from ..hipaa_compliance.phi_detector import PHIDetector
 
+from core.logging import get_logger
+
+logger = get_logger(__name__)
+
 logger = logging.getLogger(__name__)
 
 
@@ -738,4 +742,4 @@ if __name__ == "__main__":
                 overall_status = "fail"
                 break
 
-    print(f"Overall validation status: {overall_status}")
+    logger.info(f"Overall validation status: {overall_status}")

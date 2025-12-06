@@ -39,6 +39,10 @@ from typing import Any, Dict, Optional, Tuple
 
 import yaml
 
+from core.logging import get_logger
+
+logger = get_logger(__name__)
+
 # Try to import optional dependencies
 try:
     import psutil
@@ -1519,8 +1523,7 @@ def main():
 
         # Print report if not saving to file
         if not args.output:
-            print(report)
-
+            logger.info(report)
         # Send notifications if enabled and checks failed
         if args.notify and results["status"] in ["FAIL", "ERROR"]:
             # Notification logic would go here
