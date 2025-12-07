@@ -160,4 +160,3 @@ Each script uses YAML configuration files that can be customized for specific en
   - psycopg2 (for PostgreSQL validation)
   - pandas, matplotlib (for report visualization)
   - jinja2, weasyprint (for PDF report generation)
-

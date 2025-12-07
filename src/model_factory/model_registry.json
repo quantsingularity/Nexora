@@ -1,29 +1,29 @@
 {
-    "deep_fm": {
-        "latest": {
-            "path": "models/deep_fm_v1.h5",
-            "config": {
-                "name": "deep_fm",
-                "version": "1.0.0"
-            }
-        }
-    },
-    "survival_analysis": {
-        "latest": {
-            "path": "models/survival_v1.pkl",
-            "config": {
-                "name": "survival_analysis",
-                "version": "1.0.0"
-            }
-        }
-    },
-    "transformer_model": {
-        "latest": {
-            "path": "models/transformer_v1.pt",
-            "config": {
-                "name": "transformer_model",
-                "version": "1.0.0"
-            }
-        }
+  "deep_fm": {
+    "latest": {
+      "path": "models/deep_fm_v1.h5",
+      "config": {
+        "name": "deep_fm",
+        "version": "1.0.0"
+      }
     }
+  },
+  "survival_analysis": {
+    "latest": {
+      "path": "models/survival_v1.pkl",
+      "config": {
+        "name": "survival_analysis",
+        "version": "1.0.0"
+      }
+    }
+  },
+  "transformer_model": {
+    "latest": {
+      "path": "models/transformer_v1.pt",
+      "config": {
+        "name": "transformer_model",
+        "version": "1.0.0"
+      }
+    }
+  }
 }
