@@ -88,7 +88,7 @@ Nexora leverages machine learning to predict patient readmission risk, helping h
 
 ```
 Nexora/
-├── src/                  # Core source code
+├── backend/                  # Core source code
 │   ├── data/             # Data processing and FHIR integration
 │   ├── models/           # ML models and prediction algorithms
 │   ├── api/              # API endpoints and services
@@ -141,7 +141,7 @@ model:
 ## Clinical Integration
 
 ```python
-from src.data.fhir_ops import FHIRClinicalConnector
+from backend.data.fhir_ops import FHIRClinicalConnector
 
 # Initialize the FHIR connector
 connector = FHIRClinicalConnector()
@@ -194,7 +194,7 @@ kubectl port-forward svc/grafana 3000:3000
 open http://localhost:3000/dashboards
 
 # Generate compliance report
-python -m src.compliance.generate_report \
+python -m backend.compliance.generate_report \
   --start-date 2023-08-01 \
   --end-date 2023-08-31 \
   --output compliance_report_august.pdf
