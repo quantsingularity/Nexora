@@ -1,13 +1,13 @@
-# Source Directory
+# Backend Directory
 
 ## Overview
 
-The src directory is the core of the Nexora system, containing all the source code for the backend components. This directory implements the clinical data processing pipelines, machine learning models, monitoring systems, and service interfaces that power the Nexora platform's healthcare analytics and prediction capabilities.
+The backend directory is the core of the Nexora system, containing all the source code for the backend components. This directory implements the clinical data processing pipelines, machine learning models, monitoring systems, and service interfaces that power the Nexora platform's healthcare analytics and prediction capabilities.
 
 ## Directory Structure
 
 ```
-src/
+backend/
 ├── compliance/
 │   └── phi_audit_logger.py
 ├── data/
@@ -138,7 +138,7 @@ The source code in this directory is used in various ways:
 1. **Data Processing**:
 
    ```python
-   from src.data_pipeline.clinical_etl import ClinicalETL
+   from backend.data_pipeline.clinical_etl import ClinicalETL
 
    etl = ClinicalETL(config_path)
    processed_data = etl.process(raw_data)
@@ -147,7 +147,7 @@ The source code in this directory is used in various ways:
 2. **Model Training**:
 
    ```python
-   from src.model_factory.deep_fm import DeepFMModel
+   from backend.model_factory.deep_fm import DeepFMModel
 
    model = DeepFMModel(config)
    model.train(train_data, validation_data)
@@ -158,16 +158,16 @@ The source code in this directory is used in various ways:
 
    ```bash
    # Start the REST API server
-   python -m src.serving.rest_api
+   python -m backend.serving.rest_api
 
    # Start the gRPC server
-   python -m src.serving.grpc_server
+   python -m backend.serving.grpc_server
    ```
 
 4. **Validation**:
    ```bash
    # Run validation tests
-   python -m src.validation.run_tests
+   python -m backend.validation.run_tests
    ```
 
 ## Development Guidelines
@@ -194,8 +194,7 @@ Specific version requirements are defined in the project's requirements.txt file
 
 ## Related Components
 
-- The source code is deployed using configurations in the `deployments/` directory.
 - Infrastructure for running the code is defined in the `infrastructure/` directory.
 - Exploratory analyses related to the code are in the `notebooks/` directory.
 - Tests for the code are in the `tests/` directory.
-- Web and mobile frontends consume the APIs defined in `src/serving/`.
+- Web and mobile frontends consume the APIs defined in `backend/serving/`.
