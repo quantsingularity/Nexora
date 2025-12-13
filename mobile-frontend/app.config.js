@@ -1,0 +1,34 @@
+export default {
+  expo: {
+    name: "Nexora Mobile",
+    slug: "nexora-mobile",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/icon.png",
+    userInterfaceStyle: "light",
+    splash: {
+      image: "./assets/splash-icon.png",
+      resizeMode: "contain",
+      backgroundColor: "#ffffff",
+    },
+    assetBundlePatterns: ["**/*"],
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "com.nexora.mobile",
+    },
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#ffffff",
+      },
+      package: "com.nexora.mobile",
+    },
+    web: {
+      favicon: "./assets/favicon.png",
+    },
+    extra: {
+      // This logic is now valid because we are using a JS file
+      apiBaseUrl: process.env.API_BASE_URL || "http://localhost:8000",
+    },
+  },
+};
