@@ -6,108 +6,46 @@ import {
   ActivityIndicator,
   ScrollView,
   Dimensions,
+  RefreshControl,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { Colors, Typography, Spacing, GlobalStyles } from "../theme/theme";
 import ScreenWrapper from "../components/ScreenWrapper";
 import Card from "../components/Card";
-
-// Mock API service - replace with actual API calls later
-const mockApiService = {
-  getPatientDetails: async (patientId) => {
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    if (patientId === "p001") {
-      return {
-        id: "p001",
-        name: "John Doe",
-        risk: 0.75,
-        predictions: {
-          risk: 0.75,
-          top_features: [
-            "age > 60",
-            "previous_admissions > 2",
-            "diabetes diagnosis",
-          ],
-          cohort_size: 120,
-          shap_features: ["Age", "Prev Adm", "Diabetes", "HTN", "HF"],
-          shap_values: [0.3, 0.25, 0.2, 0.15, 0.1],
-        },
-        explanations: { method: "SHAP", values: [0.3, 0.25, 0.2, 0.15, 0.1] },
-        uncertainty: { confidence_interval: [0.65, 0.85] },
-        timeline: [
-          { event: "Admission", date: "2024-04-10" },
-          { event: "Lab Test (High Glucose)", date: "2024-04-11" },
-          { event: "Diagnosis: HF", date: "2024-04-12" },
-          { event: "Discharge", date: "2024-04-18" },
-        ],
-      };
-    } else if (patientId === "p003") {
-      return {
-        id: "p003",
-        name: "Robert Johnson",
-        risk: 0.85,
-        predictions: {
-          risk: 0.85,
-          top_features: [
-            "multiple comorbidities",
-            "age > 55",
-            "lab_value_x abnormal",
-          ],
-          cohort_size: 95,
-          shap_features: ["Comorb", "Age", "Lab X", "Med Y", "Prev Adm"],
-          shap_values: [0.4, 0.2, 0.15, 0.05, 0.05],
-        },
-        explanations: { method: "SHAP", values: [0.4, 0.2, 0.15, 0.05, 0.05] },
-        uncertainty: { confidence_interval: [0.78, 0.92] },
-        timeline: [
-          { event: "Admission", date: "2024-04-05" },
-          { event: "Surgery", date: "2024-04-07" },
-          { event: "ICU Stay", date: "2024-04-08" },
-          { event: "Discharge", date: "2024-04-20" },
-        ],
-      };
-    }
-    // Default mock data for other patients
-    return {
-      id: patientId,
-      name: "Default Patient",
-      risk: 0.55,
-      predictions: {
-        risk: 0.55,
-        top_features: ["feature_a", "feature_b", "feature_c"],
-        cohort_size: 150,
-        shap_features: ["Feat A", "Feat B", "Feat C", "Feat D", "Feat E"],
-        shap_values: [0.2, 0.15, 0.1, 0.05, 0.05],
-      },
-      explanations: { method: "SHAP", values: [0.2, 0.15, 0.1, 0.05, 0.05] },
-      uncertainty: { confidence_interval: [0.45, 0.65] },
-      timeline: [],
-    };
-  },
-};
+import apiService from "../services/api";
 
 const PatientDetailScreen = ({ route, navigation }) => {
   const { patientId, patientName } = route.params;
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const loadDetails = async (isRefreshing = false) => {
+    try {
+      if (!isRefreshing) setLoading(true);
+      setError(null);
+
+      const patientDetails = await apiService.getPatientDetails(patientId);
+      setDetails(patientDetails);
+    } catch (error) {
+      console.error("Failed to load patient details:", error);
+      setError("Failed to load patient details. Please try again.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    navigation.setOptions({ title: patientName || "Prediction Details" }); // Set header title dynamically
-    const loadDetails = async () => {
-      setLoading(true);
-      try {
-        const patientDetails =
-          await mockApiService.getPatientDetails(patientId);
-        setDetails(patientDetails);
-      } catch (error) {
-        console.error("Failed to load patient details:", error);
-        // Consider adding user-facing error feedback
-      } finally {
-        setLoading(false);
-      }
-    };
+    navigation.setOptions({ title: patientName || "Prediction Details" });
     loadDetails();
   }, [patientId, patientName, navigation]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    loadDetails(true);
+  };
 
   if (loading) {
     return (
@@ -117,10 +55,12 @@ const PatientDetailScreen = ({ route, navigation }) => {
     );
   }
 
-  if (!details) {
+  if (error || !details) {
     return (
-      <ScreenWrapper style={GlobalStyles.centered}>
-        <Text style={Typography.body1}>Could not load patient details.</Text>
+      <ScreenWrapper style={GlobalStyles.centered} testID="patient-details">
+        <Text style={Typography.body1} testID="error-message">
+          {error || "Could not load patient details."}
+        </Text>
       </ScreenWrapper>
     );
   }
@@ -136,38 +76,47 @@ const PatientDetailScreen = ({ route, navigation }) => {
     backgroundGradientFromOpacity: 1,
     backgroundGradientTo: Colors.surface,
     backgroundGradientToOpacity: 1,
-    color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`, // Colors.primary
-    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Colors.text
-    strokeWidth: 2, // optional, default 3
+    color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    strokeWidth: 2,
     barPercentage: 0.5,
-    useShadows: false, // Optional: add shadows to bars
+    useShadows: false,
     propsForLabels: {
-      fontSize: 10, // Smaller font size for labels
+      fontSize: 10,
     },
   };
 
   const shapData = {
-    labels: details.predictions.shap_features.slice(0, 5), // Top 5 features
+    labels: details.predictions.shap_features.slice(0, 5),
     datasets: [
       {
         data: details.predictions.shap_values.slice(0, 5),
-        color: (opacity = 1) => `rgba(88, 86, 214, ${opacity})`, // Colors.secondary
-        strokeWidth: 2, // optional
+        color: (opacity = 1) => `rgba(88, 86, 214, ${opacity})`,
+        strokeWidth: 2,
       },
     ],
-    legend: ["SHAP Value Impact"], // optional
+    legend: ["SHAP Value Impact"],
   };
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper testID="patient-details">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[Colors.primary]}
+            tintColor={Colors.primary}
+          />
+        }
       >
         <Card style={styles.riskCard}>
           <Text style={styles.sectionTitle}>Overall Risk Score</Text>
           <Text
             style={[styles.riskText, { color: getRiskColor(details.risk) }]}
+            testID="risk-score"
           >
             {`${(details.risk * 100).toFixed(0)}%`}
           </Text>
@@ -178,6 +127,11 @@ const PatientDetailScreen = ({ route, navigation }) => {
             {`${(details.uncertainty.confidence_interval[1] * 100).toFixed(0)}%`}
             ]
           </Text>
+          {details.name && (
+            <Text style={styles.patientNameText} testID="patient-name">
+              {details.name}
+            </Text>
+          )}
         </Card>
 
         <Card>
@@ -186,15 +140,16 @@ const PatientDetailScreen = ({ route, navigation }) => {
             data={shapData}
             width={
               Dimensions.get("window").width - Spacing.md * 2 - Spacing.md * 2
-            } // Screen width - screen padding - card padding
+            }
             height={220}
             chartConfig={chartConfig}
-            bezier // Makes the line chart smooth
+            bezier
             style={styles.chart}
             yAxisLabel="Impact "
             yAxisSuffix=""
-            fromZero // Start y-axis from 0
-            segments={4} // Number of horizontal grid lines
+            fromZero
+            segments={4}
+            testID="risk-chart"
           />
         </Card>
 
@@ -208,9 +163,9 @@ const PatientDetailScreen = ({ route, navigation }) => {
           ))}
         </Card>
 
-        <Card>
+        <Card testID="clinical-history-list">
           <Text style={styles.sectionTitle}>Patient Timeline</Text>
-          {details.timeline.length > 0 ? (
+          {details.timeline && details.timeline.length > 0 ? (
             details.timeline.map((event, index) => (
               <View key={index} style={styles.timelineItem}>
                 <Text style={styles.timelineDate}>{event.date}:</Text>
@@ -228,11 +183,11 @@ const PatientDetailScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   scrollContainer: {
-    paddingBottom: Spacing.md, // Ensure space at the bottom
+    paddingBottom: Spacing.md,
   },
   riskCard: {
     alignItems: "center",
-    backgroundColor: Colors.surface, // Ensure card background
+    backgroundColor: Colors.surface,
   },
   sectionTitle: {
     ...Typography.h4,
@@ -242,7 +197,7 @@ const styles = StyleSheet.create({
   },
   riskText: {
     ...Typography.h1,
-    fontSize: 48, // Larger font size for emphasis
+    fontSize: 48,
     fontWeight: "bold",
     marginBottom: Spacing.xs,
   },
@@ -250,6 +205,11 @@ const styles = StyleSheet.create({
     ...Typography.body2,
     color: Colors.textSecondary,
     marginBottom: Spacing.sm,
+  },
+  patientNameText: {
+    ...Typography.body1,
+    color: Colors.text,
+    fontWeight: "600",
   },
   chart: {
     borderRadius: 8,
@@ -264,12 +224,12 @@ const styles = StyleSheet.create({
     ...Typography.body1,
     color: Colors.primary,
     marginRight: Spacing.sm,
-    lineHeight: Typography.body1.fontSize * 1.4, // Adjust line height for alignment
+    lineHeight: Typography.body1.fontSize * 1.4,
   },
   listItemText: {
     ...Typography.body1,
     color: Colors.text,
-    flex: 1, // Allow text to wrap
+    flex: 1,
     lineHeight: Typography.body1.fontSize * 1.4,
   },
   timelineItem: {
@@ -281,7 +241,7 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.textSecondary,
     fontWeight: "600",
-    width: 90, // Fixed width for date alignment
+    width: 90,
   },
   timelineEvent: {
     ...Typography.body2,

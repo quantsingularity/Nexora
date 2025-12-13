@@ -1,4 +1,4 @@
-describe("Example", () => {
+describe("Basic Navigation", () => {
   beforeAll(async () => {
     await device.launchApp();
   });
@@ -7,12 +7,16 @@ describe("Example", () => {
     await device.reloadReactNative();
   });
 
-  it("should show welcome screen", async () => {
-    await expect(element(by.id("welcome"))).toBeVisible();
+  it("should show login screen on launch", async () => {
+    await expect(element(by.id("login-screen"))).toBeVisible();
   });
 
-  it("should navigate to login screen", async () => {
-    await element(by.id("login-button")).tap();
-    await expect(element(by.id("login-screen"))).toBeVisible();
+  it("should show login button", async () => {
+    await expect(element(by.id("login-button"))).toBeVisible();
+  });
+
+  it("should have username and password inputs", async () => {
+    await expect(element(by.id("username-input"))).toBeVisible();
+    await expect(element(by.id("password-input"))).toBeVisible();
   });
 });

@@ -14,12 +14,16 @@ const CustomButton = ({
   textStyle,
   disabled,
   loading,
+  testID,
+  ...props
 }) => {
   return (
     <TouchableOpacity
       style={[styles.button, disabled || loading ? styles.disabled : {}, style]}
       onPress={onPress}
       disabled={disabled || loading}
+      testID={testID}
+      {...props}
     >
       {loading ? (
         <ActivityIndicator color={Colors.surface} />
@@ -33,12 +37,12 @@ const CustomButton = ({
 const styles = StyleSheet.create({
   button: {
     backgroundColor: Colors.primary,
-    paddingVertical: Spacing.sm + 4, // 12
+    paddingVertical: Spacing.sm + 4,
     paddingHorizontal: Spacing.md,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 44, // Ensure minimum touch target size
+    minHeight: 44,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },

@@ -1,172 +1,282 @@
-# Mobile Frontend Directory
+# Nexora Mobile Frontend
 
-## Overview
+A React Native (Expo) mobile application for healthcare professionals to access patient risk predictions and clinical decision support on-the-go.
 
-The mobile-frontend directory contains the React Native application that serves as the mobile client interface for the Nexora system. This cross-platform mobile application provides healthcare professionals with on-the-go access to patient data, clinical predictions, and decision support tools, optimized for smartphone and tablet devices.
+## Features
 
-## Directory Structure
+- **Patient List**: View and search through patient risk scores
+- **Risk Predictions**: Detailed risk analysis with SHAP explanations
+- **Real-time Updates**: Pull-to-refresh for latest patient data
+- **Offline Support**: Fallback to cached data when backend is unavailable
+- **Secure Authentication**: Token-based authentication with AsyncStorage
 
-```
-mobile-frontend/
-├── .detoxrc.js
-├── .expo/
-│   ├── README.md
-│   └── devices.json
-├── App.js
-├── app.json
-├── assets/
-│   ├── adaptive-icon.png
-│   ├── favicon.png
-│   ├── icon.png
-│   └── splash-icon.png
-├── e2e/
-│   ├── firstTest.e2e.js
-│   └── patient-workflow.e2e.js
-├── index.js
-├── jest.config.js
-├── package-lock.json
-├── package.json
-├── src/
-│   ├── __tests__/
-│   │   └── App.test.js
-│   ├── components/
-│   │   ├── Card.js
-│   │   ├── CustomButton.js
-│   │   ├── CustomInput.js
-│   │   ├── ScreenWrapper.js
-│   │   └── __tests__/
-│   │       └── PatientCard.test.js
-│   ├── navigation/
-│   │   └── AppNavigator.js
-│   ├── screens/
-│   │   ├── HomeScreen.js
-│   │   ├── LoginScreen.js
-│   │   └── PatientDetailScreen.js
-│   ├── services/
-│   │   └── api.js
-│   └── theme/
-│       └── theme.js
-└── yarn.lock
+## Tech Stack
+
+- **Framework**: React Native with Expo SDK 52
+- **Navigation**: React Navigation v7
+- **State Management**: React Hooks
+- **API Client**: Axios
+- **Charts**: React Native Chart Kit
+- **Testing**: Jest + React Native Testing Library + Detox
+
+## Prerequisites
+
+- Node.js 18+ and npm/yarn
+- Expo CLI (`npm install -g expo-cli`)
+- For iOS: Xcode and iOS Simulator (macOS only)
+- For Android: Android Studio and Android Emulator
+- Backend API running (see main project README)
+
+## Installation
+
+### 1. Install Dependencies
+
+```bash
+cd mobile-frontend
+npm install
+# or
+yarn install
 ```
 
-## Contents Description
+### 2. Configure Environment
 
-### Root Files
+Copy the example environment file and update with your backend URL:
 
-- **App.js**: The main application component that serves as the entry point for the React Native app.
-- **app.json**: Configuration file for Expo, containing app metadata like name, version, and platform-specific settings.
-- **index.js**: JavaScript entry point that registers the main App component.
-- **.detoxrc.js**: Configuration file for Detox, an end-to-end testing framework for mobile apps.
-- **jest.config.js**: Configuration file for Jest testing framework.
-- **package.json**: Node.js package configuration file defining dependencies, scripts, and metadata.
-- **yarn.lock** and **package-lock.json**: Lock files ensuring consistent dependency installations.
+```bash
+cp .env.example .env
+```
 
-### Subdirectories
+Edit `.env` and set:
 
-#### .expo/
+```env
+API_BASE_URL=http://YOUR_BACKEND_HOST:8000
 
-Contains Expo-specific configuration files:
+# For Android Emulator use: http://10.0.2.2:8000
+# For iOS Simulator use: http://localhost:8000
+# For physical device use: http://YOUR_MACHINE_IP:8000
+```
 
-- **README.md**: Documentation for Expo configuration.
-- **devices.json**: Configuration for Expo development devices.
+### 3. Start Development Server
 
-#### assets/
+```bash
+npm start
+# or
+yarn start
+```
 
-Contains static assets used in the application:
+This will start the Expo development server. You can then:
 
-- **icon.png**: Main application icon.
-- **adaptive-icon.png**: Adaptive icon for Android devices.
-- **favicon.png**: Favicon for web versions of the app.
-- **splash-icon.png**: Image displayed during app loading.
+- Press `i` to open iOS simulator
+- Press `a` to open Android emulator
+- Scan QR code with Expo Go app on your physical device
 
-#### e2e/
+## Running on Devices/Emulators
 
-Contains end-to-end tests using Detox:
+### iOS Simulator (macOS only)
 
-- **firstTest.e2e.js**: Initial test suite for basic app functionality.
-- **patient-workflow.e2e.js**: Tests for patient-related workflows.
+```bash
+npm run ios
+# or
+yarn ios
+```
 
-#### src/
+### Android Emulator
 
-Contains the main source code for the application:
-
-- \***\*tests**/\*\*: Unit tests for the application components.
-  - **App.test.js**: Tests for the main App component.
-
-- **components/**: Reusable UI components.
-  - **Card.js**: Generic card component for displaying content.
-  - **CustomButton.js**: Styled button component.
-  - **CustomInput.js**: Styled input component.
-  - **ScreenWrapper.js**: Wrapper component for consistent screen layouts.
-  - \***\*tests**/PatientCard.test.js\*\*: Tests for the PatientCard component.
-
-- **navigation/**: Navigation configuration.
-  - **AppNavigator.js**: Main navigation structure using React Navigation.
-
-- **screens/**: Screen components representing full pages in the app.
-  - **HomeScreen.js**: Main dashboard screen.
-  - **LoginScreen.js**: Authentication screen.
-  - **PatientDetailScreen.js**: Detailed patient information screen.
-
-- **services/**: Service modules for external interactions.
-  - **api.js**: API client for communicating with the backend services.
-
-- **theme/**: Styling and theming.
-  - **theme.js**: Theme configuration including colors, typography, and spacing.
-
-## Setup and Installation
-
-To set up the mobile frontend for development:
-
-1. **Install dependencies**:
-
-   ```bash
-   cd mobile-frontend
-   npm install
-   # or
-   yarn install
-   ```
-
-2. **Start the development server**:
-
-   ```bash
-   npm start
-   # or
-   yarn start
-   ```
-
-3. **Run on a device or emulator**:
-
-   ```bash
-   # For iOS
-   npm run ios
-   # or
-   yarn ios
-
-   # For Android
-   npm run android
-   # or
-   yarn android
-   ```
+```bash
+npm run android
+# or
+yarn android
+```
 
 ## Testing
 
-The mobile frontend includes several types of tests:
+### Unit Tests
 
-1. **Unit Tests** (using Jest):
+Run all unit tests with Jest:
 
-   ```bash
-   npm test
-   # or
-   yarn test
-   ```
+```bash
+npm test
+# or
+yarn test
+```
 
-2. **End-to-End Tests** (using Detox):
+Run tests in watch mode:
 
-   ```bash
-   # Build the app for testing
-   detox build --configuration ios.sim
+```bash
+npm run test:watch
+# or
+yarn test:watch
+```
 
-   # Run the tests
-   detox test --configuration ios.sim
-   ```
+Generate coverage report:
+
+```bash
+npm run test:coverage
+# or
+yarn test:coverage
+```
+
+### End-to-End Tests
+
+E2E tests use Detox. First, build the app for testing:
+
+**iOS:**
+
+```bash
+npm run e2e:build:ios
+npm run e2e:test:ios
+```
+
+**Android:**
+
+```bash
+npm run e2e:build:android
+npm run e2e:test:android
+```
+
+## Project Structure
+
+```
+mobile-frontend/
+├── App.js                 # Root component
+├── app.json               # Expo configuration
+├── babel.config.js        # Babel configuration with env support
+├── .env.example           # Environment variables template
+├── assets/                # Static assets (icons, splash screens)
+├── src/
+│   ├── components/        # Reusable UI components
+│   │   ├── Card.js
+│   │   ├── CustomButton.js
+│   │   ├── CustomInput.js
+│   │   ├── PatientCard.js
+│   │   ├── ScreenWrapper.js
+│   │   └── __tests__/     # Component tests
+│   ├── navigation/        # Navigation configuration
+│   │   └── AppNavigator.js
+│   ├── screens/           # Screen components
+│   │   ├── HomeScreen.js
+│   │   ├── LoginScreen.js
+│   │   ├── PatientDetailScreen.js
+│   │   └── __tests__/     # Screen tests
+│   ├── services/          # API and external services
+│   │   ├── api.js
+│   │   └── __tests__/     # Service tests
+│   ├── theme/             # Design system (colors, typography, spacing)
+│   │   └── theme.js
+│   └── __mocks__/         # Mock data for testing
+│       └── mockData.js
+└── e2e/                   # End-to-end tests (Detox)
+    ├── firstTest.e2e.js
+    └── patient-workflow.e2e.js
+```
+
+## Backend Integration
+
+The mobile app integrates with the Nexora backend API. Make sure the backend is running before using the app.
+
+### Available Endpoints
+
+The app uses these backend endpoints:
+
+- `GET /health` - Health check
+- `GET /models` - List available prediction models
+- `POST /predict` - Submit prediction request
+- `POST /fhir/patient/{id}/predict` - FHIR patient prediction
+
+### Fallback Mock Data
+
+If the backend is unavailable, the app falls back to mock data for development and testing. This allows developers to work on the UI without requiring a running backend.
+
+## Authentication
+
+**Demo Credentials:**
+
+- Username: `clinician`
+- Password: `password123`
+
+In production, replace the mock authentication in `src/services/api.js` with your actual authentication implementation.
+
+## Configuration
+
+### App Configuration
+
+Edit `app.json` to customize:
+
+- App name and description
+- Bundle identifiers (iOS/Android)
+- App icons and splash screens
+- Build settings
+
+### Theme Customization
+
+Edit `src/theme/theme.js` to customize:
+
+- Colors (primary, secondary, error, success, etc.)
+- Typography (font sizes, weights)
+- Spacing (padding, margins)
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Metro bundler cache issues:**
+
+```bash
+expo start --clear
+```
+
+**2. iOS build fails:**
+
+```bash
+cd ios && pod install && cd ..
+```
+
+**3. Android build fails:**
+
+- Ensure Android SDK is properly installed
+- Check ANDROID_HOME environment variable
+- Clean build: `cd android && ./gradlew clean && cd ..`
+
+**4. Cannot connect to backend:**
+
+- Verify backend is running
+- Check API_BASE_URL in .env
+- For Android emulator, use `10.0.2.2` instead of `localhost`
+- For physical device, ensure both device and computer are on same network
+
+### Network Debugging
+
+To view API requests/responses, enable network debugging:
+
+1. Shake device (or Cmd+D on iOS, Cmd+M on Android)
+2. Select "Debug Remote JS"
+3. Open Chrome DevTools Console
+4. View network requests in console.log
+
+## Building for Production
+
+### iOS
+
+```bash
+expo build:ios
+```
+
+### Android
+
+```bash
+expo build:android
+```
+
+Follow Expo's build documentation for detailed instructions on app store submissions.
+
+## Contributing
+
+1. Create a feature branch from `main`
+2. Make your changes
+3. Add/update tests
+4. Ensure all tests pass: `npm test`
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details

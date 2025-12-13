@@ -1,0 +1,72 @@
+export const mockPatient = {
+  id: "test123",
+  name: "John Test Doe",
+  age: 65,
+  mrn: "MRN123456",
+  risk: 0.75,
+  riskLevel: "high",
+  status: "active",
+  lastUpdated: new Date().toISOString(),
+  last_update: new Date().toISOString().split("T")[0],
+};
+
+export const mockPatients = [
+  {
+    id: "p001",
+    name: "John Doe",
+    age: 65,
+    mrn: "MRN001",
+    risk: 0.75,
+    riskLevel: "high",
+    status: "active",
+    lastUpdated: "2024-04-28T10:00:00Z",
+    last_update: "2024-04-28",
+  },
+  {
+    id: "p002",
+    name: "Jane Smith",
+    age: 72,
+    mrn: "MRN002",
+    risk: 0.4,
+    riskLevel: "low",
+    status: "active",
+    lastUpdated: "2024-04-29T14:30:00Z",
+    last_update: "2024-04-29",
+  },
+  {
+    id: "p003",
+    name: "Robert Johnson",
+    age: 58,
+    mrn: "MRN003",
+    risk: 0.85,
+    riskLevel: "high",
+    status: "critical",
+    lastUpdated: "2024-04-27T08:15:00Z",
+    last_update: "2024-04-27",
+  },
+];
+
+export const mockPatientDetails = {
+  id: "p001",
+  name: "John Doe",
+  age: 65,
+  mrn: "MRN001",
+  risk: 0.75,
+  riskLevel: "high",
+  status: "active",
+  predictions: {
+    risk: 0.75,
+    top_features: ["age > 60", "previous_admissions > 2", "diabetes diagnosis"],
+    cohort_size: 120,
+    shap_features: ["Age", "Prev Adm", "Diabetes", "HTN", "HF"],
+    shap_values: [0.3, 0.25, 0.2, 0.15, 0.1],
+  },
+  explanations: { method: "SHAP", values: [0.3, 0.25, 0.2, 0.15, 0.1] },
+  uncertainty: { confidence_interval: [0.65, 0.85] },
+  timeline: [
+    { event: "Admission", date: "2024-04-10" },
+    { event: "Lab Test (High Glucose)", date: "2024-04-11" },
+    { event: "Diagnosis: HF", date: "2024-04-12" },
+    { event: "Discharge", date: "2024-04-18" },
+  ],
+};

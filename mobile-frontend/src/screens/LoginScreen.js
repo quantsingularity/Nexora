@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Alert, Image } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Colors, Typography, Spacing, GlobalStyles } from "../theme/theme";
+import { Colors, Typography, Spacing } from "../theme/theme";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
 import ScreenWrapper from "../components/ScreenWrapper";
+import apiService from "../services/api";
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
@@ -35,34 +36,35 @@ const LoginScreen = ({ navigation }) => {
     }
 
     setLoading(true);
-    // Mock authentication - replace with actual API call
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      // Use the API service for authentication
+      const response = await apiService.login(username, password);
 
-    if (username === "clinician" && password === "password123") {
-      try {
-        await AsyncStorage.setItem("userToken", "mock-token");
+      if (response.success || response.token) {
+        await AsyncStorage.setItem("userToken", response.token);
         await AsyncStorage.setItem("username", username);
-        navigation.replace("Home"); // Use replace to prevent going back to Login
-      } catch (e) {
-        Alert.alert(
-          "Login Failed",
-          "Could not save user session. Please try again.",
-        );
-      } finally {
-        setLoading(false);
+        navigation.replace("Home");
+      } else {
+        Alert.alert("Login Failed", "Invalid response from server.");
       }
-    } else {
-      Alert.alert("Login Failed", "Invalid username or password.");
+    } catch (error) {
+      console.error("Login error:", error);
+      Alert.alert(
+        "Login Failed",
+        error.message || "Invalid username or password.",
+      );
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScreenWrapper style={styles.container} useSafeArea={true}>
-      <View style={styles.logoContainer}>
-        {/* Placeholder for Logo - Add your logo image here */}
-        {/* <Image source={require('../assets/logo.png')} style={styles.logo} /> */}
+    <ScreenWrapper
+      style={styles.container}
+      useSafeArea={true}
+      testID="login-screen"
+    >
+      <View style={styles.logoContainer} testID="welcome">
         <Text style={styles.title}>Nexora Mobile</Text>
         <Text style={styles.subtitle}>Clinical Decision Support</Text>
       </View>
@@ -74,8 +76,9 @@ const LoginScreen = ({ navigation }) => {
           value={username}
           onChangeText={setUsername}
           autoCapitalize="none"
-          keyboardType="email-address" // Assuming username might be email
+          keyboardType="email-address"
           error={usernameError}
+          testID="username-input"
         />
         <CustomInput
           label="Password"
@@ -84,13 +87,18 @@ const LoginScreen = ({ navigation }) => {
           onChangeText={setPassword}
           secureTextEntry
           error={passwordError}
+          testID="password-input"
         />
         <CustomButton
           title="Login"
           onPress={handleLogin}
           loading={loading}
           style={styles.loginButton}
+          testID="login-button"
         />
+        <Text style={styles.hintText}>
+          Demo credentials: clinician / password123
+        </Text>
       </View>
     </ScreenWrapper>
   );
@@ -99,17 +107,11 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
-    paddingHorizontal: Spacing.lg, // More padding
+    paddingHorizontal: Spacing.lg,
   },
   logoContainer: {
     alignItems: "center",
     marginBottom: Spacing.xxl,
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: Spacing.md,
-    // Add styles for your logo
   },
   title: {
     ...Typography.h2,
@@ -124,6 +126,12 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   loginButton: {
+    marginTop: Spacing.md,
+  },
+  hintText: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+    textAlign: "center",
     marginTop: Spacing.md,
   },
 });

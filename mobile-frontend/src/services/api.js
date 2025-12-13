@@ -1,26 +1,32 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
-// Define the base URL for the API. Replace with the actual deployed backend URL.
-// For local testing, if the backend runs on the host machine,
-// use the host machine's IP address or a service like ngrok.
-// For now, using a placeholder.
-const API_BASE_URL = "http://localhost:8000"; // Replace with actual backend URL
+// Get API base URL from environment or use default
+const API_BASE_URL =
+  Constants.expoConfig?.extra?.apiBaseUrl ||
+  process.env.API_BASE_URL ||
+  "http://localhost:8000";
 
+// Create axios instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 10000, // 10 second timeout
 });
 
-// Optional: Add interceptor to include auth token if needed
+// Request interceptor to add auth token
 apiClient.interceptors.request.use(
   async (config) => {
-    const token = await AsyncStorage.getItem("userToken");
-    if (token) {
-      // Assuming the backend expects a Bearer token
-      // config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.warn("Failed to retrieve auth token:", error);
     }
     return config;
   },
@@ -29,26 +35,161 @@ apiClient.interceptors.request.use(
   },
 );
 
+// Response interceptor for error handling
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      // Server responded with error status
+      console.error(
+        "API Error Response:",
+        error.response.status,
+        error.response.data,
+      );
+    } else if (error.request) {
+      // Request made but no response received
+      console.error("API No Response:", error.request);
+    } else {
+      // Error in request setup
+      console.error("API Request Error:", error.message);
+    }
+    return Promise.reject(error);
+  },
+);
+
 // API Service Functions
 
+/**
+ * Health check endpoint
+ */
 const getHealth = () => {
   return apiClient.get("/health");
 };
 
+/**
+ * List available models
+ */
 const listModels = () => {
   return apiClient.get("/models");
 };
 
+/**
+ * Get list of patients
+ * Note: This endpoint may not exist in the backend yet.
+ * Falls back to mock data if the request fails.
+ */
 const getPatients = async () => {
-  // This endpoint doesn't exist in the provided backend API.
-  // We'll keep the mock data logic in HomeScreen for now,
-  // or adapt if a patient list endpoint is available.
-  console.warn(
-    "getPatients function called, but no backend endpoint defined. Using mock data.",
+  try {
+    // Try to fetch from backend first
+    const response = await apiClient.get("/patients");
+    return response.data;
+  } catch (error) {
+    console.warn(
+      "Failed to fetch patients from backend, using mock data:",
+      error.message,
+    );
+    // Fallback to mock data
+    return getMockPatients();
+  }
+};
+
+/**
+ * Get patient details including predictions
+ */
+const getPatientDetails = async (patientId) => {
+  try {
+    // Try to fetch from backend first
+    const response = await apiClient.get(`/patients/${patientId}`);
+    return response.data;
+  } catch (error) {
+    console.warn(
+      `Failed to fetch patient ${patientId} from backend, using mock data:`,
+      error.message,
+    );
+    // Fallback to mock data
+    return getMockPatientDetails(patientId);
+  }
+};
+
+/**
+ * Submit prediction request
+ */
+const postPrediction = async (modelName, patientData, modelVersion = null) => {
+  const payload = {
+    model_name: modelName,
+    patient_data: patientData,
+    model_version: modelVersion,
+  };
+  const response = await apiClient.post("/predict", payload);
+  return response.data;
+};
+
+/**
+ * Get prediction using FHIR patient ID
+ */
+const getPredictionFromFHIR = async (
+  patientId,
+  modelName,
+  modelVersion = null,
+) => {
+  const params = {
+    model_name: modelName,
+    ...(modelVersion && { model_version: modelVersion }),
+  };
+  const response = await apiClient.post(
+    `/fhir/patient/${patientId}/predict`,
+    null,
+    {
+      params,
+    },
   );
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  // Return mock data
+  return response.data;
+};
+
+/**
+ * Login user (mock implementation - replace with real auth endpoint)
+ */
+const login = async (username, password) => {
+  try {
+    // Try real backend authentication first
+    const response = await apiClient.post("/auth/login", {
+      username,
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    console.warn("Backend auth not available, using mock authentication");
+    // Fallback to mock authentication for development
+    if (username === "clinician" && password === "password123") {
+      return {
+        success: true,
+        token: "mock-token-" + Date.now(),
+        username: username,
+      };
+    }
+    throw new Error("Invalid credentials");
+  }
+};
+
+/**
+ * Logout user
+ */
+const logout = async () => {
+  try {
+    await apiClient.post("/auth/logout");
+  } catch (error) {
+    console.warn(
+      "Backend logout failed, clearing local session:",
+      error.message,
+    );
+  }
+  // Always clear local storage
+  await AsyncStorage.multiRemove(["userToken", "username"]);
+};
+
+// Mock Data Functions (Fallback when backend is unavailable)
+
+const getMockPatients = () => {
   return [
     {
       id: "p001",
@@ -78,85 +219,120 @@ const getPatients = async () => {
       risk: 0.6,
       last_update: "2024-04-29",
     },
+    {
+      id: "p005",
+      name: "Michael Brown",
+      age: 55,
+      risk: 0.25,
+      last_update: "2024-04-30",
+    },
+    {
+      id: "p006",
+      name: "Sarah Wilson",
+      age: 68,
+      risk: 0.9,
+      last_update: "2024-04-26",
+    },
+    {
+      id: "p007",
+      name: "David Lee",
+      age: 75,
+      risk: 0.55,
+      last_update: "2024-04-30",
+    },
+    {
+      id: "p008",
+      name: "Laura Martinez",
+      age: 62,
+      risk: 0.3,
+      last_update: "2024-04-28",
+    },
   ];
 };
 
-const getPatientDetails = async (patientId) => {
-  // This specific endpoint also doesn't seem to exist directly for fetching *all* details used in the screen.
-  // The backend has /predict and /fhir/patient/{patient_id}/predict.
-  // We might need to call the prediction endpoint to get risk details.
-  // For now, keeping the mock logic, but ideally, this would call the prediction endpoint.
-  console.warn(
-    `getPatientDetails for ${patientId} called, but no direct backend endpoint defined. Using mock data.`,
-  );
-
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 700));
-
-  // Mock data logic from PatientDetailScreen (simplified)
-  if (patientId === "p001") {
-    return {
+const getMockPatientDetails = (patientId) => {
+  const mockDetails = {
+    p001: {
       id: "p001",
       name: "John Doe",
+      age: 65,
       risk: 0.75,
       predictions: {
         risk: 0.75,
-        top_features: ["age", "previous_admissions", "diabetes"],
+        top_features: [
+          "age > 60",
+          "previous_admissions > 2",
+          "diabetes diagnosis",
+        ],
         cohort_size: 120,
-        shap_features: ["age", "prev_adm", "diabetes", "htn", "hf"],
+        shap_features: ["Age", "Prev Adm", "Diabetes", "HTN", "HF"],
         shap_values: [0.3, 0.25, 0.2, 0.15, 0.1],
       },
       explanations: { method: "SHAP", values: [0.3, 0.25, 0.2, 0.15, 0.1] },
       uncertainty: { confidence_interval: [0.65, 0.85] },
-      timeline: [],
-    };
-  } else if (patientId === "p003") {
-    return {
+      timeline: [
+        { event: "Admission", date: "2024-04-10" },
+        { event: "Lab Test (High Glucose)", date: "2024-04-11" },
+        { event: "Diagnosis: HF", date: "2024-04-12" },
+        { event: "Discharge", date: "2024-04-18" },
+      ],
+    },
+    p003: {
       id: "p003",
       name: "Robert Johnson",
+      age: 58,
       risk: 0.85,
       predictions: {
         risk: 0.85,
-        top_features: ["comorbidities", "age", "lab_value_x"],
+        top_features: [
+          "multiple comorbidities",
+          "age > 55",
+          "lab_value_x abnormal",
+        ],
         cohort_size: 95,
-        shap_features: ["comorb", "age", "lab_x", "med_y", "prev_adm"],
+        shap_features: ["Comorb", "Age", "Lab X", "Med Y", "Prev Adm"],
         shap_values: [0.4, 0.2, 0.15, 0.05, 0.05],
       },
       explanations: { method: "SHAP", values: [0.4, 0.2, 0.15, 0.05, 0.05] },
       uncertainty: { confidence_interval: [0.78, 0.92] },
-      timeline: [],
-    };
-  }
-  return {
-    id: patientId,
-    name: "Default Patient",
-    risk: 0.55,
-    predictions: {
-      risk: 0.55,
-      top_features: ["feature_a", "feature_b", "feature_c"],
-      cohort_size: 150,
-      shap_features: ["feat_a", "feat_b", "feat_c", "feat_d", "feat_e"],
-      shap_values: [0.2, 0.15, 0.1, 0.05, 0.05],
+      timeline: [
+        { event: "Admission", date: "2024-04-05" },
+        { event: "Surgery", date: "2024-04-07" },
+        { event: "ICU Stay", date: "2024-04-08" },
+        { event: "Discharge", date: "2024-04-20" },
+      ],
     },
-    explanations: { method: "SHAP", values: [0.2, 0.15, 0.1, 0.05, 0.05] },
-    uncertainty: { confidence_interval: [0.45, 0.65] },
-    timeline: [],
   };
-};
 
-const postPrediction = (modelName, patientData, modelVersion = null) => {
-  const payload = {
-    model_name: modelName,
-    patient_data: patientData,
-    model_version: modelVersion,
-  };
-  return apiClient.post("/predict", payload);
+  return (
+    mockDetails[patientId] || {
+      id: patientId,
+      name: "Default Patient",
+      age: 70,
+      risk: 0.55,
+      predictions: {
+        risk: 0.55,
+        top_features: ["feature_a", "feature_b", "feature_c"],
+        cohort_size: 150,
+        shap_features: ["Feat A", "Feat B", "Feat C", "Feat D", "Feat E"],
+        shap_values: [0.2, 0.15, 0.1, 0.05, 0.05],
+      },
+      explanations: { method: "SHAP", values: [0.2, 0.15, 0.1, 0.05, 0.05] },
+      uncertainty: { confidence_interval: [0.45, 0.65] },
+      timeline: [],
+    }
+  );
 };
 
 export default {
   getHealth,
   listModels,
-  getPatients, // Still uses mock data
-  getPatientDetails, // Still uses mock data
+  getPatients,
+  getPatientDetails,
   postPrediction,
+  getPredictionFromFHIR,
+  login,
+  logout,
+  // Expose base URL for debugging
+  getBaseURL: () => API_BASE_URL,
 };

@@ -12,6 +12,8 @@ const CustomInput = ({
   autoCapitalize,
   style,
   error,
+  testID,
+  ...props
 }) => {
   return (
     <View style={[styles.container, style]}>
@@ -25,6 +27,8 @@ const CustomInput = ({
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType || "default"}
         autoCapitalize={autoCapitalize || "sentences"}
+        testID={testID}
+        {...props}
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
@@ -47,7 +51,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     borderWidth: 1,
     borderRadius: 8,
-    paddingHorizontal: Spacing.sm + 4, // 12
+    paddingHorizontal: Spacing.sm + 4,
     color: Colors.text,
   },
   inputError: {

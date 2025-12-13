@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
+  RefreshControl,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Colors, Typography, Spacing, GlobalStyles } from "../theme/theme";
@@ -15,71 +16,7 @@ import ScreenWrapper from "../components/ScreenWrapper";
 import Card from "../components/Card";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
-
-// Mock API service - replace with actual API calls later
-const mockApiService = {
-  getPatients: async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return [
-      {
-        id: "p001",
-        name: "John Doe",
-        age: 65,
-        risk: 0.75,
-        last_update: "2024-04-28",
-      },
-      {
-        id: "p002",
-        name: "Jane Smith",
-        age: 72,
-        risk: 0.4,
-        last_update: "2024-04-29",
-      },
-      {
-        id: "p003",
-        name: "Robert Johnson",
-        age: 58,
-        risk: 0.85,
-        last_update: "2024-04-27",
-      },
-      {
-        id: "p004",
-        name: "Emily Davis",
-        age: 81,
-        risk: 0.6,
-        last_update: "2024-04-29",
-      },
-      {
-        id: "p005",
-        name: "Michael Brown",
-        age: 55,
-        risk: 0.25,
-        last_update: "2024-04-30",
-      },
-      {
-        id: "p006",
-        name: "Sarah Wilson",
-        age: 68,
-        risk: 0.9,
-        last_update: "2024-04-26",
-      },
-      {
-        id: "p007",
-        name: "David Lee",
-        age: 75,
-        risk: 0.55,
-        last_update: "2024-04-30",
-      },
-      {
-        id: "p008",
-        name: "Laura Martinez",
-        age: 62,
-        risk: 0.3,
-        last_update: "2024-04-28",
-      },
-    ];
-  },
-};
+import apiService from "../services/api";
 
 const SORT_OPTIONS = {
   NAME_ASC: { label: "Name (A-Z)", key: "name_asc" },
@@ -99,32 +36,49 @@ const FILTER_OPTIONS = {
 const HomeScreen = ({ navigation }) => {
   const [allPatients, setAllPatients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [username, setUsername] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState(SORT_OPTIONS.RISK_DESC.key);
   const [filterOption, setFilterOption] = useState(FILTER_OPTIONS.ALL.key);
   const [isSortModalVisible, setSortModalVisible] = useState(false);
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
+  const [error, setError] = useState(null);
+
+  const loadData = async (isRefreshing = false) => {
+    try {
+      if (!isRefreshing) setLoading(true);
+      setError(null);
+
+      const storedUsername = await AsyncStorage.getItem("username");
+      setUsername(storedUsername || "Clinician");
+
+      const patientData = await apiService.getPatients();
+      setAllPatients(patientData);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+      setError("Failed to load patients. Please try again.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const storedUsername = await AsyncStorage.getItem("username");
-        setUsername(storedUsername || "Clinician");
-        const patientData = await mockApiService.getPatients();
-        setAllPatients(patientData);
-      } catch (error) {
-        console.error("Failed to load data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadData();
   }, []);
 
+  const handleRefresh = () => {
+    setRefreshing(true);
+    loadData(true);
+  };
+
   const handleLogout = async () => {
-    await AsyncStorage.multiRemove(["userToken", "username"]);
+    try {
+      await apiService.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
     navigation.replace("Login");
   };
 
@@ -157,7 +111,6 @@ const HomeScreen = ({ navigation }) => {
         break;
       case FILTER_OPTIONS.ALL.key:
       default:
-        // No filter applied
         break;
     }
 
@@ -195,6 +148,7 @@ const HomeScreen = ({ navigation }) => {
           patientName: item.name,
         })
       }
+      testID={`patient-item-${item.id}`}
     >
       <Card style={styles.patientCard}>
         <View style={styles.patientInfo}>
@@ -271,7 +225,7 @@ const HomeScreen = ({ navigation }) => {
   }
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper testID="patient-list-tab">
       {renderOptionModal(
         isSortModalVisible,
         setSortModalVisible,
@@ -299,12 +253,25 @@ const HomeScreen = ({ navigation }) => {
         />
       </View>
 
+      {error && (
+        <View style={styles.errorContainer} testID="error-message">
+          <Text style={styles.errorText}>{error}</Text>
+          <CustomButton
+            title="Retry"
+            onPress={() => loadData()}
+            style={styles.retryButton}
+            testID="retry-button"
+          />
+        </View>
+      )}
+
       <View style={styles.controlsContainer}>
         <CustomInput
           placeholder="Search patients by name..."
           value={searchTerm}
           onChangeText={setSearchTerm}
           style={styles.searchInput}
+          testID="search-input"
         />
         <View style={styles.buttonRow}>
           <CustomButton
@@ -336,6 +303,15 @@ const HomeScreen = ({ navigation }) => {
         }
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[Colors.primary]}
+            tintColor={Colors.primary}
+          />
+        }
+        testID="patient-list"
       />
     </ScreenWrapper>
   );
@@ -365,6 +341,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: Colors.surface,
   },
+  errorContainer: {
+    backgroundColor: Colors.error,
+    padding: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+    borderRadius: 8,
+  },
+  errorText: {
+    ...Typography.body2,
+    color: Colors.surface,
+    marginBottom: Spacing.sm,
+  },
+  retryButton: {
+    backgroundColor: Colors.surface,
+  },
   controlsContainer: {
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.md,
@@ -377,8 +368,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   controlButton: {
-    flex: 1, // Make buttons share space
-    marginHorizontal: Spacing.xs, // Add small gap between buttons
+    flex: 1,
+    marginHorizontal: Spacing.xs,
     backgroundColor: Colors.secondary,
     paddingVertical: Spacing.sm,
   },
@@ -433,7 +424,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: Spacing.xxl,
   },
-  // Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -459,7 +449,7 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   modalOption: {
-    paddingVertical: Spacing.sm + 2, // 10
+    paddingVertical: Spacing.sm + 2,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },

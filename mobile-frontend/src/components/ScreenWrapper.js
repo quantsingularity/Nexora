@@ -2,11 +2,11 @@ import React from "react";
 import { View, StyleSheet, SafeAreaView, StatusBar } from "react-native";
 import { Colors, GlobalStyles } from "../theme/theme";
 
-const ScreenWrapper = ({ children, style, useSafeArea = true }) => {
+const ScreenWrapper = ({ children, style, useSafeArea = true, testID }) => {
   const WrapperComponent = useSafeArea ? SafeAreaView : View;
 
   return (
-    <WrapperComponent style={[styles.safeArea, style]}>
+    <WrapperComponent style={[styles.safeArea, style]} testID={testID}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       <View style={styles.container}>{children}</View>
     </WrapperComponent>
