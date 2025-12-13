@@ -27,7 +27,6 @@ export default {
       favicon: "./assets/favicon.png",
     },
     extra: {
-      // This logic is now valid because we are using a JS file
       apiBaseUrl: process.env.API_BASE_URL || "http://localhost:8000",
     },
   },
