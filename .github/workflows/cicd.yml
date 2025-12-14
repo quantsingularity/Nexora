@@ -40,7 +40,7 @@ jobs:
           pip install --upgrade pip
           pip install autoflake black
 
-      - name: Run Python Formatting Checks (src)
+      - name: Run Python Formatting Checks (code)
         working-directory: ${{ env.code_DIR }}
         shell: bash
         run: |
