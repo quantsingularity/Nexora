@@ -10,9 +10,9 @@ from ..monitoring.adverse_event_reporting import AdverseEventReporter
 logger = logging.getLogger(__name__)
 
 
-class ClinicianUIBackend:
+class ClinicianUIcode:
     """
-    Backend logic for the Clinician User Interface.
+    code logic for the Clinician User Interface.
 
     This class aggregates data from various services (FHIR, Model Registry, Monitoring)
     to provide a comprehensive view for a clinician.
@@ -23,7 +23,7 @@ class ClinicianUIBackend:
         self.model_registry = ModelRegistry()
         self.metrics_calculator = ClinicalMetrics()
         self.event_reporter = AdverseEventReporter()
-        logger.info("ClinicianUIBackend initialized.")
+        logger.info("ClinicianUIcode initialized.")
 
     def get_patient_summary(self, patient_id: str) -> Dict[str, Any]:
         """

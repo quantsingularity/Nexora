@@ -172,7 +172,7 @@ if command_exists terraform; then
   for dir in "${TERRAFORM_DIRS[@]}"; do
     if [ -d "$PROJECT_ROOT/$dir" ]; then
       echo "Processing Terraform files in $dir..."
-      (cd "$PROJECT_ROOT/$dir" && terraform fmt -recursive && terraform init -backend=false && terraform validate)
+      (cd "$PROJECT_ROOT/$dir" && terraform fmt -recursive && terraform init -code=false && terraform validate)
     else
       echo "Directory $dir not found. Skipping Terraform processing."
     fi

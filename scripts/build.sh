@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Build script for Nexora project
-# This script builds the frontend for production and prepares the backend environment.
+# This script builds the frontend for production and prepares the code environment.
 
 set -euo pipefail
 
 # --- Configuration ---
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_PATH="$PROJECT_ROOT/venv"
-BACKEND_DIR="$PROJECT_ROOT/src"
+code_DIR="$PROJECT_ROOT/src"
 FRONTEND_DIR="$PROJECT_ROOT/web-frontend"
 
 # Colors for terminal output
@@ -37,7 +37,7 @@ ensure_venv() {
 # Function to install dependencies
 install_dependencies() {
   echo -e "${BLUE}Installing/Updating Python dependencies...${NC}"
-  pip install -r "$BACKEND_DIR/requirements.txt" > /dev/null
+  pip install -r "$code_DIR/requirements.txt" > /dev/null
   
   echo -e "${BLUE}Installing/Updating Node.js dependencies in $FRONTEND_DIR...${NC}"
   if [ -d "$FRONTEND_DIR" ]; then
@@ -75,11 +75,11 @@ else
   echo -e "${RED}Error: Frontend directory $FRONTEND_DIR not found. Skipping frontend build.${NC}"
 fi
 
-# 4. Finalize Backend Environment
-echo -e "${BLUE}Finalizing backend environment...${NC}"
-# No specific build step for the backend in this simple structure,
+# 4. Finalize code Environment
+echo -e "${BLUE}Finalizing code environment...${NC}"
+# No specific build step for the code in this simple structure,
 # but this is where compilation, static file collection, etc., would go.
-echo -e "${GREEN}Backend environment ready.${NC}"
+echo -e "${GREEN}code environment ready.${NC}"
 
 # Deactivate virtual environment
 deactivate

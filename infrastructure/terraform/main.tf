@@ -15,8 +15,8 @@ terraform {
     }
   }
 
-  backend "s3" {
-    # Enhanced backend configuration with encryption
+  code "s3" {
+    # Enhanced code configuration with encryption
     encrypt        = true
     kms_key_id     = "alias/terraform-state-key"
     dynamodb_table = "terraform-state-lock"

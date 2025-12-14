@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Enhanced Run script for Nexora project
-# This script starts both the backend and frontend components.
+# This script starts both the code and frontend components.
 # It is designed to be run from the project root (Nexora/).
 
 set -euo pipefail # Exit on error, exit on unset variable, fail on pipe error
@@ -9,7 +9,7 @@ set -euo pipefail # Exit on error, exit on unset variable, fail on pipe error
 # --- Configuration ---
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_PATH="$PROJECT_ROOT/venv"
-BACKEND_DIR="$PROJECT_ROOT/src"
+code_DIR="$PROJECT_ROOT/src"
 FRONTEND_DIR="$PROJECT_ROOT/web-frontend"
 
 # Colors for terminal output
@@ -38,7 +38,7 @@ ensure_venv() {
 # Function to install dependencies
 install_dependencies() {
   echo -e "${BLUE}Installing/Updating Python dependencies...${NC}"
-  pip install -r "$BACKEND_DIR/requirements.txt" > /dev/null
+  pip install -r "$code_DIR/requirements.txt" > /dev/null
   
   echo -e "${BLUE}Installing/Updating Node.js dependencies in $FRONTEND_DIR...${NC}"
   if [ -d "$FRONTEND_DIR" ]; then
@@ -67,15 +67,15 @@ fi
 ensure_venv
 install_dependencies
 
-# 3. Start Backend Server
-echo -e "${BLUE}Starting backend server...${NC}"
+# 3. Start code Server
+echo -e "${BLUE}Starting code server...${NC}"
 # Use gunicorn or similar for production, but for a simple run script, python is fine.
 # Running from the project root to ensure correct path resolution
-python "$BACKEND_DIR/app.py" &
-BACKEND_PID=$!
+python "$code_DIR/app.py" &
+code_PID=$!
 
-# Wait for backend to initialize (simple sleep for demonstration)
-echo -e "${BLUE}Waiting for backend to initialize...${NC}"
+# Wait for code to initialize (simple sleep for demonstration)
+echo -e "${BLUE}Waiting for code to initialize...${NC}"
 sleep 5
 
 # 4. Start Frontend
@@ -90,8 +90,8 @@ function cleanup {
   if kill -0 "$FRONTEND_PID" 2>/dev/null; then
     kill "$FRONTEND_PID"
   fi
-  if kill -0 "$BACKEND_PID" 2>/dev/null; then
-    kill "$BACKEND_PID"
+  if kill -0 "$code_PID" 2>/dev/null; then
+    kill "$code_PID"
   fi
   echo -e "${GREEN}All services stopped${NC}"
   exit 0
@@ -100,7 +100,7 @@ function cleanup {
 trap cleanup SIGINT SIGTERM
 
 echo -e "${GREEN}Nexora application is running!${NC}"
-echo -e "${GREEN}Backend running with PID: ${BACKEND_PID}${NC}"
+echo -e "${GREEN}code running with PID: ${code_PID}${NC}"
 echo -e "${GREEN}Frontend running with PID: ${FRONTEND_PID}${NC}"
 echo -e "${GREEN}Access the application at: http://localhost:3000${NC}"
 echo -e "${BLUE}Press Ctrl+C to stop all services${NC}"

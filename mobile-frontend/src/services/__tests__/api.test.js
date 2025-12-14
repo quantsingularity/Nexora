@@ -54,7 +54,7 @@ describe("API Service", () => {
   });
 
   describe("getPatients", () => {
-    it("should fetch patients from backend", async () => {
+    it("should fetch patients from code", async () => {
       const mockPatients = [{ id: "p001", name: "John Doe" }];
       mockAxiosInstance.get.mockResolvedValue({ data: mockPatients });
 
@@ -73,7 +73,7 @@ describe("API Service", () => {
   });
 
   describe("getPatientDetails", () => {
-    it("should fetch patient details from backend", async () => {
+    it("should fetch patient details from code", async () => {
       const mockDetails = {
         id: "p001",
         name: "John Doe",
@@ -117,7 +117,7 @@ describe("API Service", () => {
   });
 
   describe("login", () => {
-    it("should authenticate with backend", async () => {
+    it("should authenticate with code", async () => {
       const mockResponse = {
         success: true,
         token: "test-token",
@@ -136,7 +136,7 @@ describe("API Service", () => {
 
     it("should fallback to mock auth on error", async () => {
       mockAxiosInstance.post.mockRejectedValue(
-        new Error("Backend unavailable"),
+        new Error("code unavailable"),
       );
 
       const result = await apiService.login("clinician", "password123");
@@ -146,7 +146,7 @@ describe("API Service", () => {
 
     it("should reject invalid credentials in mock mode", async () => {
       mockAxiosInstance.post.mockRejectedValue(
-        new Error("Backend unavailable"),
+        new Error("code unavailable"),
       );
 
       await expect(apiService.login("invalid", "invalid")).rejects.toThrow(
@@ -156,7 +156,7 @@ describe("API Service", () => {
   });
 
   describe("logout", () => {
-    it("should call backend logout endpoint", async () => {
+    it("should call code logout endpoint", async () => {
       mockAxiosInstance.post.mockResolvedValue({});
 
       await apiService.logout();

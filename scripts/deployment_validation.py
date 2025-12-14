@@ -582,16 +582,16 @@ class DeploymentValidator:
                                     "path": path.path,
                                     "path_type": path.path_type,
                                 }
-                                if path.backend:
+                                if path.code:
                                     if (
-                                        hasattr(path.backend, "service")
-                                        and path.backend.service
+                                        hasattr(path.code, "service")
+                                        and path.code.service
                                     ):
-                                        path_info["backend"] = {
-                                            "service_name": path.backend.service.name,
+                                        path_info["code"] = {
+                                            "service_name": path.code.service.name,
                                             "service_port": (
-                                                path.backend.service.port.number
-                                                if path.backend.service.port
+                                                path.code.service.port.number
+                                                if path.code.service.port
                                                 else None
                                             ),
                                         }

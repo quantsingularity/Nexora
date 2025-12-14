@@ -6,7 +6,7 @@ This directory contains the continuous integration and continuous deployment (CI
 
 ## Workflow Structure
 
-Currently, the Nexora project implements a single workflow file (`ci-cd.yml`) that handles the complete CI/CD process. This consolidated approach simplifies maintenance while providing comprehensive coverage for both backend and frontend components of the application.
+Currently, the Nexora project implements a single workflow file (`ci-cd.yml`) that handles the complete CI/CD process. This consolidated approach simplifies maintenance while providing comprehensive coverage for both code and frontend components of the application.
 
 ## CI/CD Workflow
 
@@ -22,19 +22,19 @@ The workflow is configured to activate on the following Git events:
 
 This dual-trigger approach ensures code quality is maintained both during active development and when preparing for integration into stable branches.
 
-### Job: Backend Testing
+### Job: code Testing
 
-The `backend-test` job runs on an Ubuntu latest environment and performs comprehensive testing of the backend codebase. This job consists of the following steps:
+The `code-test` job runs on an Ubuntu latest environment and performs comprehensive testing of the code codebase. This job consists of the following steps:
 
 1. **Checkout Code**: Uses the `actions/checkout@v3` action to fetch the repository code.
 
-2. **Set up Python**: Configures Python 3.10 using the `actions/setup-python@v4` action, which is the required version for the Nexora backend.
+2. **Set up Python**: Configures Python 3.10 using the `actions/setup-python@v4` action, which is the required version for the Nexora code.
 
 3. **Install Dependencies**: Upgrades pip and installs all required dependencies specified in the `src/requirements.txt` file.
 
-4. **Run Tests**: Executes the pytest test suite located in the `src/tests/` directory to validate backend functionality.
+4. **Run Tests**: Executes the pytest test suite located in the `src/tests/` directory to validate code functionality.
 
-This job ensures that all backend code meets the project's quality standards and functions as expected before proceeding with deployment.
+This job ensures that all code code meets the project's quality standards and functions as expected before proceeding with deployment.
 
 ### Job: Frontend Testing
 
@@ -52,7 +52,7 @@ This job ensures that all frontend code meets the project's quality standards an
 
 ### Job: Build and Deploy
 
-The `build-and-deploy` job is dependent on the successful completion of both the `backend-test` and `frontend-test` jobs. This job is conditionally executed only when:
+The `build-and-deploy` job is dependent on the successful completion of both the `code-test` and `frontend-test` jobs. This job is conditionally executed only when:
 
 1. The trigger event is a push (not a pull request)
 2. The target branch is either `main` or `master`
@@ -65,9 +65,9 @@ This ensures that deployment only occurs for production-ready code that has pass
 
 3. **Build Frontend**: Installs frontend dependencies and builds the production-ready frontend assets.
 
-4. **Set up Python**: Configures Python 3.10 using the `actions/setup-python@v4` action for the backend deployment.
+4. **Set up Python**: Configures Python 3.10 using the `actions/setup-python@v4` action for the code deployment.
 
-5. **Install Backend Dependencies**: Installs all required backend dependencies.
+5. **Install code Dependencies**: Installs all required code dependencies.
 
 6. **Deploy Application**: Placeholder step for deployment commands. The actual deployment commands would need to be added based on the project's deployment strategy.
 

@@ -1,11 +1,11 @@
 appName: nexora
 environment: staging
 
-# Backend configuration
-backend:
+# code configuration
+code:
   replicas: 3
   image:
-    repository: registry.example.com/app/backend
+    repository: registry.example.com/app/code
     tag: stable
     pullPolicy: Always
   containerPort: 3000
@@ -17,7 +17,7 @@ backend:
     requests:
       cpu: 500m
       memory: 512Mi
-  apiUrl: http://app-backend
+  apiUrl: http://app-code
   jwtSecret: staging-jwt-secret
   apiKey: staging-api-key
 

@@ -75,17 +75,17 @@ const listModels = () => {
 
 /**
  * Get list of patients
- * Note: This endpoint may not exist in the backend yet.
+ * Note: This endpoint may not exist in the code yet.
  * Falls back to mock data if the request fails.
  */
 const getPatients = async () => {
   try {
-    // Try to fetch from backend first
+    // Try to fetch from code first
     const response = await apiClient.get("/patients");
     return response.data;
   } catch (error) {
     console.warn(
-      "Failed to fetch patients from backend, using mock data:",
+      "Failed to fetch patients from code, using mock data:",
       error.message,
     );
     // Fallback to mock data
@@ -98,12 +98,12 @@ const getPatients = async () => {
  */
 const getPatientDetails = async (patientId) => {
   try {
-    // Try to fetch from backend first
+    // Try to fetch from code first
     const response = await apiClient.get(`/patients/${patientId}`);
     return response.data;
   } catch (error) {
     console.warn(
-      `Failed to fetch patient ${patientId} from backend, using mock data:`,
+      `Failed to fetch patient ${patientId} from code, using mock data:`,
       error.message,
     );
     // Fallback to mock data
@@ -151,14 +151,14 @@ const getPredictionFromFHIR = async (
  */
 const login = async (username, password) => {
   try {
-    // Try real backend authentication first
+    // Try real code authentication first
     const response = await apiClient.post("/auth/login", {
       username,
       password,
     });
     return response.data;
   } catch (error) {
-    console.warn("Backend auth not available, using mock authentication");
+    console.warn("code auth not available, using mock authentication");
     // Fallback to mock authentication for development
     if (username === "clinician" && password === "password123") {
       return {
@@ -179,7 +179,7 @@ const logout = async () => {
     await apiClient.post("/auth/logout");
   } catch (error) {
     console.warn(
-      "Backend logout failed, clearing local session:",
+      "code logout failed, clearing local session:",
       error.message,
     );
   }
@@ -187,7 +187,7 @@ const logout = async () => {
   await AsyncStorage.multiRemove(["userToken", "username"]);
 };
 
-// Mock Data Functions (Fallback when backend is unavailable)
+// Mock Data Functions (Fallback when code is unavailable)
 
 const getMockPatients = () => {
   return [

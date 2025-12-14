@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: "{{ .Values.appName }}-config"
 data:
-  API_URL: "{{ .Values.backend.apiUrl }}"
+  API_URL: "{{ .Values.code.apiUrl }}"
   REDIS_HOST: "{{ .Values.appName }}-redis"
   REDIS_PORT: "{{ .Values.redis.containerPort }}"
   DATABASE_HOST: "{{ .Values.appName }}-database"

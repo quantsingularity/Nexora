@@ -1,32 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{ .Values.appName }}-backend"
+  name: "{{ .Values.appName }}-code"
   labels:
-    app: "{{ .Values.appName }}-backend"
+    app: "{{ .Values.appName }}-code"
 spec:
-  replicas: { { .Values.backend.replicas } }
+  replicas: { { .Values.code.replicas } }
   selector:
     matchLabels:
-      app: "{{ .Values.appName }}-backend"
+      app: "{{ .Values.appName }}-code"
   template:
     metadata:
       labels:
-        app: "{{ .Values.appName }}-backend"
+        app: "{{ .Values.appName }}-code"
     spec:
       containers:
-        - name: "{{ .Values.appName }}-backend"
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
-          imagePullPolicy: "{{ .Values.backend.image.pullPolicy }}"
+        - name: "{{ .Values.appName }}-code"
+          image: "{{ .Values.code.image.repository }}:{{ .Values.code.image.tag }}"
+          imagePullPolicy: "{{ .Values.code.image.pullPolicy }}"
           ports:
-            - containerPort: { { .Values.backend.containerPort } }
+            - containerPort: { { .Values.code.containerPort } }
           resources:
             limits:
-              cpu: "{{ .Values.backend.resources.limits.cpu }}"
-              memory: "{{ .Values.backend.resources.limits.memory }}"
+              cpu: "{{ .Values.code.resources.limits.cpu }}"
+              memory: "{{ .Values.code.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.backend.resources.requests.cpu }}"
-              memory: "{{ .Values.backend.resources.requests.memory }}"
+              cpu: "{{ .Values.code.resources.requests.cpu }}"
+              memory: "{{ .Values.code.resources.requests.memory }}"
           env:
             - name: NODE_ENV
               value: "{{ .Values.environment }}"
@@ -43,13 +43,13 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: { { .Values.backend.containerPort } }
+              port: { { .Values.code.containerPort } }
             initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /health
-              port: { { .Values.backend.containerPort } }
+              port: { { .Values.code.containerPort } }
             initialDelaySeconds: 5
             periodSeconds: 5
       imagePullSecrets:

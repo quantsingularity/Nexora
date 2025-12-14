@@ -1,11 +1,11 @@
 appName: nexora
 environment: dev
 
-# Backend configuration
-backend:
+# code configuration
+code:
   replicas: 2
   image:
-    repository: registry.example.com/app/backend
+    repository: registry.example.com/app/code
     tag: latest
     pullPolicy: Always
   containerPort: 3000
@@ -17,7 +17,7 @@ backend:
     requests:
       cpu: 200m
       memory: 256Mi
-  apiUrl: http://app-backend
+  apiUrl: http://app-code
   jwtSecret: dev-jwt-secret
   apiKey: dev-api-key
 

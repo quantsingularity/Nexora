@@ -1,13 +1,13 @@
-# Backend Directory
+# code Directory
 
 ## Overview
 
-The backend directory is the core of the Nexora system, containing all the source code for the backend components. This directory implements the clinical data processing pipelines, machine learning models, monitoring systems, and service interfaces that power the Nexora platform's healthcare analytics and prediction capabilities.
+The code directory is the core of the Nexora system, containing all the source code for the code components. This directory implements the clinical data processing pipelines, machine learning models, monitoring systems, and service interfaces that power the Nexora platform's healthcare analytics and prediction capabilities.
 
 ## Directory Structure
 
 ```
-backend/
+code/
 ├── compliance/
 │   └── phi_audit_logger.py
 ├── data/
@@ -79,7 +79,7 @@ This directory contains the data processing pipeline components:
 
 This directory contains user interface components:
 
-- **clinician_ui.py**: Implements backend logic for the clinician-facing user interface, likely providing data and functionality to the web and mobile frontends.
+- **clinician_ui.py**: Implements code logic for the clinician-facing user interface, likely providing data and functionality to the web and mobile frontends.
 
 ### model_factory/
 
@@ -138,7 +138,7 @@ The source code in this directory is used in various ways:
 1. **Data Processing**:
 
    ```python
-   from backend.data_pipeline.clinical_etl import ClinicalETL
+   from code.data_pipeline.clinical_etl import ClinicalETL
 
    etl = ClinicalETL(config_path)
    processed_data = etl.process(raw_data)
@@ -147,7 +147,7 @@ The source code in this directory is used in various ways:
 2. **Model Training**:
 
    ```python
-   from backend.model_factory.deep_fm import DeepFMModel
+   from code.model_factory.deep_fm import DeepFMModel
 
    model = DeepFMModel(config)
    model.train(train_data, validation_data)
@@ -158,16 +158,16 @@ The source code in this directory is used in various ways:
 
    ```bash
    # Start the REST API server
-   python -m backend.serving.rest_api
+   python -m code.serving.rest_api
 
    # Start the gRPC server
-   python -m backend.serving.grpc_server
+   python -m code.serving.grpc_server
    ```
 
 4. **Validation**:
    ```bash
    # Run validation tests
-   python -m backend.validation.run_tests
+   python -m code.validation.run_tests
    ```
 
 ## Development Guidelines
@@ -197,4 +197,4 @@ Specific version requirements are defined in the project's requirements.txt file
 - Infrastructure for running the code is defined in the `infrastructure/` directory.
 - Exploratory analyses related to the code are in the `notebooks/` directory.
 - Tests for the code are in the `tests/` directory.
-- Web and mobile frontends consume the APIs defined in `backend/serving/`.
+- Web and mobile frontends consume the APIs defined in `code/serving/`.

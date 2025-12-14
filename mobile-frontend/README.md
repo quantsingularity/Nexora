@@ -7,7 +7,7 @@ A React Native (Expo) mobile application for healthcare professionals to access 
 - **Patient List**: View and search through patient risk scores
 - **Risk Predictions**: Detailed risk analysis with SHAP explanations
 - **Real-time Updates**: Pull-to-refresh for latest patient data
-- **Offline Support**: Fallback to cached data when backend is unavailable
+- **Offline Support**: Fallback to cached data when code is unavailable
 - **Secure Authentication**: Token-based authentication with AsyncStorage
 
 ## Tech Stack
@@ -25,7 +25,7 @@ A React Native (Expo) mobile application for healthcare professionals to access 
 - Expo CLI (`npm install -g expo-cli`)
 - For iOS: Xcode and iOS Simulator (macOS only)
 - For Android: Android Studio and Android Emulator
-- Backend API running (see main project README)
+- code API running (see main project README)
 
 ## Installation
 
@@ -40,7 +40,7 @@ yarn install
 
 ### 2. Configure Environment
 
-Copy the example environment file and update with your backend URL:
+Copy the example environment file and update with your code URL:
 
 ```bash
 cp .env.example .env
@@ -49,7 +49,7 @@ cp .env.example .env
 Edit `.env` and set:
 
 ```env
-API_BASE_URL=http://YOUR_BACKEND_HOST:8000
+API_BASE_URL=http://YOUR_code_HOST:8000
 
 # For Android Emulator use: http://10.0.2.2:8000
 # For iOS Simulator use: http://localhost:8000
@@ -170,13 +170,13 @@ mobile-frontend/
     └── patient-workflow.e2e.js
 ```
 
-## Backend Integration
+## code Integration
 
-The mobile app integrates with the Nexora backend API. Make sure the backend is running before using the app.
+The mobile app integrates with the Nexora code API. Make sure the code is running before using the app.
 
 ### Available Endpoints
 
-The app uses these backend endpoints:
+The app uses these code endpoints:
 
 - `GET /health` - Health check
 - `GET /models` - List available prediction models
@@ -185,7 +185,7 @@ The app uses these backend endpoints:
 
 ### Fallback Mock Data
 
-If the backend is unavailable, the app falls back to mock data for development and testing. This allows developers to work on the UI without requiring a running backend.
+If the code is unavailable, the app falls back to mock data for development and testing. This allows developers to work on the UI without requiring a running code.
 
 ## Authentication
 
@@ -237,9 +237,9 @@ cd ios && pod install && cd ..
 - Check ANDROID_HOME environment variable
 - Clean build: `cd android && ./gradlew clean && cd ..`
 
-**4. Cannot connect to backend:**
+**4. Cannot connect to code:**
 
-- Verify backend is running
+- Verify code is running
 - Check API_BASE_URL in .env
 - For Android emulator, use `10.0.2.2` instead of `localhost`
 - For physical device, ensure both device and computer are on same network

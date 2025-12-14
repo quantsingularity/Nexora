@@ -463,7 +463,7 @@ spec:
         paths:
           - path: /
             pathType: Prefix
-            backend:
+            code:
               service:
                 name: readmission-api
                 port:
@@ -473,7 +473,7 @@ spec:
         paths:
           - path: /
             pathType: Prefix
-            backend:
+            code:
               service:
                 name: readmission-ui
                 port:

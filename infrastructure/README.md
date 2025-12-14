@@ -39,8 +39,8 @@ infrastructure/
 │   ├── base/
 │   │   ├── app-configmap.yaml
 │   │   ├── app-secrets.yaml
-│   │   ├── backend-deployment.yaml
-│   │   ├── backend-service.yaml
+│   │   ├── code-deployment.yaml
+│   │   ├── code-service.yaml
 │   │   ├── database-service.yaml
 │   │   ├── database-statefulset.yaml
 │   │   ├── frontend-deployment.yaml
@@ -109,7 +109,7 @@ The Kubernetes directory contains manifests for deploying the Nexora application
 
 - **base/**: Contains base Kubernetes manifests that define the core application components:
   - Application configurations and secrets
-  - Backend and frontend deployments and services
+  - code and frontend deployments and services
   - Database statefulset and service
   - Redis deployment, service, and persistent volume claim
   - Ingress configuration for external access
@@ -180,7 +180,7 @@ terraform apply -var-file=environments/dev/terraform.tfvars
 
 1. **Environment Isolation**: Keep production, staging, and development environments completely isolated.
 2. **Secret Management**: Use appropriate secret management tools (Ansible Vault, Kubernetes Secrets, HashiCorp Vault) for sensitive information.
-3. **State Management**: Store Terraform state in a remote backend with proper locking mechanisms.
+3. **State Management**: Store Terraform state in a remote code with proper locking mechanisms.
 4. **Modularity**: Keep infrastructure components modular for easier maintenance and reusability.
 5. **Documentation**: Document infrastructure changes and keep architecture diagrams updated.
 6. **Testing**: Test infrastructure changes in lower environments before applying to production.

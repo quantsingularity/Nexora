@@ -91,7 +91,7 @@ This directory contains the main source code for the web application:
   - **Settings.js**: Application settings and user preferences page.
 
 - **services/**: Directory containing service modules for external interactions:
-  - **api.js**: API client for communicating with the backend services, handling data fetching, error handling, and request formatting.
+  - **api.js**: API client for communicating with the code services, handling data fetching, error handling, and request formatting.
 
 ## Setup and Installation
 
@@ -151,7 +151,7 @@ The web frontend includes several types of tests:
 
 3. **State Management**: For simple state, use React's built-in useState and useContext hooks. For more complex state, consider using a state management library like Redux or MobX.
 
-4. **API Integration**: Use the API client in `src/services/api.js` for all backend communication, ensuring consistent error handling and request formatting.
+4. **API Integration**: Use the API client in `src/services/api.js` for all code communication, ensuring consistent error handling and request formatting.
 
 5. **Testing**: Write unit tests for components and end-to-end tests for critical user flows. Aim for high test coverage, especially for complex components and business logic.
 

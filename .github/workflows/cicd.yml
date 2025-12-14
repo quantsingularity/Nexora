@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      BACKEND_DIR: backend
+      code_DIR: code
       WEB_FRONTEND_DIR: web-frontend
       MOBILE_FRONTEND_DIR: mobile-frontend
       INFRASTRUCTURE_DIR: infrastructure
@@ -41,16 +41,16 @@ jobs:
           pip install autoflake black
 
       - name: Run Python Formatting Checks (src)
-        working-directory: ${{ env.BACKEND_DIR }}
+        working-directory: ${{ env.code_DIR }}
         shell: bash
         run: |
           set -euo pipefail
-          if [ ! -d "${{ env.BACKEND_DIR }}" ]; then
-            echo "Directory '${{ env.BACKEND_DIR }}' not found — skipping Python formatting."
+          if [ ! -d "${{ env.code_DIR }}" ]; then
+            echo "Directory '${{ env.code_DIR }}' not found — skipping Python formatting."
             exit 0
           fi
 
-          echo "=== Running autoflake (diff mode) on ${BACKEND_DIR} ==="
+          echo "=== Running autoflake (diff mode) on ${code_DIR} ==="
           TMP_COPY="$(mktemp -d)"
           cp -a . "$TMP_COPY/"
 
@@ -64,15 +64,15 @@ jobs:
 
           echo "Comparing files..."
           if ! diff -r . "$TMP_COPY" > /dev/null; then
-            echo "autoflake found issues in ${BACKEND_DIR}."
-            echo "Run locally: autoflake --remove-all-unused-imports --remove-unused-variables --recursive --ignore-init-module-imports --in-place ${BACKEND_DIR}"
+            echo "autoflake found issues in ${code_DIR}."
+            echo "Run locally: autoflake --remove-all-unused-imports --remove-unused-variables --recursive --ignore-init-module-imports --in-place ${code_DIR}"
             rm -rf "$TMP_COPY"
             exit 1
           fi
 
           rm -rf "$TMP_COPY"
 
-          echo "=== Running black (check mode) on ${BACKEND_DIR} ==="
+          echo "=== Running black (check mode) on ${code_DIR} ==="
           black . --check
 
       - name: Run Python Formatting Checks (tests)

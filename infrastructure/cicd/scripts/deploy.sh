@@ -270,7 +270,7 @@ validate_terraform() {
     log INFO "Initializing Terraform..."
     if [[ -n "$ENVIRONMENT" ]]; then
         terraform init \
-            -backend-config="key=${ENVIRONMENT}/terraform.tfstate" \
+            -code-config="key=${ENVIRONMENT}/terraform.tfstate" \
             -reconfigure
     else
         terraform init -reconfigure

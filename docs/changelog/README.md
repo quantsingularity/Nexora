@@ -140,7 +140,7 @@ This document provides a chronological record of all notable changes to the Hosp
 
 ### Technical Details
 
-- Python 3.10 backend
+- Python 3.10 code
 - TensorFlow 2.8 for model training
 - PostgreSQL database for patient data
 - Kubernetes deployment with Helm charts
