@@ -135,9 +135,7 @@ describe("API Service", () => {
     });
 
     it("should fallback to mock auth on error", async () => {
-      mockAxiosInstance.post.mockRejectedValue(
-        new Error("code unavailable"),
-      );
+      mockAxiosInstance.post.mockRejectedValue(new Error("code unavailable"));
 
       const result = await apiService.login("clinician", "password123");
       expect(result.success).toBe(true);
@@ -145,9 +143,7 @@ describe("API Service", () => {
     });
 
     it("should reject invalid credentials in mock mode", async () => {
-      mockAxiosInstance.post.mockRejectedValue(
-        new Error("code unavailable"),
-      );
+      mockAxiosInstance.post.mockRejectedValue(new Error("code unavailable"));
 
       await expect(apiService.login("invalid", "invalid")).rejects.toThrow(
         "Invalid credentials",

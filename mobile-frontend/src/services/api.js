@@ -178,10 +178,7 @@ const logout = async () => {
   try {
     await apiClient.post("/auth/logout");
   } catch (error) {
-    console.warn(
-      "code logout failed, clearing local session:",
-      error.message,
-    );
+    console.warn("code logout failed, clearing local session:", error.message);
   }
   // Always clear local storage
   await AsyncStorage.multiRemove(["userToken", "username"]);
