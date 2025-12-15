@@ -80,8 +80,13 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f src/requirements.txt ]; then pip install -r src/requirements.txt; fi
 
-      # Add deployment steps here based on your deployment strategy
       - name: Deploy application
         run: |
-          cd deployments
-          # Add deployment commands here
+          echo "Deployment step - configure based on your infrastructure"
+          echo "Options: kubectl apply, terraform apply, ansible-playbook, etc."
+          # Example for Kubernetes:
+          # kubectl apply -k ../infrastructure/kubernetes/environments/prod
+          # Example for Terraform:
+          # cd ../infrastructure/terraform && terraform apply -auto-approve
+          # Example for Ansible:
+          # cd ../infrastructure/ansible && ansible-playbook -i inventory/hosts.yml playbooks/main.yml

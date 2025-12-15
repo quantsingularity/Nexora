@@ -1,0 +1,58 @@
+# Example Terraform Variables File
+# Copy this file to terraform.tfvars and fill in your actual values
+# DO NOT commit terraform.tfvars with real secrets to version control
+
+# Core Configuration
+aws_region  = "us-west-2"
+environment = "dev"  # Options: dev, staging, prod
+app_name    = "nexora"
+
+# Network Configuration
+vpc_cidr             = "10.0.0.0/16"
+availability_zones   = ["us-west-2a", "us-west-2b", "us-west-2c"]
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+private_subnet_cidrs = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+database_subnet_cidrs = ["10.0.7.0/24", "10.0.8.0/24", "10.0.9.0/24"]
+
+# Compute Configuration
+instance_type = "t3.micro"
+key_name      = "your-ec2-key-name"  # Replace with your EC2 key pair name
+
+# Auto Scaling Configuration
+asg_min_size         = 1
+asg_max_size         = 3
+asg_desired_capacity = 1
+
+# Database Configuration
+db_instance_class = "db.t3.micro"
+db_name           = "nexoradb"
+db_username       = "dbadmin"  # Change this
+# IMPORTANT: DO NOT put the actual password here
+# Use AWS Secrets Manager or environment variable TF_VAR_db_password
+# Example: export TF_VAR_db_password="your-secure-password"
+db_password = "CHANGE_ME_USE_SECRETS_MANAGER"
+
+# Security Configuration
+enable_waf       = false  # Set true for production
+enable_shield    = false  # Set true for production (requires AWS Shield subscription)
+enable_guardduty = true
+enable_config    = true
+enable_cloudtrail = true
+enable_inspector = true
+
+# Monitoring Configuration
+alert_email_endpoints = ["your-email@example.com"]  # Replace with actual emails
+
+# Tags
+default_tags = {
+  Terraform   = "true"
+  Environment = "dev"
+  Project     = "nexora"
+  Owner       = "YourTeam"
+}
+
+# Application Secrets (use AWS Secrets Manager in production)
+# app_secrets = {
+#   "api_key" = "CHANGE_ME"
+#   "jwt_secret" = "CHANGE_ME"
+# }

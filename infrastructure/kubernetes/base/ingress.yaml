@@ -17,14 +17,14 @@ spec:
         paths:
           - path: /api
             pathType: Prefix
-            code:
+            backend:
               service:
-                name: "{{ .Values.appName }}-code"
+                name: "{{ .Values.appName }}-backend"
                 port:
-                  number: { { .Values.code.servicePort } }
+                  number: { { .Values.backend.servicePort } }
           - path: /
             pathType: Prefix
-            code:
+            backend:
               service:
                 name: "{{ .Values.appName }}-frontend"
                 port:

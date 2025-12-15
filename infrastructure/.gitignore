@@ -1,0 +1,75 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate.d/
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+plan.out
+*.tfplan
+
+# Terraform backend files (keep examples)
+backend-local.tf
+backend-s3.tf
+
+# Kubernetes
+*-secrets.yaml
+!*-secrets.example.yaml
+values.yaml
+!values.example.yaml
+
+# Ansible
+*.retry
+*.vault
+.vault_pass
+group_vars/*/vault.yml
+!group_vars/*/vault.example.yml
+hosts.yml
+!hosts.example.yml
+ansible.log
+
+# SSH Keys
+*.pem
+*.key
+id_rsa*
+*.ppk
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+!*.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.iml
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# CI/CD
+.github/workflows/*.local.yml

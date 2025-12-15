@@ -5,7 +5,7 @@ metadata:
   labels:
     app: "{{ .Values.appName }}-code"
 spec:
-  replicas: { { .Values.code.replicas } }
+  replicas: { { .Values.backend.replicas } }
   selector:
     matchLabels:
       app: "{{ .Values.appName }}-code"
@@ -15,18 +15,18 @@ spec:
         app: "{{ .Values.appName }}-code"
     spec:
       containers:
-        - name: "{{ .Values.appName }}-code"
-          image: "{{ .Values.code.image.repository }}:{{ .Values.code.image.tag }}"
-          imagePullPolicy: "{{ .Values.code.image.pullPolicy }}"
+        - name: "{{ .Values.appName }}-backend"
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: "{{ .Values.backend.image.pullPolicy }}"
           ports:
-            - containerPort: { { .Values.code.containerPort } }
+            - containerPort: { { .Values.backend.containerPort } }
           resources:
             limits:
-              cpu: "{{ .Values.code.resources.limits.cpu }}"
-              memory: "{{ .Values.code.resources.limits.memory }}"
+              cpu: "{{ .Values.backend.resources.limits.cpu }}"
+              memory: "{{ .Values.backend.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.code.resources.requests.cpu }}"
-              memory: "{{ .Values.code.resources.requests.memory }}"
+              cpu: "{{ .Values.backend.resources.requests.cpu }}"
+              memory: "{{ .Values.backend.resources.requests.memory }}"
           env:
             - name: NODE_ENV
               value: "{{ .Values.environment }}"
@@ -43,13 +43,13 @@ spec:
           livenessProbe:
             httpGet:
               path: /health
-              port: { { .Values.code.containerPort } }
+              port: { { .Values.backend.containerPort } }
             initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /health
-              port: { { .Values.code.containerPort } }
+              port: { { .Values.backend.containerPort } }
             initialDelaySeconds: 5
             periodSeconds: 5
       imagePullSecrets:

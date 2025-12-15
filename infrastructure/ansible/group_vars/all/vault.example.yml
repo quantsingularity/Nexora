@@ -1,0 +1,34 @@
+# group_vars/all/vault.example.yml
+# Example vault file for sensitive variables
+#
+# Usage:
+# 1. Create encrypted vault file:
+#    ansible-vault create group_vars/all/vault.yml
+# 2. Add the variables below with actual values
+# 3. To edit: ansible-vault edit group_vars/all/vault.yml
+# 4. To view: ansible-vault view group_vars/all/vault.yml
+#
+# Store vault password in .vault_pass file (add to .gitignore):
+#    echo "your-vault-password" > .vault_pass
+#    chmod 600 .vault_pass
+#
+# Then in ansible.cfg, set: vault_password_file = .vault_pass
+
+---
+# Database passwords (to be encrypted with ansible-vault)
+vault_db_root_password: "CHANGEME_SecureRootPassword123!"
+vault_db_password: "CHANGEME_SecureUserPassword123!"
+
+# SSH keys
+vault_ssh_private_key: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  CHANGEME_YourPrivateKeyContent
+  -----END OPENSSH PRIVATE KEY-----
+
+# Application secrets
+vault_jwt_secret: "CHANGEME_YourJWTSecretKey"
+vault_api_key: "CHANGEME_YourAPIKey"
+
+# AWS credentials (if needed)
+vault_aws_access_key: "CHANGEME_AWSAccessKey"
+vault_aws_secret_key: "CHANGEME_AWSSecretKey"

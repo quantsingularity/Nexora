@@ -1,0 +1,15 @@
+---
+# tfsec configuration file
+# https://aquasecurity.github.io/tfsec/
+
+severity_overrides:
+  aws-s3-enable-bucket-logging: WARNING
+  aws-s3-enable-versioning: ERROR
+  aws-rds-encrypt-instance-storage-data: ERROR
+  aws-ec2-enable-at-rest-encryption: ERROR
+
+exclude:
+  # Add specific checks to exclude if needed (with justification)
+  # Example: AWS001 # Reason: Using custom encryption solution
+
+minimum_severity: MEDIUM

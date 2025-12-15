@@ -1,0 +1,51 @@
+# hosts.example.yml - Ansible Inventory Example
+# Copy this file to hosts.yml and configure with your actual hosts
+#
+# Usage: ansible-playbook -i inventory/hosts.yml playbooks/main.yml
+
+all:
+  children:
+    # Web server group
+    webservers:
+      hosts:
+        web1:
+          ansible_host: 10.0.1.10
+          ansible_user: ubuntu
+        web2:
+          ansible_host: 10.0.1.11
+          ansible_user: ubuntu
+      vars:
+        # Web server specific variables
+        nginx_worker_processes: auto
+        nginx_worker_connections: 1024
+
+    # Database server group
+    databases:
+      hosts:
+        db1:
+          ansible_host: 10.0.2.10
+          ansible_user: ubuntu
+          mysql_server_id: 1
+        db2:
+          ansible_host: 10.0.2.11
+          ansible_user: ubuntu
+          mysql_server_id: 2
+      vars:
+        # Database specific variables
+        mysql_version: "8.0"
+
+  vars:
+    # Global variables for all hosts
+    ansible_ssh_private_key_file: "~/.ssh/id_rsa" # Change to your SSH key path
+    ansible_python_interpreter: /usr/bin/python3
+
+    # Application configuration
+    app_name: nexora
+    app_environment: dev
+
+    # Database configuration (use Ansible Vault for sensitive data)
+    db_name: nexoradb
+    db_user: nexora
+    # Use ansible-vault to encrypt: ansible-vault create group_vars/all/vault.yml
+    # db_password: "{{ vault_db_password }}"
+    # db_root_password: "{{ vault_db_root_password }}"

@@ -1,10 +1,18 @@
 ---
 # roles/database/vars/main.yml
-db_name: "{{ db_name }}"
-db_user: "{{ db_user }}"
-db_password: "{{ db_password }}"
-db_root_password: "{{ db_root_password }}"
+# Database role default variables
+# DO NOT define sensitive values here - use ansible-vault
+
+# Database configuration parameters (non-sensitive)
 db_max_connections: 150
 db_max_allowed_packet: "64M"
 db_innodb_buffer_pool_size: "256M"
 db_innodb_log_file_size: "64M"
+# Sensitive variables should be defined in:
+# - group_vars/all/vault.yml (encrypted with ansible-vault)
+# - inventory/hosts.yml (for non-sensitive overrides)
+# Required variables:
+# - db_name
+# - db_user
+# - db_password (should be in vault)
+# - db_root_password (should be in vault)

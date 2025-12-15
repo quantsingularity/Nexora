@@ -15,12 +15,11 @@ terraform {
     }
   }
 
-  code "s3" {
-    # Enhanced code configuration with encryption
-    encrypt        = true
-    kms_key_id     = "alias/terraform-state-key"
-    dynamodb_table = "terraform-state-lock"
-  }
+  # Backend configuration moved to separate files for flexibility:
+  # - backend-local.tf.example: For local development
+  # - backend-s3.tf.example: For production/team usage
+  # Uncomment and configure ONE of these files as needed.
+  # See backend-*.tf.example files for detailed instructions.
 }
 
 # Configure AWS provider with enhanced security
@@ -112,6 +111,7 @@ module "network" {
   public_subnet_cidrs     = var.public_subnet_cidrs
   private_subnet_cidrs    = var.private_subnet_cidrs
   database_subnet_cidrs   = var.database_subnet_cidrs
+  app_name               = var.app_name
   enable_nat_gateway      = var.enable_nat_gateway
   enable_vpn_gateway      = var.enable_vpn_gateway
   enable_dns_hostnames    = true

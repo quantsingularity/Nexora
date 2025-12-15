@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base Kubernetes manifests for Nexora application
+namespace: nexora
+
+resources:
+  - namespace.yaml
+  - rbac.yaml
+  - app-configmap.yaml
+  - app-secrets.yaml
+  - backend-deployment.yaml
+  - backend-service.yaml
+  - frontend-deployment.yaml
+  - frontend-service.yaml
+  - database-statefulset.yaml
+  - database-service.yaml
+  - redis-deployment.yaml
+  - redis-service.yaml
+  - redis-pvc.yaml
+  - ingress.yaml
+
+commonLabels:
+  app: nexora
+  managedBy: kustomize
+
+# Images can be overridden in overlays
+images:
+  - name: backend-image
+    newName: nexora/backend
+    newTag: latest
+  - name: frontend-image
+    newName: nexora/frontend
+    newTag: latest
+  - name: mysql
+    newName: mysql
+    newTag: "8.0"
+  - name: redis
+    newName: redis
+    newTag: "7-alpine"

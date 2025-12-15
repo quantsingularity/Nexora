@@ -1,0 +1,16 @@
+# backend-local.tf.example
+# Local backend configuration for development and testing
+# 
+# Usage for local development:
+# 1. Copy this file to backend-local.tf
+# 2. Remove or comment out the S3 backend in main.tf lines 18-23
+# 3. Run: terraform init -reconfigure
+#
+# This stores Terraform state locally in terraform.tfstate file
+# WARNING: Local state is NOT suitable for team collaboration or production
+
+terraform {
+  backend "local" {
+    path = "terraform.tfstate"
+  }
+}
