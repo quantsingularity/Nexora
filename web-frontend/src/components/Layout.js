@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   Box,
   Drawer,
@@ -18,6 +18,7 @@ import {
   MenuItem,
   useTheme,
   useMediaQuery,
+  Badge,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -35,6 +36,7 @@ const drawerWidth = 240;
 function Layout() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const location = useLocation();
   const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -94,7 +96,9 @@ function Layout() {
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <IconButton color="inherit" sx={{ mr: 2 }}>
-              <NotificationsIcon />
+              <Badge badgeContent={3} color="error">
+                <NotificationsIcon />
+              </Badge>
             </IconButton>
             <IconButton
               edge="end"
@@ -146,24 +150,43 @@ function Layout() {
             </Box>
           )}
           <List>
-            {menuItems.map((item) => (
-              <ListItem key={item.text} disablePadding>
-                <ListItemButton
-                  sx={{
-                    borderRadius: "0 24px 24px 0",
-                    mx: 1,
-                    "&:hover": {
-                      backgroundColor: "rgba(25, 118, 210, 0.08)",
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ color: "primary.main" }}>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText primary={item.text} />
-                </ListItemButton>
-              </ListItem>
-            ))}
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <ListItem key={item.text} disablePadding>
+                  <ListItemButton
+                    component={Link}
+                    to={item.path}
+                    selected={isActive}
+                    sx={{
+                      borderRadius: "0 24px 24px 0",
+                      mx: 1,
+                      backgroundColor: isActive
+                        ? "rgba(25, 118, 210, 0.12)"
+                        : "transparent",
+                      "&:hover": {
+                        backgroundColor: "rgba(25, 118, 210, 0.08)",
+                      },
+                    }}
+                    onClick={isMobile ? handleDrawerToggle : undefined}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        color: isActive ? "primary.main" : "text.secondary",
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.text}
+                      primaryTypographyProps={{
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
           </List>
           <Divider sx={{ my: 2 }} />
           <Box sx={{ p: 2 }}>
@@ -184,7 +207,20 @@ function Layout() {
           </Box>
         </Box>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, pt: 10 }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          pt: 10,
+          width: { sm: `calc(100% - ${open ? drawerWidth : 0}px)` },
+          ml: { sm: open ? `${drawerWidth}px` : 0 },
+          transition: theme.transitions.create(["margin", "width"], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+        }}
+      >
         <Outlet />
       </Box>
     </Box>
