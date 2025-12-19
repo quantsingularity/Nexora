@@ -2,10 +2,13 @@ import pandas as pd
 import os
 from typing import Dict, Any, List, Optional
 import logging
-from ..utils.fhir_connector import FHIRConnector
-from .icd10_encoder import ICD10Encoder
-from .temporal_features import TemporalFeatureExtractor
-from .hipaa_compliance.deidentifier import PHIDeidentifier, DeidentificationConfig
+from utils.fhir_connector import FHIRConnector
+from data_pipeline.icd10_encoder import ICD10Encoder
+from data_pipeline.temporal_features import TemporalFeatureExtractor
+from data_pipeline.hipaa_compliance.deidentifier import (
+    PHIDeidentifier,
+    DeidentificationConfig,
+)
 
 logger = logging.getLogger(__name__)
 

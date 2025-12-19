@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -6,13 +7,11 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from ..compliance.phi_audit_logger import PHIAuditLogger
-
-# Import model registry and other utilities
-# These would need to be implemented or imported from other modules
-from ..model_factory.model_registry import ModelRegistry
-from ..model_factory.base_model import BaseModel
-from ..utils.fhir_connector import FHIRConnector
+# Use absolute imports
+from compliance.phi_audit_logger import PHIAuditLogger
+from model_factory.model_registry import ModelRegistry
+from model_factory.base_model import BaseModel as MLBaseModel
+from utils.fhir_connector import FHIRConnector
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -81,24 +80,30 @@ async def list_models():
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(request: PredictionRequest):
     try:
-        # Log the request before processing
-        model_version = request.model_version or "latest"
-        PHIAuditLogger().log_prediction_request(
-            patient_id=request.patient_id,
-            model_used=f"{request.model_name} v{model_version}",
-        )
-
+        # Generate request ID if not provided
         if not request.request_id:
             request.request_id = f"req_{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
-            model: BaseModel = ModelRegistry().get_model(
-                request.model_name, request.model_version
-            )
-        # The predict method expects a DataFrame for SurvivalAnalysisModel, but a dict for others.
-        # We'll assume the model handles the conversion internally or that the input is pre-processed.
-        # For this implementation, we'll pass the raw dict and let the model mock the prediction.
-        predictions = model.predict(request.patient_data)
-        explanations = model.explain(request.patient_data)
+        # Log the request before processing
+        model_version = request.model_version or "latest"
+
+        # Initialize audit logger with default path
+        audit_db_path = os.environ.get("AUDIT_DB_PATH", "audit/phi_access.db")
+        os.makedirs(os.path.dirname(audit_db_path), exist_ok=True)
+
+        PHIAuditLogger(db_path=audit_db_path).log_prediction_request(
+            patient_id=request.patient_data.patient_id,
+            model_used=f"{request.model_name} v{model_version}",
+        )
+
+        # Get model from registry
+        model: MLBaseModel = ModelRegistry().get_model(
+            request.model_name, request.model_version
+        )
+
+        # Generate predictions
+        predictions = model.predict(request.patient_data.dict())
+        explanations = model.explain(request.patient_data.dict())
 
         return PredictionResponse(
             request_id=request.request_id,
@@ -123,8 +128,16 @@ async def predict_from_fhir(
     patient_id: str, model_name: str, model_version: Optional[str] = None
 ):
     try:
-        fhir_connector = FHIRConnector()
-        patient_data = fhir_connector.get_patient_data(patient_id)
+        # Get FHIR server URL from environment or use default
+        fhir_server_url = os.environ.get(
+            "FHIR_SERVER_URL", "http://mock-fhir-server/R4"
+        )
+
+        fhir_connector = FHIRConnector(base_url=fhir_server_url)
+        patient_data_dict = fhir_connector.get_patient_data(patient_id)
+
+        # Convert dict to PatientData model
+        patient_data = PatientData(**patient_data_dict)
 
         request = PredictionRequest(
             model_name=model_name,
@@ -141,4 +154,6 @@ async def predict_from_fhir(
 
 # Run the API server
 if __name__ == "__main__":
-    uvicorn.run("rest_api:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    host = os.environ.get("HOST", "0.0.0.0")
+    uvicorn.run(app, host=host, port=port, reload=False)

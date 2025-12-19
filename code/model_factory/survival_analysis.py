@@ -6,7 +6,7 @@ from typing import Dict, Any, Optional
 import logging
 import os
 import pickle
-from .base_model import BaseModel
+from model_factory.base_model import BaseModel
 
 logger = logging.getLogger(__name__)
 

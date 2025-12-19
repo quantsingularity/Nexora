@@ -3,7 +3,8 @@ from tensorflow.keras import layers
 from typing import Dict, Any, Optional
 import numpy as np
 import logging
-from .base_model import BaseModel
+import os
+from model_factory.base_model import BaseModel
 
 logger = logging.getLogger(__name__)
 

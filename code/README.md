@@ -169,32 +169,3 @@ The source code in this directory is used in various ways:
    # Run validation tests
    python -m code.validation.run_tests
    ```
-
-## Development Guidelines
-
-1. **Code Style**: Follow PEP 8 guidelines for Python code style.
-2. **Documentation**: Use docstrings for all modules, classes, and functions.
-3. **Testing**: Write unit tests for all components and ensure they pass before committing.
-4. **Error Handling**: Implement proper error handling and logging throughout the codebase.
-5. **Configuration**: Use configuration files rather than hardcoded values.
-6. **Security**: Follow security best practices, especially when handling PHI.
-7. **Performance**: Consider performance implications, especially for components in the critical path.
-
-## Dependencies
-
-The source code depends on various Python libraries:
-
-- **Data Processing**: pandas, numpy, scikit-learn
-- **Machine Learning**: tensorflow, pytorch, xgboost
-- **API**: flask, fastapi, grpcio
-- **Healthcare**: fhir.resources, pydicom
-- **Monitoring**: prometheus_client, grafana_api
-
-Specific version requirements are defined in the project's requirements.txt file.
-
-## Related Components
-
-- Infrastructure for running the code is defined in the `infrastructure/` directory.
-- Exploratory analyses related to the code are in the `notebooks/` directory.
-- Tests for the code are in the `tests/` directory.
-- Web and mobile frontends consume the APIs defined in `code/serving/`.

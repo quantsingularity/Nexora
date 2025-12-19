@@ -1,7 +1,7 @@
 import os
 import json
 from typing import Dict, Any, Optional
-from .base_model import BaseModel
+from model_factory.base_model import BaseModel
 
 
 class ModelRegistry:
@@ -74,15 +74,15 @@ class ModelRegistry:
         model_info["path"]
         model_config = model_info["config"]
         if model_name == "deep_fm":
-            from .deep_fm import DeepFMModel
+            from model_factory.deep_fm import DeepFMModel
 
             model_class = DeepFMModel
         elif model_name == "survival_analysis":
-            from .survival_analysis import SurvivalAnalysisModel
+            from model_factory.survival_analysis import SurvivalAnalysisModel
 
             model_class = SurvivalAnalysisModel
         elif model_name == "transformer_model":
-            from .transformer_model import TransformerModel
+            from model_factory.transformer_model import TransformerModel
 
             model_class = TransformerModel
         else:

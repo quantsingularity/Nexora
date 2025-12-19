@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional
 import logging
 import numpy as np
 import os
-from .base_model import BaseModel
+from model_factory.base_model import BaseModel
 
 logger = logging.getLogger(__name__)
 
