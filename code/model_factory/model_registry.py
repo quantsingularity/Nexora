@@ -10,14 +10,14 @@ class ModelRegistry:
     In a real-world scenario, this would interact with a persistent model store (e.g., MLflow, S3).
     """
 
-    def __init__(self, registry_path: str = "model_registry.json") -> Any:
+    def __init__(self, registry_path: str = "model_registry.json") -> None:
         self.registry_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), registry_path
         )
         self.models: Dict[str, Dict[str, BaseModel]] = {}
         self._load_registry()
 
-    def _load_registry(self) -> Any:
+    def _load_registry(self) -> None:
         """Loads the model metadata from a JSON file."""
         if not os.path.exists(self.registry_path):
             self.metadata = {
@@ -45,7 +45,7 @@ class ModelRegistry:
         with open(self.registry_path, "r") as f:
             self.metadata = json.load(f)
 
-    def _save_registry(self) -> Any:
+    def _save_registry(self) -> None:
         """Saves the model metadata to a JSON file."""
         os.makedirs(os.path.dirname(self.registry_path), exist_ok=True)
         with open(self.registry_path, "w") as f:
@@ -53,7 +53,7 @@ class ModelRegistry:
 
     def register_model(
         self, model_name: str, version: str, path: str, config: Dict[str, Any]
-    ) -> Any:
+    ) -> None:
         """Registers a new model version."""
         if model_name not in self.metadata:
             self.metadata[model_name] = {}

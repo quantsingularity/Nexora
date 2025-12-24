@@ -212,9 +212,9 @@ class HealthcareFairness:
             except Exception as e:
                 logger.error(f"Error calculating {name}: {str(e)}")
                 results[name] = {
-                    "value": None,
+                    "value": 0.0,
                     "passed": False,
-                    "error": str(e),
+                    "error_msg": str(e),
                 }
 
         # Check if all metrics passed

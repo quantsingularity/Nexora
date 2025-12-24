@@ -38,7 +38,7 @@ class PipelineValidator:
         output_dir: str = "validation_results",
         test_data_ratio: float = 0.2,
         random_seed: int = 42,
-    ) -> Any:
+    ) -> None:
         """
         Initialize the pipeline validator.
 
@@ -287,7 +287,7 @@ class PipelineValidator:
         else:
             raise ValueError(f"Unsupported file format: {ext}")
 
-    def _load_model(self, model_path: str) -> Any:
+    def _load_model(self, model_path: str) -> None:
         """
         Load model from file.
 
@@ -409,7 +409,7 @@ class AutomatedValidator:
         model_dir: str = "models",
         output_dir: str = "validation_results",
         config_path: Optional[str] = None,
-    ) -> Any:
+    ) -> None:
         """
         Initialize the automated validator.
 
@@ -437,7 +437,7 @@ class AutomatedValidator:
         data_files = self._find_data_files()
         model_files = self._find_model_files()
         deidentification_config = self._create_deidentification_config()
-        results = {}
+        results: Dict[str, Any] = {}
         for data_file in data_files:
             data_name = os.path.basename(data_file)
             results[data_name] = {}

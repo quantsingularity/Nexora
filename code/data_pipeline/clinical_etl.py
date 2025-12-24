@@ -21,7 +21,7 @@ class ClinicalETL:
     DataFrame, including compliance checks, encoding, and feature engineering.
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None) -> Any:
+    def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
         self.config = config if config is not None else {}
         self.fhir_connector = FHIRConnector(
             self.config.get("fhir_server_url", "http://mock-fhir-server/R4")
@@ -104,7 +104,7 @@ class ClinicalETL:
         )
         return feature_df
 
-    def load(self, feature_df: pd.DataFrame) -> Any:
+    def load(self, feature_df: pd.DataFrame) -> None:
         """
         Loads the feature DataFrame into a feature store or database.
 

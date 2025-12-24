@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import layers, Model
 from typing import Dict, Any, Optional
 import numpy as np
 import logging
@@ -16,7 +16,7 @@ class DeepFMModel(BaseModel):
     and Deep Neural Networks (DNN) for high-level feature learning.
     """
 
-    def __init__(self, config: Dict[str, Any]) -> Any:
+    def __init__(self, config: Dict[str, Any]) -> None:
         super().__init__(config)
         self.num_features = config.get("num_features", 100)
         self.embedding_dims = config.get("embedding_dims", 16)
@@ -26,7 +26,7 @@ class DeepFMModel(BaseModel):
         )
         self.model = self._build_model()
 
-    def _build_model(self) -> Any:
+    def _build_model(self) -> Model:
         """Builds the DeepFM Keras model."""
         inputs = {
             f"feature_{i}": tf.keras.Input(
@@ -65,7 +65,7 @@ class DeepFMModel(BaseModel):
         self,
         train_data: Dict[str, np.ndarray],
         validation_data: Optional[Dict[str, np.ndarray]] = None,
-    ) -> Any:
+    ) -> None:
         """
         Trains the DeepFM model.
 
@@ -125,14 +125,14 @@ class DeepFMModel(BaseModel):
             "uncertainty": {"std_dev": float(uncertainty)},
         }
 
-    def save(self, path: Optional[str] = None) -> Any:
+    def save(self, path: Optional[str] = None) -> None:
         """Saves the model to the specified path."""
         save_path = path or self.model_path
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         self.model.save(save_path)
         logger.info(f"DeepFM model saved to {save_path}")
 
-    def load(self, path: Optional[str] = None) -> Any:
+    def load(self, path: Optional[str] = None) -> None:
         """Loads the model from the specified path."""
         load_path = path or self.model_path
         self.model = tf.keras.models.load_model(load_path)

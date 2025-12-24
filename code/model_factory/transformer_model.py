@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class PositionalEncoding(nn.Module):
     """Injects some information about the relative or absolute position of the tokens in the sequence."""
 
-    def __init__(self, d_model: Any, dropout: Any = 0.1, max_len: Any = 5000) -> Any:
+    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000) -> None:
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
         pe = torch.zeros(max_len, d_model)
@@ -26,7 +26,7 @@ class PositionalEncoding(nn.Module):
         pe = pe.unsqueeze(0).transpose(0, 1)
         self.register_buffer("pe", pe)
 
-    def forward(self, x: Any) -> Any:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Args:
             x: Tensor, shape [seq_len, batch_size, embedding_dim]
@@ -42,14 +42,14 @@ class ClinicalTransformer(nn.Module):
 
     def __init__(
         self,
-        vocab_size: Any,
-        d_model: Any,
-        nhead: Any,
-        num_layers: Any,
-        dim_feedforward: Any,
-        dropout: Any = 0.1,
-        num_classes: Any = 1,
-    ) -> Any:
+        vocab_size: int,
+        d_model: int,
+        nhead: int,
+        num_layers: int,
+        dim_feedforward: int,
+        dropout: float = 0.1,
+        num_classes: int = 1,
+    ) -> None:
         super(ClinicalTransformer, self).__init__()
         self.model_type = "Transformer"
         self.pos_encoder = PositionalEncoding(d_model, dropout)
@@ -66,13 +66,15 @@ class ClinicalTransformer(nn.Module):
         self.decoder = nn.Linear(d_model, num_classes)
         self.init_weights()
 
-    def init_weights(self) -> Any:
+    def init_weights(self) -> None:
         initrange = 0.1
         self.embedding.weight.data.uniform_(-initrange, initrange)
         self.decoder.bias.data.zero_()
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
-    def forward(self, src: Any, src_mask: Any = None) -> Any:
+    def forward(
+        self, src: torch.Tensor, src_mask: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         """
         Args:
             src: Tensor, shape [seq_len, batch_size] (indices of concepts)
@@ -91,7 +93,7 @@ class TransformerModel(BaseModel):
     Wrapper for the ClinicalTransformer model, adhering to the BaseModel interface.
     """
 
-    def __init__(self, config: Dict[str, Any]) -> Any:
+    def __init__(self, config: Dict[str, Any]) -> None:
         super().__init__(config)
         self.vocab_size = config.get("vocab_size", 10000)
         self.d_model = config.get("d_model", 128)
@@ -119,7 +121,7 @@ class TransformerModel(BaseModel):
         self,
         train_data: Dict[str, Any],
         validation_data: Optional[Dict[str, Any]] = None,
-    ) -> Any:
+    ) -> None:
         """
         Trains the Transformer model.
 
@@ -162,14 +164,14 @@ class TransformerModel(BaseModel):
             "uncertainty": {"std_dev": float(uncertainty)},
         }
 
-    def save(self, path: Optional[str] = None) -> Any:
+    def save(self, path: Optional[str] = None) -> None:
         """Saves the model state dictionary to the specified path."""
         save_path = path or self.model_path
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         torch.save(self.model.state_dict(), save_path)
         logger.info(f"Transformer model saved to {save_path}")
 
-    def load(self, path: Optional[str] = None) -> Any:
+    def load(self, path: Optional[str] = None) -> None:
         """Loads the model state dictionary from the specified path."""
         load_path = path or self.model_path
         self.model.load_state_dict(torch.load(load_path))

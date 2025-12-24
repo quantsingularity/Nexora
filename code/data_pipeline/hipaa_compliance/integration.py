@@ -19,7 +19,7 @@ class DeidentifyFHIRDoFn(beam.DoFn):
     Apache Beam DoFn for de-identifying FHIR bundles.
     """
 
-    def __init__(self, config: Optional[DeidentificationConfig] = None) -> Any:
+    def __init__(self, config: Optional[DeidentificationConfig] = None) -> None:
         """
         Initialize the DoFn.
 
@@ -28,11 +28,11 @@ class DeidentifyFHIRDoFn(beam.DoFn):
         """
         self.config = config if config else DeidentificationConfig()
 
-    def setup(self) -> Any:
+    def setup(self) -> None:
         """Set up the DoFn."""
         self.deidentifier = PHIDeidentifier(self.config)
 
-    def process(self, element: Any) -> Any:
+    def process(self, element: Any) -> None:
         """
         Process a FHIR bundle.
 
@@ -60,7 +60,7 @@ class DeidentifyDataFrameDoFn(beam.DoFn):
         config: Optional[DeidentificationConfig] = None,
         patient_id_col: Optional[str] = None,
         phi_cols: Optional[List[str]] = None,
-    ) -> Any:
+    ) -> None:
         """
         Initialize the DoFn.
 
@@ -73,11 +73,11 @@ class DeidentifyDataFrameDoFn(beam.DoFn):
         self.patient_id_col = patient_id_col
         self.phi_cols = phi_cols
 
-    def setup(self) -> Any:
+    def setup(self) -> None:
         """Set up the DoFn."""
         self.deidentifier = PHIDeidentifier(self.config)
 
-    def process(self, element: Any) -> Any:
+    def process(self, element: Any) -> None:
         """
         Process a pandas DataFrame.
 
@@ -109,7 +109,7 @@ class HIPAACompliantHealthcareETL(beam.PTransform):
         deidentification_config: Optional[DeidentificationConfig] = None,
         patient_id_col: Optional[str] = None,
         phi_cols: Optional[List[str]] = None,
-    ) -> Any:
+    ) -> None:
         """
         Initialize the PTransform.
 
@@ -126,7 +126,7 @@ class HIPAACompliantHealthcareETL(beam.PTransform):
         self.patient_id_col = patient_id_col
         self.phi_cols = phi_cols
 
-    def expand(self, pcoll: Any) -> Any:
+    def expand(self, pcoll: Any) -> None:
         return (
             pcoll
             | "ParseFHIR" >> beam.Map(parse_fhir_bundle)

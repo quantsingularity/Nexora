@@ -18,7 +18,7 @@ class PHIDetector:
     HIPAA Safe Harbor method, helping to identify PHI before de-identification.
     """
 
-    def __init__(self) -> Any:
+    def __init__(self) -> None:
         """Initialize the PHI detector."""
         self.patterns = {
             "name": re.compile("\\b[A-Z][a-z]+ [A-Z][a-z]+\\b"),
@@ -81,7 +81,7 @@ class PHIDetector:
             sample_df = df
         results = {}
         for col in sample_df.columns:
-            col_results = {}
+            col_results: Dict[str, Any] = {}
             if not pd.api.types.is_string_dtype(sample_df[col]) and (
                 not pd.api.types.is_object_dtype(sample_df[col])
             ):
@@ -143,20 +143,20 @@ class PHIDetector:
             "id": ["id", "identifier", "mrn", "ssn", "social", "account"],
             "contact": ["phone", "email", "fax", "contact", "mobile", "cell"],
         }
-        name_based_phi = {}
+        name_based_phi: Dict[str, List[str]] = {}
         for col in df.columns:
             col_lower = col.lower()
             for phi_type, indicators in name_indicators.items():
                 if any((indicator in col_lower for indicator in indicators)):
                     if col not in name_based_phi:
-                        name_based_phi[col] = set()
-                    name_based_phi[col].add(phi_type)
+                        name_based_phi[col] = []
+                    name_based_phi[col].append(phi_type)
         all_phi_columns = set(phi_columns.keys()) | set(name_based_phi.keys())
         combined_results = {}
         for col in all_phi_columns:
             combined_results[col] = {
                 "content_detection": phi_columns.get(col, set()),
-                "name_indicators": name_based_phi.get(col, set()),
+                "name_indicators": set(name_based_phi.get(col, [])),
                 "risk_level": (
                     "high"
                     if col in phi_columns

@@ -7,7 +7,7 @@ missing values, and creating derived features based on temporal patterns.
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 import numpy as np
 import pandas as pd
 from scipy import signal, stats
@@ -35,7 +35,7 @@ class TemporalFeatureExtractor(BaseEstimator, TransformerMixin):
         include_trends: bool = True,
         handle_missing: str = "interpolate",
         reference_time_column: Optional[str] = None,
-    ) -> Any:
+    ) -> None:
         """
         Initialize the temporal feature extractor.
 
@@ -187,7 +187,7 @@ class TemporalFeatureExtractor(BaseEstimator, TransformerMixin):
         Returns:
             Dictionary of extracted features
         """
-        features = {}
+        features: Dict[str, float] = {}
         if not self.value_column:
             return features
         for window_size in self.window_sizes:
@@ -244,7 +244,7 @@ class TemporalFeatureExtractor(BaseEstimator, TransformerMixin):
         Returns:
             Dictionary of extracted frequency features
         """
-        features = {}
+        features: Dict[str, float] = {}
         if not self.value_column or len(patient_data) < 5:
             return features
         max_window_size = max(self.window_sizes)
@@ -292,7 +292,7 @@ class TemporalFeatureExtractor(BaseEstimator, TransformerMixin):
         Returns:
             Dictionary of extracted event features
         """
-        features = {}
+        features: Dict[str, float] = {}
         for window_size in self.window_sizes:
             window_start = reference_time - pd.Timedelta(days=window_size)
             window_data = patient_data[
@@ -326,7 +326,7 @@ class TemporalFeatureExtractor(BaseEstimator, TransformerMixin):
                     )
         return features
 
-    def fit(self, X: pd.DataFrame, y: Any = None) -> Any:
+    def fit(self, X: pd.DataFrame, y: Any = None) -> None:
         """
         Fit the transformer (no-op for this transformer).
 
@@ -405,7 +405,7 @@ class MultiVariateTemporalFeatures:
         include_trends: bool = True,
         handle_missing: str = "interpolate",
         reference_time_column: Optional[str] = None,
-    ) -> Any:
+    ) -> None:
         """
         Initialize the multivariate temporal feature extractor.
 

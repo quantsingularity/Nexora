@@ -21,7 +21,7 @@ from ...validation.pipeline_validator import PipelineValidator
 class MockHIPAACompliantHealthcareETL:
     """A mock ETL class that simulates the de-identification step."""
 
-    def __init__(self, deidentifier: Any) -> Any:
+    def __init__(self, deidentifier: Any) -> None:
         self.deidentifier = deidentifier
 
     def process_data(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -46,7 +46,7 @@ class MockHIPAACompliantHealthcareETL:
 class TestHIPAACompliance(unittest.TestCase):
     """Test HIPAA compliance of the de-identification module."""
 
-    def setUp(self) -> Any:
+    def setUp(self) -> None:
         """Set up test fixtures."""
         self.sample_data = pd.DataFrame(
             {
@@ -127,11 +127,11 @@ class TestHIPAACompliance(unittest.TestCase):
         self.phi_detector = PHIDetector()
         self.temp_dir = tempfile.mkdtemp()
 
-    def tearDown(self) -> Any:
+    def tearDown(self) -> None:
         """Tear down test fixtures."""
         shutil.rmtree(self.temp_dir)
 
-    def test_phi_detection(self) -> Any:
+    def test_phi_detection(self) -> None:
         """Test PHI detection functionality."""
         phi_report = self.phi_detector.generate_phi_report(self.sample_data)
         self.assertGreater(len(phi_report["summary"]["phi_columns"]), 0)
@@ -139,7 +139,7 @@ class TestHIPAACompliance(unittest.TestCase):
         self.assertIn("ssn", phi_report["column_details"])
         self.assertIn("address", phi_report["column_details"])
 
-    def test_deidentification(self) -> Any:
+    def test_deidentification(self) -> None:
         """Test de-identification functionality."""
         deidentified_data = self.deidentifier.deidentify_dataframe(self.sample_data)
         self.assertEqual(len(deidentified_data), len(self.sample_data))
@@ -169,7 +169,7 @@ class TestHIPAACompliance(unittest.TestCase):
             self.sample_data["readmission_risk"].iloc[0],
         )
 
-    def test_phi_leakage(self) -> Any:
+    def test_phi_leakage(self) -> None:
         """Test for PHI leakage after de-identification."""
         deidentified_data = self.deidentifier.deidentify_dataframe(self.sample_data)
         phi_report = self.phi_detector.generate_phi_report(deidentified_data)
@@ -180,7 +180,7 @@ class TestHIPAACompliance(unittest.TestCase):
         ]
         self.assertEqual(len(high_risk_columns), 0)
 
-    def test_validation_pipeline(self) -> Any:
+    def test_validation_pipeline(self) -> None:
         """Test the validation pipeline."""
         data_path = os.path.join(self.temp_dir, "sample_data.csv")
         self.sample_data.to_csv(data_path, index=False)
@@ -195,7 +195,7 @@ class TestHIPAACompliance(unittest.TestCase):
 class TestFHIRDeidentification(unittest.TestCase):
     """Test de-identification of FHIR resources."""
 
-    def setUp(self) -> Any:
+    def setUp(self) -> None:
         """Set up test fixtures."""
         self.fhir_bundle = {
             "resourceType": "Bundle",
@@ -285,7 +285,7 @@ class TestFHIRDeidentification(unittest.TestCase):
         )
         self.deidentifier = PHIDeidentifier(self.config)
 
-    def test_fhir_deidentification(self) -> Any:
+    def test_fhir_deidentification(self) -> None:
         """Test de-identification of FHIR bundle."""
         deidentified_bundle = self.deidentifier.deidentify_fhir_bundle(self.fhir_bundle)
         patient = None
@@ -311,7 +311,7 @@ class TestFHIRDeidentification(unittest.TestCase):
         self.assertNotEqual(original_start_date, deidentified_start_date)
         self.assertEqual(patient["gender"], "male")
 
-    def test_pipeline_integration(self) -> Any:
+    def test_pipeline_integration(self) -> None:
         """Test integration with the clinical data pipeline."""
         config = DeidentificationConfig(
             hash_patient_ids=True,

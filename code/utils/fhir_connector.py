@@ -65,7 +65,7 @@ class FHIRConnector:
         max_retries: int = 3,
         retry_delay: int = 2,
         page_size: int = 100,
-    ) -> Any:
+    ) -> None:
         """
         Initialize the FHIR connector.
 
@@ -99,8 +99,8 @@ class FHIRConnector:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.page_size = page_size
-        self.token_expiry = None
-        self.refresh_token = None
+        self.token_expiry: Optional[datetime] = None
+        self.refresh_token: Optional[str] = None
         self.session = requests.Session()
         self.session.verify = verify_ssl
         self._setup_auth()
@@ -108,7 +108,7 @@ class FHIRConnector:
             f"Initialized FHIR connector for {base_url} with {auth_type} authentication"
         )
 
-    def _setup_auth(self) -> Any:
+    def _setup_auth(self) -> None:
         """Set up authentication for the FHIR server."""
         if self.auth_type == "none":
             pass
@@ -169,7 +169,7 @@ class FHIRConnector:
             logger.warning(f"Failed to discover token URL: {str(e)}")
             return None
 
-    def _refresh_oauth2_token(self) -> Any:
+    def _refresh_oauth2_token(self) -> None:
         """Refresh the OAuth2 token."""
         try:
             data = {
@@ -196,7 +196,7 @@ class FHIRConnector:
             logger.error(f"Failed to refresh OAuth2 token: {str(e)}")
             raise
 
-    def _check_token_expiry(self) -> Any:
+    def _check_token_expiry(self) -> None:
         """Check if the OAuth2 token needs to be refreshed."""
         if self.auth_type != "oauth2":
             return

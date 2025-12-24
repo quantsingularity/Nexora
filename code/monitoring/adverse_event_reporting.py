@@ -12,8 +12,8 @@ class AdverseEventReporter:
     or reported by clinicians.
     """
 
-    def __init__(self) -> Any:
-        self.event_log = []
+    def __init__(self) -> None:
+        self.event_log: List[Dict[str, Any]] = []
         logger.info("AdverseEventReporter initialized.")
 
     def report_event(self, patient_id: str, event_details: Dict[str, Any]) -> str:
@@ -42,7 +42,7 @@ class AdverseEventReporter:
         self._trigger_alert(event_record)
         return event_id
 
-    def _trigger_alert(self, event_record: Dict[str, Any]) -> Any:
+    def _trigger_alert(self, event_record: Dict[str, Any]) -> None:
         """Mock function to simulate triggering an external alert."""
         logger.info(
             f"ALERT: New adverse event {event_record['event_id']} requires immediate review."

@@ -13,7 +13,7 @@ class ClinicalMetrics:
     In a real system, this would query a database of patient outcomes and model predictions.
     """
 
-    def __init__(self) -> Any:
+    def __init__(self) -> None:
         logger.info("ClinicalMetrics initialized.")
 
     def calculate_mock_patient_metrics(self, patient_id: str) -> Dict[str, Any]:

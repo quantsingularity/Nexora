@@ -17,7 +17,7 @@ class SurvivalAnalysisModel(BaseModel):
     Commonly used for predicting time to readmission, time to adverse event, etc.
     """
 
-    def __init__(self, config: Dict[str, Any]) -> Any:
+    def __init__(self, config: Dict[str, Any]) -> None:
         super().__init__(config)
         self.cph = CoxPHFitter()
         self.duration_col = config.get("duration_col", "time_to_event")
@@ -28,7 +28,7 @@ class SurvivalAnalysisModel(BaseModel):
 
     def train(
         self, train_data: pd.DataFrame, validation_data: Optional[pd.DataFrame] = None
-    ) -> Any:
+    ) -> None:
         """
         Trains the Cox Proportional Hazards model.
 
@@ -69,7 +69,7 @@ class SurvivalAnalysisModel(BaseModel):
             "risk_score": float(self.cph.predict_partial_hazard(patient_data).iloc[0]),
         }
 
-    def save(self, path: Optional[str] = None) -> Any:
+    def save(self, path: Optional[str] = None) -> None:
         """Saves the model to the specified path."""
         save_path = path or self.model_path
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -77,7 +77,7 @@ class SurvivalAnalysisModel(BaseModel):
             pickle.dump(self.cph, f)
         logger.info(f"Survival Analysis model saved to {save_path}")
 
-    def load(self, path: Optional[str] = None) -> Any:
+    def load(self, path: Optional[str] = None) -> None:
         """Loads the model from the specified path."""
         load_path = path or self.model_path
         with open(load_path, "rb") as f:

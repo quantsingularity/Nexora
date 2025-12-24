@@ -1,3 +1,4 @@
+from datetime import datetime
 import unittest
 import logging
 import os
@@ -19,7 +20,7 @@ class TestCoreComponents(unittest.TestCase):
     A comprehensive test suite to validate the core components of Nexora.
     """
 
-    def setUp(self) -> Any:
+    def setUp(self) -> None:
         self.mock_patient_data = {
             "patient_id": "test_patient_123",
             "demographics": {"age": 65, "gender": "male"},
@@ -50,7 +51,7 @@ class TestCoreComponents(unittest.TestCase):
             }
         )
 
-    def test_01_fhir_connector_data_retrieval(self) -> Any:
+    def test_01_fhir_connector_data_retrieval(self) -> None:
         """Test FHIR connector can retrieve and format patient data."""
         logger.info("--- Testing FHIR Connector ---")
         connector = FHIRConnector(base_url="mock")
@@ -61,7 +62,7 @@ class TestCoreComponents(unittest.TestCase):
         )
         logger.info("FHIR Connector data retrieval successful.")
 
-    def test_02_etl_pipeline_run(self) -> Any:
+    def test_02_etl_pipeline_run(self) -> None:
         """Test the Clinical ETL pipeline can run without crashing."""
         logger.info("--- Testing ETL Pipeline Run ---")
         try:
@@ -80,7 +81,7 @@ class TestCoreComponents(unittest.TestCase):
         except Exception as e:
             self.fail(f"ETL pipeline failed with exception: {e}")
 
-    def test_03_model_registry_and_prediction(self) -> Any:
+    def test_03_model_registry_and_prediction(self) -> None:
         """Test model registry loads and models can make predictions."""
         logger.info("--- Testing Model Registry and Prediction ---")
         try:
@@ -117,7 +118,7 @@ class TestCoreComponents(unittest.TestCase):
         except Exception as e:
             self.fail(f"Model registry or prediction failed with exception: {e}")
 
-    def test_04_phi_audit_logger(self) -> Any:
+    def test_04_phi_audit_logger(self) -> None:
         """Test PHI Audit Logger functionality."""
         logger.info("--- Testing PHI Audit Logger ---")
         try:
@@ -139,7 +140,7 @@ class TestCoreComponents(unittest.TestCase):
             self.fail(f"PHI Audit Logger failed with exception: {e}")
 
 
-def run_all_tests() -> Any:
+def run_all_tests() -> None:
     """Runs all tests in the suite."""
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestCoreComponents))

@@ -15,7 +15,7 @@ class ConceptDriftDetector:
     and model performance metrics.
     """
 
-    def __init__(self, model_name: str, sensitivity: float = 0.05) -> Any:
+    def __init__(self, model_name: str, sensitivity: float = 0.05) -> None:
         self.model_name = model_name
         self.sensitivity = sensitivity
         self.baseline_metrics = self._load_baseline()

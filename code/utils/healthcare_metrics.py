@@ -37,7 +37,7 @@ class HealthcareMetrics:
         complication_column: Optional[str] = "complication",
         prediction_column: Optional[str] = "prediction",
         expected_column: Optional[str] = "expected",
-    ) -> Any:
+    ) -> None:
         """
         Initialize the healthcare metrics calculator.
 

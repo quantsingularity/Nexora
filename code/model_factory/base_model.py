@@ -7,13 +7,13 @@ class BaseModel:
     Defines the required interface for training, prediction, and explanation.
     """
 
-    def __init__(self, config: Dict[str, Any]) -> Any:
+    def __init__(self, config: Dict[str, Any]) -> None:
         self.config = config
         self.model = None
         self.name = config.get("name", "base_model")
         self.version = config.get("version", "1.0.0")
 
-    def train(self, train_data: Any, validation_data: Optional[Any] = None) -> Any:
+    def train(self, train_data: Any, validation_data: Optional[Any] = None) -> None:
         """Trains the model."""
         raise NotImplementedError
 
@@ -25,10 +25,10 @@ class BaseModel:
         """Generates explanations for the prediction."""
         return {"explanation_method": "Not Implemented", "features": {}}
 
-    def save(self, path: str) -> Any:
+    def save(self, path: str) -> None:
         """Saves the model and configuration."""
         raise NotImplementedError
 
-    def load(self, path: str) -> Any:
+    def load(self, path: str) -> None:
         """Loads the model and configuration."""
         raise NotImplementedError

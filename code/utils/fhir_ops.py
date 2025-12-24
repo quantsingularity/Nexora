@@ -254,7 +254,7 @@ class OmopTransformer:
         Returns:
             Dictionary with OMOP CDM tables
         """
-        omop_data = {
+        omop_data: Dict[str, Any] = {
             "person": None,
             "observations": [],
             "conditions": [],

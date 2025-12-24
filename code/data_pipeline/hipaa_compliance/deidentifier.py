@@ -33,7 +33,7 @@ class DeidentificationConfig:
         date_shift_strategy: str = "patient",
         max_date_shift_days: int = 365,
         k_anonymity_threshold: int = 5,
-    ) -> Any:
+    ) -> None:
         """
         Initialize de-identification configuration.
 
@@ -94,7 +94,7 @@ class PHIDeidentifier:
     18. Any other unique identifying number, characteristic, or code
     """
 
-    def __init__(self, config: DeidentificationConfig = None) -> Any:
+    def __init__(self, config: Optional[DeidentificationConfig] = None) -> None:
         """
         Initialize the PHI de-identifier.
 
@@ -102,7 +102,7 @@ class PHIDeidentifier:
             config: Configuration for de-identification
         """
         self.config = config if config else DeidentificationConfig()
-        self.patient_date_shifts = {}
+        self.patient_date_shifts: Dict[str, int] = {}
         self.global_date_shift = np.random.randint(
             -self.config.max_date_shift_days, self.config.max_date_shift_days
         )

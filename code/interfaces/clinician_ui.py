@@ -18,7 +18,7 @@ class ClinicianUIcode:
     to provide a comprehensive view for a clinician.
     """
 
-    def __init__(self) -> Any:
+    def __init__(self) -> None:
         self.fhir_connector = FHIRConnector(base_url="http://mock-fhir-server/R4")
         self.model_registry = ModelRegistry()
         self.metrics_calculator = ClinicalMetrics()

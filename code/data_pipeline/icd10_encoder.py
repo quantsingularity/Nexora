@@ -174,7 +174,7 @@ class ICD10Encoder:
         include_dot: bool = False,
         max_code_length: Optional[int] = None,
         custom_code_groups: Optional[Dict[str, List[str]]] = None,
-    ) -> Any:
+    ) -> None:
         """
         Initialize the ICD-10 encoder.
 
