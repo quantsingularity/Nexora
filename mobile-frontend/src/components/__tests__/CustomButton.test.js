@@ -62,7 +62,8 @@ describe("CustomButton", () => {
       />,
     );
 
-    const button = getByTestID("styled-button");
-    expect(button.props.style).toContainEqual(customStyle);
+    const button = getByTestId("styled-button");
+    // Style is flattened, so check that custom backgroundColor is applied
+    expect(button.props.style.backgroundColor).toBe("red");
   });
 });

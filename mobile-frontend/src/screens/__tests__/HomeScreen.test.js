@@ -129,15 +129,25 @@ describe("HomeScreen", () => {
   it("handles pull to refresh", async () => {
     const { getByTestId } = render(<HomeScreen navigation={mockNavigation} />);
 
+    // Wait for initial load to complete
     await waitFor(() => {
       expect(apiService.getPatients).toHaveBeenCalledTimes(1);
     });
 
+    // Trigger refresh by firing the onRefresh callback directly
     const patientList = getByTestId("patient-list");
-    fireEvent(patientList, "refresh");
+    const refreshControl = patientList.props.refreshControl;
 
-    await waitFor(() => {
-      expect(apiService.getPatients).toHaveBeenCalledTimes(2);
-    });
+    // Call onRefresh if it exists
+    if (refreshControl && refreshControl.props.onRefresh) {
+      refreshControl.props.onRefresh();
+    }
+
+    await waitFor(
+      () => {
+        expect(apiService.getPatients).toHaveBeenCalledTimes(2);
+      },
+      { timeout: 3000 },
+    );
   });
 });

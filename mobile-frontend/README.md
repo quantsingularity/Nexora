@@ -253,22 +253,6 @@ To view API requests/responses, enable network debugging:
 3. Open Chrome DevTools Console
 4. View network requests in console.log
 
-## Building for Production
-
-### iOS
-
-```bash
-expo build:ios
-```
-
-### Android
-
-```bash
-expo build:android
-```
-
-Follow Expo's build documentation for detailed instructions on app store submissions.
-
 ## Contributing
 
 1. Create a feature branch from `main`

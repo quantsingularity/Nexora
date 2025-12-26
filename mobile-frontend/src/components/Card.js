@@ -2,8 +2,12 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Colors, Spacing } from "../theme/theme";
 
-const Card = ({ children, style }) => {
-  return <View style={[styles.card, style]}>{children}</View>;
+const Card = ({ children, style, testID, ...props }) => {
+  return (
+    <View style={[styles.card, style]} testID={testID} {...props}>
+      {children}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({

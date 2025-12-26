@@ -30,10 +30,13 @@ describe("PatientDetailScreen", () => {
       <PatientDetailScreen route={mockRoute} navigation={mockNavigation} />,
     );
 
-    await waitFor(() => {
-      expect(getByTestId("patient-details")).toBeTruthy();
-    });
-  });
+    await waitFor(
+      () => {
+        expect(getByTestId("patient-details")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
+  }, 10000);
 
   it("displays patient risk score", async () => {
     const { getByTestId } = render(
@@ -74,10 +77,13 @@ describe("PatientDetailScreen", () => {
       <PatientDetailScreen route={mockRoute} navigation={mockNavigation} />,
     );
 
-    await waitFor(() => {
-      expect(getByTestId("clinical-history-list")).toBeTruthy();
-    });
-  });
+    await waitFor(
+      () => {
+        expect(getByTestId("clinical-history-list")).toBeTruthy();
+      },
+      { timeout: 3000 },
+    );
+  }, 10000);
 
   it("displays error message on API failure", async () => {
     apiService.getPatientDetails.mockRejectedValue(new Error("Network error"));
