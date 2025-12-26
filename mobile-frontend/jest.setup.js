@@ -1,6 +1,9 @@
 // Jest setup file for Nexora Mobile Frontend
 // This file runs before each test suite
 
+// Setup jest-expo preset which handles most React Native mocks
+require("@testing-library/react-native/extend-expect");
+
 // Mock @react-native-async-storage/async-storage
 import mockAsyncStorage from "@react-native-async-storage/async-storage/jest/async-storage-mock";
 jest.mock("@react-native-async-storage/async-storage", () => mockAsyncStorage);
@@ -56,30 +59,42 @@ jest.mock("react-native-gesture-handler", () => {
   };
 });
 
-// Mock Alert
-jest.mock("react-native/Libraries/Alert/Alert", () => ({
-  alert: jest.fn(),
-}));
-
 // Mock axios
 jest.mock("axios", () => {
   const mockAxios = {
-    create: jest.fn(() => mockAxios),
-    get: jest.fn(),
-    post: jest.fn(),
+    create: jest.fn(function () {
+      return {
+        get: jest.fn(() => Promise.resolve({ data: [] })),
+        post: jest.fn(() => Promise.resolve({ data: {} })),
+        interceptors: {
+          request: {
+            use: jest.fn((onFulfilled) => onFulfilled),
+            eject: jest.fn(),
+          },
+          response: {
+            use: jest.fn((onFulfilled) => onFulfilled),
+            eject: jest.fn(),
+          },
+        },
+      };
+    }),
+    get: jest.fn(() => Promise.resolve({ data: [] })),
+    post: jest.fn(() => Promise.resolve({ data: {} })),
     interceptors: {
       request: {
         use: jest.fn(),
+        eject: jest.fn(),
       },
       response: {
         use: jest.fn(),
+        eject: jest.fn(),
       },
     },
   };
   return mockAxios;
 });
 
-// Suppress console warnings during tests
+// Suppress console warnings/errors during tests
 global.console = {
   ...console,
   warn: jest.fn(),

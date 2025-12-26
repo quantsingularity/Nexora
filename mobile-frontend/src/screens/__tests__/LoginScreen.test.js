@@ -1,6 +1,5 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import { Alert } from "react-native";
 import LoginScreen from "../LoginScreen";
 import apiService from "../../services/api";
 
@@ -12,7 +11,14 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   multiRemove: jest.fn(() => Promise.resolve()),
 }));
 
-jest.spyOn(Alert, "alert");
+// Mock Alert at module level
+const mockAlert = jest.fn();
+jest.mock("react-native/Libraries/Alert/Alert", () => ({
+  __esModule: true,
+  default: {
+    alert: mockAlert,
+  },
+}));
 
 const mockNavigation = {
   replace: jest.fn(),
@@ -82,7 +88,7 @@ describe("LoginScreen", () => {
     fireEvent.press(loginButton);
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
+      expect(mockAlert).toHaveBeenCalledWith(
         "Login Failed",
         expect.any(String),
       );
