@@ -239,6 +239,6 @@ class PHIAuditLogger:
             self.conn.close()
             logger.info("Closed PHI Audit Logger database connection")
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Cleanup database connection on deletion."""
         self.close()

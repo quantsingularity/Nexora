@@ -88,7 +88,7 @@ class PredictionService:
             raise
 
 
-def serve(port: int = 50051, max_workers: int = 10):
+def serve(port: int = 50051, max_workers: int = 10) -> None:
     """
     Start the gRPC server.
 
