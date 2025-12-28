@@ -19,7 +19,7 @@ set -e
 
 echo "Starting Nexora project setup..."
 
-PROJECT_DIR="/home/ubuntu/projects_extracted/Nexora"
+PROJECT_DIR="/projects_extracted/Nexora"
 
 if [ ! -d "${PROJECT_DIR}" ]; then
   echo "Error: Project directory ${PROJECT_DIR} not found."

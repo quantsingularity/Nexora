@@ -2,12 +2,12 @@
 # Script to create a test environment for validating the automation scripts
 
 # Create necessary directories
-mkdir -p /home/ubuntu/test_env/config
-mkdir -p /home/ubuntu/test_env/logs
-mkdir -p /home/ubuntu/test_env/output
+mkdir -p /test_env/config
+mkdir -p /test_env/logs
+mkdir -p /test_env/output
 
 # Create sample configuration files for testing
-cat > /home/ubuntu/test_env/config/deployment_config.yaml << 'EOF'
+cat > /test_env/config/deployment_config.yaml << 'EOF'
 environments:
   dev:
     deployment:
@@ -66,7 +66,7 @@ environments:
     config_validations:
       - name: api-config
         type: file
-        file_path: /home/ubuntu/test_env/config/api-config.yaml
+        file_path: /test_env/config/api-config.yaml
         required_settings:
           - path: api.timeout
             value: 30
@@ -79,7 +79,7 @@ environments:
             value: dev
 EOF
 
-cat > /home/ubuntu/test_env/config/compliance_config.yaml << 'EOF'
+cat > /test_env/config/compliance_config.yaml << 'EOF'
 organization:
   name: Nexora Healthcare
   domain: nexora.health
@@ -97,7 +97,7 @@ compliance:
             title: Security Management Process
             description: Implement policies and procedures to prevent, detect, contain, and correct security violations.
             check_type: config
-            check_paths: ["/home/ubuntu/test_env/config/security.yaml"]
+            check_paths: ["/test_env/config/security.yaml"]
             check_pattern: "security_management_process:\\s*enabled:\\s*true"
   gdpr:
     enabled: true
@@ -110,7 +110,7 @@ compliance:
             title: Lawfulness, fairness and transparency
             description: Personal data must be processed lawfully, fairly, and in a transparent manner.
             check_type: config
-            check_paths: ["/home/ubuntu/test_env/config/privacy.yaml"]
+            check_paths: ["/test_env/config/privacy.yaml"]
             check_pattern: "data_processing_principles:\\s*lawfulness:\\s*true"
 
 analysis:
@@ -132,10 +132,10 @@ reporting:
   include_technical_details: true
   include_remediation_plan: true
   include_evidence: false
-  evidence_directory: "/home/ubuntu/test_env/evidence"
+  evidence_directory: "/test_env/evidence"
 EOF
 
-cat > /home/ubuntu/test_env/config/env_config.yaml << 'EOF'
+cat > /test_env/config/env_config.yaml << 'EOF'
 environments:
   dev:
     api:
@@ -200,7 +200,7 @@ environments:
 EOF
 
 # Create sample configuration files for compliance checks
-cat > /home/ubuntu/test_env/config/security.yaml << 'EOF'
+cat > /test_env/config/security.yaml << 'EOF'
 security_management_process:
   enabled: true
   last_updated: 2025-01-15
@@ -227,7 +227,7 @@ data_security:
   in_transit: true
 EOF
 
-cat > /home/ubuntu/test_env/config/privacy.yaml << 'EOF'
+cat > /test_env/config/privacy.yaml << 'EOF'
 data_processing_principles:
   lawfulness: true
   fairness: true
@@ -248,7 +248,7 @@ privacy_by_default:
   limited_retention: true
 EOF
 
-cat > /home/ubuntu/test_env/config/api-config.yaml << 'EOF'
+cat > /test_env/config/api-config.yaml << 'EOF'
 api:
   timeout: 30
   max_connections: 100
@@ -277,7 +277,7 @@ security:
 EOF
 
 # Create sample log files
-cat > /home/ubuntu/test_env/logs/access.log << 'EOF'
+cat > /test_env/logs/access.log << 'EOF'
 2025-05-20 08:12:34 INFO [Authentication] User john.doe successfully logged in from 192.168.1.100
 2025-05-20 08:15:22 INFO [Authorization] User john.doe accessed patient record #12345
 2025-05-20 09:30:45 INFO [Data Access] User jane.smith accessed patient data for ID #54321
@@ -299,7 +299,7 @@ cat > /home/ubuntu/test_env/logs/access.log << 'EOF'
 2025-05-22 08:10:12 INFO [Authentication] User john.doe logged in from 192.168.1.100
 EOF
 
-cat > /home/ubuntu/test_env/logs/audit.log << 'EOF'
+cat > /test_env/logs/audit.log << 'EOF'
 2025-05-20 08:15:30 AUDIT [Access] User john.doe accessed PHI for patient #12345
 2025-05-20 09:31:00 AUDIT [Access] User jane.smith accessed PHI for patient #54321
 2025-05-20 10:45:30 AUDIT [Access Denied] User guest attempted to access PHI without authorization
@@ -315,7 +315,7 @@ cat > /home/ubuntu/test_env/logs/audit.log << 'EOF'
 EOF
 
 # Create a test script to validate all three automation scripts
-cat > /home/ubuntu/test_env/validate_scripts.sh << 'EOF'
+cat > /test_env/validate_scripts.sh << 'EOF'
 #!/bin/bash
 set -e
 
@@ -324,20 +324,20 @@ echo
 
 # Set up environment variables for testing
 export NEXORA_ENV=dev
-export NEXORA_CONFIG_DIR=/home/ubuntu/test_env/config
-export NEXORA_LOGS_DIR=/home/ubuntu/test_env/logs
-export NEXORA_OUTPUT_DIR=/home/ubuntu/test_env/output
+export NEXORA_CONFIG_DIR=/test_env/config
+export NEXORA_LOGS_DIR=/test_env/logs
+export NEXORA_OUTPUT_DIR=/test_env/output
 
 echo "1. Testing Environment Health Check Script"
-python3 /home/ubuntu/scripts/environment_health_check.py \
-  --config /home/ubuntu/test_env/config/env_config.yaml \
+python3 /scripts/environment_health_check.py \
+  --config /test_env/config/env_config.yaml \
   --env dev \
-  --output /home/ubuntu/test_env/output/env_health_report.json \
+  --output /test_env/output/env_health_report.json \
   --format json
 
-if [ -f "/home/ubuntu/test_env/output/env_health_report.json" ]; then
+if [ -f "/test_env/output/env_health_report.json" ]; then
   echo "✓ Environment Health Check Script executed successfully"
-  echo "  Report generated at: /home/ubuntu/test_env/output/env_health_report.json"
+  echo "  Report generated at: /test_env/output/env_health_report.json"
 else
   echo "✗ Environment Health Check Script failed"
   exit 1
@@ -346,15 +346,15 @@ fi
 echo
 
 echo "2. Testing Deployment Validation Script"
-python3 /home/ubuntu/scripts/deployment_validation.py \
+python3 /scripts/deployment_validation.py \
   --env dev \
-  --config /home/ubuntu/test_env/config/deployment_config.yaml \
-  --output /home/ubuntu/test_env/output/deployment_validation_report.json \
+  --config /test_env/config/deployment_config.yaml \
+  --output /test_env/output/deployment_validation_report.json \
   --format json
 
-if [ -f "/home/ubuntu/test_env/output/deployment_validation_report.json" ]; then
+if [ -f "/test_env/output/deployment_validation_report.json" ]; then
   echo "✓ Deployment Validation Script executed successfully"
-  echo "  Report generated at: /home/ubuntu/test_env/output/deployment_validation_report.json"
+  echo "  Report generated at: /test_env/output/deployment_validation_report.json"
 else
   echo "✗ Deployment Validation Script failed"
   exit 1
@@ -363,16 +363,16 @@ fi
 echo
 
 echo "3. Testing Compliance Report Generator Script"
-python3 /home/ubuntu/scripts/compliance_report_generator.py \
-  --config /home/ubuntu/test_env/config/compliance_config.yaml \
-  --output-dir /home/ubuntu/test_env/output \
+python3 /scripts/compliance_report_generator.py \
+  --config /test_env/config/compliance_config.yaml \
+  --output-dir /test_env/output \
   --report-type all \
   --period month \
   --format json
 
-if ls /home/ubuntu/test_env/output/compliance_report_*.json 1> /dev/null 2>&1; then
+if ls /test_env/output/compliance_report_*.json 1> /dev/null 2>&1; then
   echo "✓ Compliance Report Generator Script executed successfully"
-  echo "  Report generated at: $(ls /home/ubuntu/test_env/output/compliance_report_*.json)"
+  echo "  Report generated at: $(ls /test_env/output/compliance_report_*.json)"
 else
   echo "✗ Compliance Report Generator Script failed"
   exit 1
@@ -383,6 +383,6 @@ echo "===== All scripts validated successfully! ====="
 EOF
 
 # Make the validation script executable
-chmod +x /home/ubuntu/test_env/validate_scripts.sh
+chmod +x /test_env/validate_scripts.sh
 
 echo "Test environment setup completed successfully."

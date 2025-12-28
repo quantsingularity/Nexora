@@ -58,7 +58,7 @@
               "title": "Security Management Process",
               "description": "Implement policies and procedures to prevent, detect, contain, and correct security violations.",
               "status": "compliant",
-              "details": "Pattern found in /home/ubuntu/test_env/config/security.yaml"
+              "details": "Pattern found in /test_env/config/security.yaml"
             }
           }
         }
@@ -84,7 +84,7 @@
               "title": "Lawfulness, fairness and transparency",
               "description": "Personal data must be processed lawfully, fairly, and in a transparent manner.",
               "status": "compliant",
-              "details": "Pattern found in /home/ubuntu/test_env/config/privacy.yaml"
+              "details": "Pattern found in /test_env/config/privacy.yaml"
             }
           }
         }

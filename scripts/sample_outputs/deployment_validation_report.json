@@ -51,7 +51,7 @@
       "api-config": {
         "status": "PASS",
         "type": "file",
-        "file_path": "/home/ubuntu/test_env/config/api-config.yaml",
+        "file_path": "/test_env/config/api-config.yaml",
         "message": "Configuration validation passed",
         "settings_checked": 2
       },
