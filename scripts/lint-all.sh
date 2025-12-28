@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Enhanced Linting and Fixing Script for Nexora Project
+# Linting and Fixing Script for Nexora Project
 # This script is designed to be run from the project root (Nexora/).
 
 set -euo pipefail # Exit on error, exit on unset variable, fail on pipe error

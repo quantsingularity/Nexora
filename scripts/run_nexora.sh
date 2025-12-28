@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Enhanced Run script for Nexora project
+# Run script for Nexora project
 # This script starts both the code and frontend components.
 # It is designed to be run from the project root (Nexora/).
 
