@@ -670,7 +670,7 @@ When reporting issues, include:
 
 ### Resources
 
-- [GitHub Issues](https://github.com/abrar2030/Nexora/issues)
+- [GitHub Issues](https://github.com/quantsingularity/Nexora/issues)
 - [Documentation](README.md)
 - [API Reference](API.md)
 - [Configuration Guide](CONFIGURATION.md)

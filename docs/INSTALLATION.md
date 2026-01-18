@@ -55,7 +55,7 @@ Complete installation instructions for Nexora healthcare AI platform across diff
 
 ```bash
 # Clone the repository
-git clone https://github.com/abrar2030/Nexora.git
+git clone https://github.com/quantsingularity/Nexora.git
 cd Nexora
 
 # Create and activate virtual environment
@@ -76,7 +76,7 @@ pip install -r requirements-dev.txt  # If available
 
 ```bash
 # Clone the repository
-git clone https://github.com/abrar2030/Nexora.git
+git clone https://github.com/quantsingularity/Nexora.git
 cd Nexora
 
 # Build Docker images
@@ -116,7 +116,7 @@ kubectl apply -f infrastructure/kubernetes/manifests/
 | **1. Update system**        | `sudo apt-get update && sudo apt-get upgrade -y`                | Update package lists |
 | **2. Install Python**       | `sudo apt-get install python3.9 python3.9-venv python3-pip -y`  | Python 3.9+ required |
 | **3. Install Git**          | `sudo apt-get install git -y`                                   | Version control      |
-| **4. Clone repository**     | `git clone https://github.com/abrar2030/Nexora.git`             | Get source code      |
+| **4. Clone repository**     | `git clone https://github.com/quantsingularity/Nexora.git`             | Get source code      |
 | **5. Setup environment**    | `cd Nexora && python3 -m venv venv && source venv/bin/activate` | Isolated environment |
 | **6. Install dependencies** | `pip install -r code/requirements.txt`                          | Python packages      |
 
@@ -127,7 +127,7 @@ kubectl apply -f infrastructure/kubernetes/manifests/
 | **1. Install Homebrew**     | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` | Package manager      |
 | **2. Install Python**       | `brew install python@3.9`                                                                         | Python 3.9+          |
 | **3. Install Git**          | `brew install git`                                                                                | Version control      |
-| **4. Clone repository**     | `git clone https://github.com/abrar2030/Nexora.git`                                               | Get source code      |
+| **4. Clone repository**     | `git clone https://github.com/quantsingularity/Nexora.git`                                               | Get source code      |
 | **5. Setup environment**    | `cd Nexora && python3 -m venv venv && source venv/bin/activate`                                   | Isolated environment |
 | **6. Install dependencies** | `pip install -r code/requirements.txt`                                                            | Python packages      |
 
@@ -140,7 +140,7 @@ kubectl apply -f infrastructure/kubernetes/manifests/
 | **3. Update system**        | `sudo apt-get update && sudo apt-get upgrade -y`                | Inside WSL                 |
 | **4. Install Python**       | `sudo apt-get install python3.9 python3.9-venv python3-pip -y`  | Python 3.9+                |
 | **5. Install Git**          | `sudo apt-get install git -y`                                   | Version control            |
-| **6. Clone repository**     | `git clone https://github.com/abrar2030/Nexora.git`             | Get source code            |
+| **6. Clone repository**     | `git clone https://github.com/quantsingularity/Nexora.git`             | Get source code            |
 | **7. Setup environment**    | `cd Nexora && python3 -m venv venv && source venv/bin/activate` | Isolated environment       |
 | **8. Install dependencies** | `pip install -r code/requirements.txt`                          | Python packages            |
 
@@ -150,7 +150,7 @@ kubectl apply -f infrastructure/kubernetes/manifests/
 | ----------------------------- | --------------------------------------------------- | --------------------------------------------- |
 | **1. Install Docker Desktop** | Download from docker.com                            | Windows, macOS, Linux                         |
 | **2. Start Docker**           | Launch Docker Desktop application                   | Ensure Docker daemon is running               |
-| **3. Clone repository**       | `git clone https://github.com/abrar2030/Nexora.git` | Get source code                               |
+| **3. Clone repository**       | `git clone https://github.com/quantsingularity/Nexora.git` | Get source code                               |
 | **4. Build images**           | `cd Nexora && make docker-build`                    | Build all services                            |
 | **5. Run services**           | `docker-compose up -d`                              | Start all containers (if compose file exists) |
 
@@ -383,5 +383,5 @@ After successful installation:
 
 - **Installation issues**: Check [Troubleshooting](TROUBLESHOOTING.md)
 - **Configuration help**: See [Configuration Guide](CONFIGURATION.md)
-- **Bug reports**: [GitHub Issues](https://github.com/abrar2030/Nexora/issues)
+- **Bug reports**: [GitHub Issues](https://github.com/quantsingularity/Nexora/issues)
 - **Community support**: GitHub Discussions

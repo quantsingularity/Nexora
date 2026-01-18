@@ -35,11 +35,11 @@ We are committed to providing a welcoming and inclusive environment. Please be r
 # Fork the repository on GitHub first
 
 # Clone your fork
-git clone https://github.com/abrar2030/Nexora.git
+git clone https://github.com/quantsingularity/Nexora.git
 cd Nexora
 
 # Add upstream remote
-git remote add upstream https://github.com/abrar2030/Nexora.git
+git remote add upstream https://github.com/quantsingularity/Nexora.git
 ```
 
 ### Setup Development Environment

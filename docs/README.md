@@ -164,7 +164,7 @@ This project is licensed under the MIT License - see [LICENSE](../LICENSE) file 
 
 ## Quick Links
 
-- [GitHub Repository](https://github.com/abrar2030/Nexora)
+- [GitHub Repository](https://github.com/quantsingularity/Nexora)
 - [API Documentation](API.md)
 - [Installation Guide](INSTALLATION.md)
 - [Examples](examples/)
