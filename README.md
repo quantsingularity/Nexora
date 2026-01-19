@@ -17,9 +17,9 @@ Nexora is an advanced healthcare AI platform that predicts patient readmission r
 ## Table of Contents
 
 - [Overview](#overview)
+- [Project Structure](#project-structure)
 - [Key Features](#key-features)
 - [Model Performance](#model-performance)
-- [Project Structure](#project-structure)
 - [Configuration](#configuration)
 - [Clinical Integration](#clinical-integration)
 - [Compliance & Security](#compliance--security)
@@ -37,7 +37,7 @@ Nexora leverages machine learning to predict patient readmission risk, helping h
 
 The project is organized into several main components:
 
-````
+```
 Nexora/
 ├── code/                   # Core backend logic, services, and shared utilities
 ├── docs/                   # Project documentation
@@ -48,7 +48,8 @@ Nexora/
 ├── LICENSE                 # License information
 ├── README.md               # Project overview and instructions
 ├── eslint.config.js        # ESLint configuration
-└── package.json            # Nod
+└── package.json            # Node.js project metadata and dependencies
+```
 
 ## Key Features
 
@@ -85,7 +86,7 @@ Nexora/
 ### Clinical Metrics
 
 | Metric          | Overall | Elderly | Comorbidities |
-| --------------- | ------- | ------- | ------------- |
+| :-------------- | :------ | :------ | :------------ |
 | **AUROC**       | 0.82    | 0.78    | 0.80          |
 | **AUPRC**       | 0.76    | 0.74    | 0.79          |
 | **Sensitivity** | 0.79    | 0.72    | 0.81          |
@@ -100,7 +101,7 @@ Nexora/
   "demographic_parity_ratio": 0.92,
   "calibration_slope": "1.02±0.05"
 }
-````
+```
 
 ## Configuration
 
@@ -172,7 +173,7 @@ Key dashboard features:
 
 ### Audit Logging
 
-```
+```text
 2023-08-15T14:23:18 | dr.smith | 123-45-6789 | Prediction | Access | Discharge planning | ReadmissionRisk_v2.3
 2023-08-15T14:25:42 | nurse-jones | 987-65-4321 | Update | Correction | Data error remediation | -
 2023-08-15T14:30:05 | system | - | Model | Retraining | Scheduled update | ReadmissionRisk_v2.4
@@ -207,7 +208,7 @@ The project includes comprehensive testing to ensure clinical reliability and re
 ### Test Coverage
 
 | Component             | Coverage | Status |
-| --------------------- | -------- | ------ |
+| :-------------------- | :------- | :----- |
 | Core ML Models        | 92%      | ✅     |
 | Data Processing       | 90%      | ✅     |
 | API Services          | 88%      | ✅     |
