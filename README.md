@@ -33,6 +33,23 @@ Nexora is an advanced healthcare AI platform that predicts patient readmission r
 
 Nexora leverages machine learning to predict patient readmission risk, helping healthcare providers identify high-risk patients and implement targeted interventions. The platform integrates with electronic health record (EHR) systems, processes clinical data securely, and provides actionable insights through an intuitive clinical interface.
 
+## Project Structure
+
+The project is organized into several main components:
+
+````
+Nexora/
+├── code/                   # Core backend logic, services, and shared utilities
+├── docs/                   # Project documentation
+├── infrastructure/         # DevOps, deployment, and infra-related code
+├── mobile-frontend/        # Mobile application
+├── web-frontend/           # Web dashboard
+├── scripts/                # Automation, setup, and utility scripts
+├── LICENSE                 # License information
+├── README.md               # Project overview and instructions
+├── eslint.config.js        # ESLint configuration
+└── package.json            # Nod
+
 ## Key Features
 
 ### Clinical Decision Support
@@ -83,33 +100,7 @@ Nexora leverages machine learning to predict patient readmission risk, helping h
   "demographic_parity_ratio": 0.92,
   "calibration_slope": "1.02±0.05"
 }
-```
-
-## Project Structure
-
-```
-Nexora/
-├── code/                  # Core source code
-│   ├── data/             # Data processing and FHIR integration
-│   ├── models/           # ML models and prediction algorithms
-│   ├── api/              # API endpoints and services
-│   ├── clinical/         # Clinical decision support logic
-│   └── utils/            # Utility functions and helpers
-├── clinical_ui/          # Streamlit clinician interface
-├── compliance/           # HIPAA audit logs and compliance tools
-├── federated_learning/   # Cross-hospital training framework
-├── model_cards/          # Regulatory documentation
-├── pharmacovigilance/    # Adverse event monitoring
-├── synthetic_data/       # Synthetic patient data generation
-├── tests/                # Comprehensive test suite
-├── docs/                 # Documentation and clinical guidelines
-├── deployments/          # Kubernetes and deployment configurations
-├── config/               # Configuration files
-├── notebooks/            # Research and analysis notebooks
-├── scripts/              # Utility scripts
-├── web-frontend/         # Web interface for clinical users
-└── mobile-frontend/      # Mobile application for on-the-go access
-```
+````
 
 ## Configuration
 
