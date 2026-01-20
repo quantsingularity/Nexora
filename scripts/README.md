@@ -1,4 +1,4 @@
-# Nexora Automation Scripts Documentation
+# Nexora Automation Scripts
 
 This documentation provides an overview of the automation scripts created for the Nexora repository, including their purpose, usage, and implementation details.
 
