@@ -4,7 +4,7 @@
 [![Test Coverage](https://img.shields.io/badge/coverage-89%25-brightgreen)](https://github.com/quantsingularity/Nexora/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## 🏥 Healthcare AI Readmission Risk Prediction Platform
+## Healthcare AI Readmission Risk Prediction Platform
 
 Nexora is an advanced healthcare AI platform that predicts patient readmission risk using machine learning and electronic health record (EHR) data, helping clinicians make informed decisions and improve patient outcomes.
 
