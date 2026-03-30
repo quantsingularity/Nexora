@@ -1,50 +1,45 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import {
-  Box,
-  Grid,
-  Paper,
-  Typography,
-  Card,
-  CardContent,
-  CardHeader,
-  Avatar,
-  IconButton,
-  Button,
-  Divider,
-  Tabs,
-  Tab,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Chip,
-  LinearProgress,
-} from "@mui/material";
-import {
-  MoreVert as MoreVertIcon,
   ArrowBack as ArrowBackIcon,
+  Assignment as AssignmentIcon,
   CalendarToday as CalendarIcon,
   LocalHospital as HospitalIcon,
-  Science as ScienceIcon,
-  Assignment as AssignmentIcon,
   Medication as MedicationIcon,
+  Science as ScienceIcon,
   Timeline as TimelineIcon,
   Warning as WarningIcon,
 } from "@mui/icons-material";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Grid,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
+import {
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
-import { Line, Bar } from "react-chartjs-2";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Bar, Line } from "react-chartjs-2";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 
 // Register ChartJS components
@@ -82,7 +77,7 @@ const PatientDetail = () => {
     fetchPatientDetail();
   }, [id]);
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (_event, newValue) => {
     setActiveTab(newValue);
   };
 

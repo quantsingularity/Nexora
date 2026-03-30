@@ -1,9 +1,9 @@
-import React from "react";
-import { Box, Typography, Button, Paper } from "@mui/material";
 import {
   Error as ErrorIcon,
   Refresh as RefreshIcon,
 } from "@mui/icons-material";
+import { Box, Button, Paper, Typography } from "@mui/material";
+import React from "react";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -11,7 +11,7 @@ class ErrorBoundary extends React.Component {
     this.state = { hasError: false, error: null, errorInfo: null };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(_error) {
     return { hasError: true };
   }
 

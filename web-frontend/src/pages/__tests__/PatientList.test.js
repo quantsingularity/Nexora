@@ -1,9 +1,8 @@
-import React from "react";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import PatientList from "../PatientList";
+import { BrowserRouter } from "react-router-dom";
 import * as api from "../../services/api";
+import PatientList from "../PatientList";
 
 jest.mock("../../services/api");
 

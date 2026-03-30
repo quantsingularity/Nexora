@@ -1,40 +1,39 @@
-import React, { useState, useEffect } from "react";
 import {
+  Assignment as AssignmentIcon,
+  MoreVert as MoreVertIcon,
+  People as PeopleIcon,
+  Science as ScienceIcon,
+  TrendingDown as TrendingDownIcon,
+  TrendingUp as TrendingUpIcon,
+} from "@mui/icons-material";
+import {
+  Avatar,
   Box,
-  Grid,
-  Paper,
-  Typography,
+  Button,
   Card,
   CardContent,
   CardHeader,
-  Avatar,
-  IconButton,
-  Button,
-  Divider,
-  LinearProgress,
   Chip,
+  Divider,
+  Grid,
+  IconButton,
+  LinearProgress,
+  Typography,
 } from "@mui/material";
 import {
-  MoreVert as MoreVertIcon,
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
-  People as PeopleIcon,
-  Science as ScienceIcon,
-  Assignment as AssignmentIcon,
-} from "@mui/icons-material";
-import {
-  Chart as ChartJS,
   ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
 } from "chart.js";
-import { Doughnut, Line, Bar } from "react-chartjs-2";
+import { useEffect, useState } from "react";
+import { Bar, Doughnut, Line } from "react-chartjs-2";
 import api from "../services/api";
 
 // Register ChartJS components

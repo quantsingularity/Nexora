@@ -1,12 +1,11 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
 import { Box } from "@mui/material";
+import { Route, Routes } from "react-router-dom";
+import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
-import PatientList from "./pages/PatientList";
 import PatientDetail from "./pages/PatientDetail";
+import PatientList from "./pages/PatientList";
 import PredictionModels from "./pages/PredictionModels";
 import Settings from "./pages/Settings";
-import Layout from "./components/Layout";
 
 function App() {
   return (

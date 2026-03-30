@@ -1,8 +1,7 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
-import Settings from "../Settings";
 import * as api from "../../services/api";
+import Settings from "../Settings";
 
 jest.mock("../../services/api");
 

@@ -1,35 +1,35 @@
-import React, { useState } from "react";
 import {
+  CloudSync as CloudSyncIcon,
+  Notifications as NotificationsIcon,
+  Person as PersonIcon,
+  Save as SaveIcon,
+  Security as SecurityIcon,
+  Settings as SettingsIcon,
+  Storage as StorageIcon,
+} from "@mui/icons-material";
+import {
+  Alert,
   Box,
-  Grid,
-  Typography,
+  Button,
   Card,
   CardContent,
   CardHeader,
   Divider,
+  FormControlLabel,
+  Grid,
   List,
   ListItem,
-  ListItemText,
   ListItemIcon,
-  Switch,
-  FormControlLabel,
-  TextField,
-  Button,
-  Alert,
-  Snackbar,
+  ListItemText,
   Paper,
-  Tabs,
+  Snackbar,
+  Switch,
   Tab,
+  Tabs,
+  TextField,
+  Typography,
 } from "@mui/material";
-import {
-  Settings as SettingsIcon,
-  Security as SecurityIcon,
-  Notifications as NotificationsIcon,
-  Storage as StorageIcon,
-  CloudSync as CloudSyncIcon,
-  Person as PersonIcon,
-  Save as SaveIcon,
-} from "@mui/icons-material";
+import { useState } from "react";
 import api from "../services/api";
 
 const Settings = () => {
@@ -38,7 +38,7 @@ const Settings = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (_event, newValue) => {
     setActiveTab(newValue);
   };
 

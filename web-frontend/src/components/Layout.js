@@ -1,35 +1,35 @@
-import React, { useState } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
 import {
-  Box,
-  Drawer,
+  AccountCircle,
+  ChevronLeft as ChevronLeftIcon,
+  Dashboard as DashboardIcon,
+  Menu as MenuIcon,
+  Notifications as NotificationsIcon,
+  People as PeopleIcon,
+  Science as ScienceIcon,
+  Settings as SettingsIcon,
+} from "@mui/icons-material";
+import {
   AppBar,
-  Toolbar,
-  Typography,
+  Avatar,
+  Badge,
+  Box,
   Divider,
+  Drawer,
   IconButton,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Avatar,
   Menu,
   MenuItem,
-  useTheme,
+  Toolbar,
+  Typography,
   useMediaQuery,
-  Badge,
+  useTheme,
 } from "@mui/material";
-import {
-  Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  People as PeopleIcon,
-  Science as ScienceIcon,
-  Settings as SettingsIcon,
-  Notifications as NotificationsIcon,
-  AccountCircle,
-  ChevronLeft as ChevronLeftIcon,
-} from "@mui/icons-material";
+import { useState } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 const drawerWidth = 240;
 

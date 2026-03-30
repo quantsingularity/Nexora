@@ -1,31 +1,31 @@
-import React, { useState, useEffect } from "react";
+import {
+  Add as AddIcon,
+  ArrowForward as ArrowForwardIcon,
+  FilterList as FilterListIcon,
+  Search as SearchIcon,
+} from "@mui/icons-material";
 import {
   Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  IconButton,
+  InputAdornment,
+  LinearProgress,
   Paper,
-  Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
   TablePagination,
+  TableRow,
   TextField,
-  InputAdornment,
-  IconButton,
-  Chip,
-  Button,
-  Card,
-  CardContent,
-  Divider,
-  LinearProgress,
+  Typography,
 } from "@mui/material";
-import {
-  Search as SearchIcon,
-  FilterList as FilterListIcon,
-  Add as AddIcon,
-  ArrowForward as ArrowForwardIcon,
-} from "@mui/icons-material";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
@@ -53,7 +53,7 @@ const PatientList = () => {
     fetchPatients();
   }, []);
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (_event, newPage) => {
     setPage(newPage);
   };
 
@@ -75,8 +75,7 @@ const PatientList = () => {
     (patient) =>
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (patient.diagnosis &&
-        patient.diagnosis.toLowerCase().includes(searchTerm.toLowerCase())),
+      patient.diagnosis?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getRiskColor = (risk) => {

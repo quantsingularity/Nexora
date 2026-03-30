@@ -1,8 +1,7 @@
-import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
-import PredictionModels from "../PredictionModels";
 import * as api from "../../services/api";
+import PredictionModels from "../PredictionModels";
 
 jest.mock("../../services/api");
 

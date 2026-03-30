@@ -1,54 +1,51 @@
-import React, { useState, useEffect } from "react";
+import {
+  CheckCircle as CheckCircleIcon,
+  CloudDownload as CloudDownloadIcon,
+  CloudUpload as CloudUploadIcon,
+  Error as ErrorIcon,
+  Refresh as RefreshIcon,
+  Science as ScienceIcon,
+  Tune as TuneIcon,
+} from "@mui/icons-material";
 import {
   Box,
-  Grid,
-  Paper,
-  Typography,
+  Button,
   Card,
   CardContent,
   CardHeader,
-  Avatar,
-  IconButton,
-  Button,
+  Chip,
   Divider,
-  Tabs,
-  Tab,
+  FormControl,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  InputLabel,
+  LinearProgress,
   List,
   ListItem,
-  ListItemText,
   ListItemIcon,
-  Chip,
-  LinearProgress,
-  Switch,
-  FormControlLabel,
-  TextField,
+  ListItemText,
   MenuItem,
   Select,
-  InputLabel,
-  FormControl,
+  Switch,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
 } from "@mui/material";
 import {
-  MoreVert as MoreVertIcon,
-  Science as ScienceIcon,
-  Tune as TuneIcon,
-  CloudUpload as CloudUploadIcon,
-  CloudDownload as CloudDownloadIcon,
-  Refresh as RefreshIcon,
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
-} from "@mui/icons-material";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
-import { Line, Bar } from "react-chartjs-2";
+import { useEffect, useState } from "react";
+import { Bar, Line } from "react-chartjs-2";
 import api from "../services/api";
 
 // Register ChartJS components
@@ -84,7 +81,7 @@ const PredictionModels = () => {
     fetchModels();
   }, []);
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = (_event, newValue) => {
     setActiveTab(newValue);
   };
 

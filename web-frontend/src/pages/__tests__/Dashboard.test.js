@@ -1,8 +1,7 @@
-import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
-import Dashboard from "../Dashboard";
 import * as api from "../../services/api";
+import Dashboard from "../Dashboard";
 
 // Mock the API
 jest.mock("../../services/api");
