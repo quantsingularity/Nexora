@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
-from src.model_factory.fairness_metrics import FairnessEvaluator
-from src.utils.healthcare_metrics import HealthcareMetrics
+from code.model_factory.fairness_metrics import FairnessEvaluator
+from code.utils.healthcare_metrics import HealthcareMetrics
 
 
 class TestPredictiveEquality(unittest.TestCase):

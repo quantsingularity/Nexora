@@ -4,7 +4,7 @@ import apache_beam as beam
 import pytest
 from apache_beam.testing.test_pipeline import TestPipeline
 from apache_beam.testing.util import assert_that, equal_to
-from src.data_pipeline.clinical_etl import HealthcareETL
+from code.data_pipeline.clinical_etl import HealthcareETL
 
 
 @pytest.fixture

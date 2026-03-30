@@ -1,8 +1,8 @@
 from typing import Any
 from datetime import date
 import pytest
-from src.monitoring.adverse_event_reporting import AdverseEvent, report_adverse_event
-from src.monitoring.model_reviewer import ModelReviewer
+from code.monitoring.adverse_event_reporting import AdverseEvent, report_adverse_event
+from code.monitoring.model_reviewer import ModelReviewer
 
 
 @pytest.fixture

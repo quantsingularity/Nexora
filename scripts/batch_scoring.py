@@ -21,11 +21,11 @@ import requests
 sys.path.append(
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
 )
-from data.clinical_data_loader import ClinicalDataLoader
-from data_pipeline.feature_engineering import FeatureEngineer
-from serving.model_registry import ModelRegistry
-from utils.config_loader import ConfigLoader
-from utils.logging_utils import setup_logging
+from code.data.clinical_data_loader import ClinicalDataLoader
+from code.data_pipeline.feature_engineering import FeatureEngineer
+from code.serving.model_registry import ModelRegistry
+from code.utils.config_loader import ConfigLoader
+from code.utils.logging_utils import setup_logging
 
 logger = logging.getLogger(__name__)
 

@@ -7,7 +7,7 @@ import unittest
 import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
-from src.data_pipeline.data_validation import DataValidator
+from code.data_pipeline.data_validation import DataValidator
 
 
 class TestFHIRIngest(unittest.TestCase):
