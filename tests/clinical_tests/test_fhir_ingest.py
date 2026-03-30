@@ -440,7 +440,7 @@ class MockFHIRConnector:
         medications: Any = None,
         connection_error: Any = False,
         auth_error: Any = False,
-    ) -> Any:
+    ) -> None:
         """Initialize the mock connector."""
         self.patients = patients or []
         self.observations = observations or []

@@ -4,7 +4,7 @@ from openlineage.facet import DataQualityMetrics
 
 class ClinicalLineageTracker:
 
-    def __init__(self) -> Any:
+    def __init__(self) -> None:
         self.client = OpenLineageClient(url="http://marquez:5000")
 
     def log_pipeline_run(self, dataset: Any, model_version: Any) -> Any:

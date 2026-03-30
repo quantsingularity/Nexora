@@ -82,7 +82,7 @@ class ComplianceReportGenerator:
         include_evidence: bool = False,
         anonymize: bool = False,
         verbose: bool = False,
-    ) -> Any:
+    ) -> None:
         """
         Initialize the compliance report generator
 

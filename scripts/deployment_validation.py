@@ -85,7 +85,7 @@ class DeploymentValidator:
         timeout: int = 300,
         rollback: bool = False,
         verbose: bool = False,
-    ) -> Any:
+    ) -> None:
         """
         Initialize the deployment validator with configuration
 

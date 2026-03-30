@@ -88,7 +88,7 @@ class HealthCheck:
 
     def __init__(
         self, config_path: str, env: str, threshold: int = 80, verbose: bool = False
-    ) -> Any:
+    ) -> None:
         """
         Initialize the health check with configuration
 

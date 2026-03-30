@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class BatchScorer:
     """Handles batch scoring for clinical prediction models"""
 
-    def __init__(self, model_id: str, config_path: Optional[str] = None) -> Any:
+    def __init__(self, model_id: str, config_path: Optional[str] = None) -> None:
         """
         Initialize the batch scorer
 
