@@ -1,0 +1,103 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Nexora – docker-compose.override.yml
+# Local development overrides. Applied automatically on top of docker-compose.yml.
+# Do NOT commit secrets stored in .env to version control.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── Gateway: expose on 8080 locally to avoid requiring root ──────────────
+  nginx:
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/nexora-proxy.conf:ro
+
+  # ── Frontend: enable hot-reload via Vite dev server ──────────────────────
+  frontend:
+    build:
+      args:
+        REACT_APP_ENV: development
+        REACT_APP_API_URL: http://localhost:8080/api
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080/api
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      # Mount source for hot reload (override the built image content)
+      - ./frontend/src:/app/src:delegated
+      - ./frontend/public:/app/public:delegated
+    command: ["npm", "start"]
+    ports:
+      - "3001:3001"
+
+  # ── Backend: mount source for nodemon hot-reload ─────────────────────────
+  backend:
+    build:
+      target: builder # Use builder stage (includes devDependencies)
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+      - JWT_SECRET=dev-jwt-secret-not-for-production
+      - API_KEY=dev-api-key-not-for-production
+    volumes:
+      - ./backend/src:/app/src:delegated
+      - ./backend/package*.json:/app/package.json:ro
+    command: ["npm", "run", "dev"]
+    ports:
+      - "3000:3000" # Direct access for debugging
+
+  # ── MySQL: expose port locally for DB tools (TablePlus, DBeaver, etc.) ──
+  mysql:
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: devroot
+      MYSQL_DATABASE: nexoradb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: devpassword
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  # ── Redis: expose port locally for redis-cli / RedisInsight ─────────────
+  redis:
+    ports:
+      - "6379:6379"
+    command: redis-server --loglevel verbose
+
+  # ── Adminer: lightweight DB GUI for local development ────────────────────
+  adminer:
+    image: adminer:4-standalone
+    container_name: nexora-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    networks:
+      - backend-net
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+      ADMINER_DESIGN: dracula
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # ── Redis Commander: Redis GUI for local development ─────────────────────
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: nexora-redis-commander
+    restart: unless-stopped
+    ports:
+      - "8082:8081"
+    networks:
+      - backend-net
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # Migrations not needed on every dev restart; run manually:
+  #   docker compose run --rm migrate
+  migrate:
+    profiles:
+      - migrate

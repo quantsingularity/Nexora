@@ -377,3 +377,17 @@ variable "default_tags" {
     error_message = "Tag keys and values must contain only valid characters."
   }
 }
+
+# SSL/TLS Configuration
+variable "ssl_certificate_arn" {
+  description = "ARN of the ACM SSL certificate for HTTPS listener (required for production)"
+  type        = string
+  default     = null
+}
+
+# VPC Endpoints Configuration
+variable "enable_vpc_endpoints" {
+  description = "Enable VPC endpoints for private AWS service access without internet traversal"
+  type        = bool
+  default     = true
+}

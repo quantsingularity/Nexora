@@ -1,3 +1,4 @@
+namespace: nexora
 appName: nexora
 environment: staging
 
@@ -18,8 +19,8 @@ code:
       cpu: 500m
       memory: 512Mi
   apiUrl: http://app-code
-  jwtSecret: staging-jwt-secret
-  apiKey: staging-api-key
+  jwtSecret: CHANGE_ME_in_sealed_secret
+  apiKey: CHANGE_ME_in_sealed_secret
 
 # Frontend configuration
 frontend:
@@ -52,8 +53,8 @@ database:
   servicePort: 3306
   name: nexoradb
   user: appuser
-  password: staging-password
-  rootPassword: staging-root-password
+  password: CHANGE_ME_use_sealed_secrets
+  rootPassword: CHANGE_ME_use_sealed_secrets
   url: mysql://appuser:staging-password@app-database:3306/appdb
   storageClass: standard
   storage: 20Gi
@@ -70,7 +71,7 @@ redis:
   replicas: 2
   image:
     repository: redis
-    tag: 6.2
+    tag: "7-alpine"
     pullPolicy: IfNotPresent
   containerPort: 6379
   servicePort: 6379

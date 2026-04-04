@@ -1,10 +1,9 @@
 ---
 # roles/common/tasks/main.yml
-- name: Update all packages
+- name: Update all packages to latest
   yum:
     name: "*"
     state: latest
-    update_only: yes
 
 - name: Install common packages
   yum:
@@ -12,22 +11,32 @@
       - vim
       - git
       - wget
+      - curl
       - unzip
       - htop
       - net-tools
       - python3
       - python3-pip
+      - chrony
+      - fail2ban
     state: present
 
-- name: Set timezone
+- name: Set timezone to UTC
   timezone:
     name: UTC
 
-- name: Configure firewall
+- name: Enable and start chronyd (NTP)
+  systemd:
+    name: chronyd
+    state: started
+    enabled: yes
+
+- name: Configure firewalld services
   firewalld:
     service: "{{ item }}"
     permanent: yes
     state: enabled
+    immediate: yes
   loop:
     - http
     - https
@@ -40,3 +49,24 @@
     state: started
     enabled: yes
   when: ansible_os_family == "RedHat"
+
+- name: Enable and start fail2ban
+  systemd:
+    name: fail2ban
+    state: started
+    enabled: yes
+
+- name: Set sysctl security hardening parameters
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  loop:
+    - { key: "net.ipv4.tcp_syncookies", value: "1" }
+    - { key: "net.ipv4.conf.all.rp_filter", value: "1" }
+    - { key: "net.ipv4.conf.default.rp_filter", value: "1" }
+    - { key: "net.ipv4.conf.all.accept_source_route", value: "0" }
+    - { key: "net.ipv6.conf.all.accept_source_route", value: "0" }
+    - { key: "net.ipv4.conf.all.log_martians", value: "1" }
+    - { key: "kernel.randomize_va_space", value: "2" }

@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Nexora Helm Values",
+  "type": "object",
+  "required": ["appName", "environment", "namespace"],
+  "properties": {
+    "appName":     { "type": "string", "minLength": 2 },
+    "environment": { "type": "string", "enum": ["dev", "staging", "prod"] },
+    "namespace":   { "type": "string", "minLength": 2 },
+    "code": {
+      "type": "object",
+      "required": ["replicas", "containerPort"],
+      "properties": {
+        "replicas":      { "type": "integer", "minimum": 1 },
+        "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 }
+      }
+    },
+    "frontend": {
+      "type": "object",
+      "required": ["replicas", "containerPort"],
+      "properties": {
+        "replicas":      { "type": "integer", "minimum": 1 },
+        "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 }
+      }
+    },
+    "database": {
+      "type": "object",
+      "required": ["name", "user"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "user": { "type": "string", "minLength": 1 }
+      }
+    },
+    "redis": {
+      "type": "object",
+      "required": ["replicas"],
+      "properties": {
+        "replicas": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

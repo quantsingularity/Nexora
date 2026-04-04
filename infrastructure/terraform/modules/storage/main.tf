@@ -1,3 +1,12 @@
+
+locals {
+  # Validate transition ordering at plan time
+  _validate_lifecycle = (
+    var.transition_to_ia_days < var.transition_to_glacier_days &&
+    var.transition_to_glacier_days < var.expiration_days
+  ) ? true : tobool("ERROR: S3 lifecycle transition days must satisfy: IA < Glacier < expiration_days")
+}
+
 # Data sources
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}

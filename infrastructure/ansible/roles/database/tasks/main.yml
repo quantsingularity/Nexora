@@ -12,6 +12,9 @@
   template:
     src: my.cnf.j2
     dest: /etc/my.cnf.d/server.cnf
+    owner: root
+    group: root
+    mode: "0640"
   notify: Restart MariaDB
 
 - name: Start and enable MariaDB
@@ -20,13 +23,47 @@
     state: started
     enabled: yes
 
-- name: Set root password
+- name: Set root password (using unix socket on fresh install)
   mysql_user:
     name: root
     password: "{{ db_root_password }}"
     host_all: yes
     state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
   no_log: true
+
+- name: Remove anonymous users
+  mysql_user:
+    name: ""
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ db_root_password }}"
+    login_unix_socket: /var/lib/mysql/mysql.sock
+  no_log: true
+
+- name: Remove test database
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ db_root_password }}"
+    login_unix_socket: /var/lib/mysql/mysql.sock
+
+- name: Disallow root login remotely
+  mysql_user:
+    name: root
+    host: "{{ item }}"
+    state: absent
+    login_user: root
+    login_password: "{{ db_root_password }}"
+    login_unix_socket: /var/lib/mysql/mysql.sock
+  loop:
+    - "{{ ansible_fqdn }}"
+    - "127.0.0.1"
+    - "::1"
+  no_log: true
+  ignore_errors: true
 
 - name: Create application database
   mysql_db:
@@ -34,6 +71,7 @@
     state: present
     login_user: root
     login_password: "{{ db_root_password }}"
+    login_unix_socket: /var/lib/mysql/mysql.sock
 
 - name: Create application database user
   mysql_user:
@@ -44,4 +82,13 @@
     state: present
     login_user: root
     login_password: "{{ db_root_password }}"
+    login_unix_socket: /var/lib/mysql/mysql.sock
+  no_log: true
+
+- name: Flush privileges
+  mysql_query:
+    query: FLUSH PRIVILEGES
+    login_user: root
+    login_password: "{{ db_root_password }}"
+    login_unix_socket: /var/lib/mysql/mysql.sock
   no_log: true

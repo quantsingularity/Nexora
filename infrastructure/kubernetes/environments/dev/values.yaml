@@ -1,3 +1,4 @@
+namespace: nexora
 appName: nexora
 environment: dev
 
@@ -18,8 +19,8 @@ code:
       cpu: 200m
       memory: 256Mi
   apiUrl: http://app-code
-  jwtSecret: dev-jwt-secret
-  apiKey: dev-api-key
+  jwtSecret: dev-jwt-secret-local-only
+  apiKey: dev-api-key-local-only
 
 # Frontend configuration
 frontend:
@@ -52,9 +53,9 @@ database:
   servicePort: 3306
   name: nexoradb
   user: appuser
-  password: dev-password
-  rootPassword: dev-root-password
-  url: mysql://appuser:dev-password@app-database:3306/appdb
+  password: devpassword
+  rootPassword: devroot
+  url: mysql://appuser:devpassword@app-database:3306/appdb
   storageClass: standard
   storage: 10Gi
   resources:
@@ -70,7 +71,7 @@ redis:
   replicas: 1
   image:
     repository: redis
-    tag: 6.2
+    tag: "7-alpine"
     pullPolicy: IfNotPresent
   containerPort: 6379
   servicePort: 6379

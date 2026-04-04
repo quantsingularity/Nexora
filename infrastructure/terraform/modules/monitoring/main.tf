@@ -31,7 +31,7 @@ resource "aws_cloudwatch_log_group" "system_logs" {
 # CloudWatch Log Group for security logs
 resource "aws_cloudwatch_log_group" "security_logs" {
   name              = "/aws/security/${var.app_name}-${var.environment}"
-  retention_in_days = var.log_retention_days * 2  # Keep security logs longer
+  retention_in_days = 365  # Security logs kept for 1 year (fixed valid CW retention value)
   kms_key_id        = var.kms_key_id
 
   tags = {

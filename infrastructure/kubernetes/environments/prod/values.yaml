@@ -1,3 +1,4 @@
+namespace: nexora
 appName: nexora
 environment: prod
 
@@ -18,8 +19,8 @@ code:
       cpu: 1000m
       memory: 1Gi
   apiUrl: http://app-code
-  jwtSecret: prod-jwt-secret
-  apiKey: prod-api-key
+  jwtSecret: CHANGE_ME_in_sealed_secret
+  apiKey: CHANGE_ME_in_sealed_secret
 
 # Frontend configuration
 frontend:
@@ -52,9 +53,9 @@ database:
   servicePort: 3306
   name: nexoradb
   user: appuser
-  password: prod-password
-  rootPassword: prod-root-password
-  url: mysql://appuser:prod-password@app-database:3306/appdb
+  password: CHANGE_ME_use_sealed_secrets
+  rootPassword: CHANGE_ME_use_sealed_secrets
+  url: mysql://appuser:CHANGE_ME@app-database:3306/appdb
   storageClass: premium-rwo
   storage: 50Gi
   resources:
@@ -70,7 +71,7 @@ redis:
   replicas: 3
   image:
     repository: redis
-    tag: 6.2
+    tag: "7-alpine"
     pullPolicy: IfNotPresent
   containerPort: 6379
   servicePort: 6379

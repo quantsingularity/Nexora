@@ -4,3 +4,8 @@
   systemd:
     name: nginx
     state: restarted
+
+- name: Reload Nginx
+  systemd:
+    name: nginx
+    state: reloaded

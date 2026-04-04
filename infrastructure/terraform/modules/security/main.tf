@@ -45,6 +45,18 @@ resource "aws_security_group" "alb" {
     description     = "HTTPS to application servers"
   }
 
+  # Allow ALB to reach app on any configured app port (e.g. 3000 for Node.js)
+  dynamic "egress" {
+    for_each = var.app_port != null ? [var.app_port] : [3000]
+    content {
+      from_port       = egress.value
+      to_port         = egress.value
+      protocol        = "tcp"
+      security_groups = [aws_security_group.app.id]
+      description     = "Application port to backend servers"
+    }
+  }
+
   tags = {
     Name        = "${var.app_name}-${var.environment}-alb-sg"
     Environment = var.environment

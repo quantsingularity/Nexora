@@ -15,7 +15,7 @@ db_name           = "nexoradb"
 db_username       = "admin"
 # SECURITY: DO NOT commit real passwords. Use AWS Secrets Manager or environment variables.
 # Set via: export TF_VAR_db_password="your-secure-password"
-db_password       = "CHANGE_ME_PLEASE" # MUST be changed before apply
+db_password       = "CHANGE_ME_before_apply!"  # Min 12 chars; use TF_VAR_db_password env var instead
 
 default_tags = {
   Terraform   = "true"

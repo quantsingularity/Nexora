@@ -262,6 +262,10 @@ resource "aws_db_snapshot" "manual_snapshot" {
     Purpose     = "Manual-Backup"
     CreatedBy   = "Terraform"
   }
+
+  lifecycle {
+    ignore_changes = [db_snapshot_identifier]
+  }
 }
 
 # CloudWatch Log Groups for database logs

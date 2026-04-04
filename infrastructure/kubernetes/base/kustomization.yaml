@@ -1,7 +1,23 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# Base Kubernetes manifests for Nexora application
+# ─────────────────────────────────────────────────────────────────────────────
+# NOTE: The YAML files in this directory are Helm chart templates.
+# To use them with kustomize directly, first render them with Helm:
+#
+#   helm template nexora ./kubernetes \
+#     -f kubernetes/environments/dev/values.yaml \
+#     --output-dir kubernetes/rendered/dev
+#
+# Then apply the rendered output:
+#   kubectl apply -k kubernetes/rendered/dev
+#
+# For Helm-native workflow:
+#   helm upgrade --install nexora ./kubernetes \
+#     -f kubernetes/environments/dev/values.yaml \
+#     -n nexora --create-namespace
+# ─────────────────────────────────────────────────────────────────────────────
+
 namespace: nexora
 
 resources:
@@ -24,7 +40,6 @@ commonLabels:
   app: nexora
   managedBy: kustomize
 
-# Images can be overridden in overlays
 images:
   - name: backend-image
     newName: nexora/backend

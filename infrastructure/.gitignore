@@ -1,191 +1,80 @@
-# ===============================================================
-# Nexora Infrastructure .gitignore
-# ===============================================================
-
-# =========================
-# Terraform
-# =========================
-
-# Local .terraform directories
-**/.terraform/*
+# ── Terraform ────────────────────────────────────────────────
+**/.terraform/
 **/.terraform.lock.hcl
-
-# .tfstate files
 *.tfstate
 *.tfstate.*
-
-# Crash log files
+*.tfstate.backup
 crash.log
 crash.*.log
-
-# Variable files that may contain secrets
-terraform.tfvars
-*.auto.tfvars
-*.auto.tfvars.json
-
-# Plans
-*.tfplan
-tfplan
-
-# Override files
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+terraform/environments/*/terraform.tfvars
+!terraform/environments/*/terraform.tfvars.example
+terraform/environments/*/backend.tf
 
-# CLI configuration files
-.terraformrc
-terraform.rc
+# ── Secrets & credentials ────────────────────────────────────
+.env
+.env.*
+!.env.example
+.vault_pass
+*.pem
+*.key
+*.p12
+*.pfx
+*secrets*.json
+*credentials*.json
+vault.yml
+!vault.example.yml
 
-# =========================
-# Ansible
-# =========================
-
-# Inventory files with real IPs/hostnames
+# ── Ansible ───────────────────────────────────────────────────
+ansible/group_vars/all/vault.yml
 ansible/inventory/hosts.yml
-ansible/inventory/*.yml
 !ansible/inventory/hosts.example.yml
+*.retry
 
-# Vault files
-ansible/group_vars/*/vault.yml
-ansible/host_vars/*/vault.yml
-!**/*.example.yml
+# ── Kubernetes ────────────────────────────────────────────────
+kubernetes/environments/*/values.yaml
+!kubernetes/environments/*/values.example.yaml
+kubernetes/rendered/
 
-# Ansible cache
-ansible/.ansible/
-ansible/**.retry
-ansible/**/*.retry
+# ── Docker ────────────────────────────────────────────────────
+docker-compose.override.yml.local
 
-# Ansible facts cache
-/tmp/ansible_facts/
+# ── Node ─────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn
 
-# =========================
-# Kubernetes
-# =========================
+# ── Build artifacts ───────────────────────────────────────────
+dist/
+build/
+.next/
+.nuxt/
+.cache/
 
-# Real secrets (not examples)
-kubernetes/base/app-secrets.yaml
-kubernetes/*/secrets.yaml
-kubernetes/*/*-secrets.yaml
-!kubernetes/**/*.example.yaml
-
-# Kustomize build output
-kubernetes/build/
-
-# =========================
-# General
-# =========================
-
-# IDE
+# ── IDE & OS ─────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Logs
+# ── Logs ─────────────────────────────────────────────────────
 *.log
 logs/
+/tmp/
 
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Backup files
-*.backup
-*.bak
-*~
-
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# SSH Keys
-*.pem
-*.key
-id_rsa*
-!*.pub
-
-# Certificates
-*.crt
-*.cert
-*.ca-bundle
-!ca.example.crt
-
-# =========================
-# CI/CD
-# =========================
-
-# GitHub Actions
-.github/workflows/*.log
-
-# =========================
-# Monitoring/Logging
-# =========================
-
-# Prometheus data
-monitoring/prometheus/data/
-
-# Grafana data
-monitoring/grafana/data/
-
-# Elasticsearch data
-monitoring/elasticsearch/data/
-
-# =========================
-# Backup
-# =========================
-
-# Database dumps
-backup-recovery/database-backup/*.sql
-backup-recovery/database-backup/*.dump
-backup-recovery/**/*.gz
-backup-recovery/**/*.tar
-
-# Velero backups
-backup-recovery/kubernetes-backup/backups/
-
-# =========================
-# Security
-# =========================
-
-# AWS credentials
-.aws/
-credentials
-config
-
-# Vault tokens
-.vault-token
-
-# Private keys and certificates
-security/**/private.key
-security/**/*.pem
-security/**/*.p12
-security/**/*.pfx
-
-# =========================
-# Validation/Testing
-# =========================
-
-# Test output
-validation_logs/*.txt
-test-results/
-coverage/
-
-# Compliance reports
-compliance-reports/
-audit-reports/
-
-# =========================
-# Scripts
-# =========================
-
-# Script outputs
-*.output
-run_*.log
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+*.egg-info/

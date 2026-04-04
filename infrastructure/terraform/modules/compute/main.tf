@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.1"
+    }
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
 # Data sources
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
@@ -409,6 +422,16 @@ resource "random_id" "alb_bucket_suffix" {
 }
 
 # S3 bucket configuration for ALB logs
+
+# S3 bucket versioning for ALB logs (enables recovery of accidentally deleted logs)
+resource "aws_s3_bucket_versioning" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id
 
@@ -458,6 +481,7 @@ data "aws_elb_service_account" "main" {}
 
 resource "aws_s3_bucket_policy" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id
+  depends_on = [aws_s3_bucket_public_access_block.alb_logs]
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -532,7 +556,7 @@ resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.app.arn
   port              = "443"
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn   = var.ssl_certificate_arn
 
   default_action {
@@ -580,8 +604,3 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-# Auto Scaling Group attachment to Target Group
-resource "aws_autoscaling_attachment" "app" {
-  autoscaling_group_name = aws_autoscaling_group.app.id
-  lb_target_group_arn    = aws_lb_target_group.app.arn
-}

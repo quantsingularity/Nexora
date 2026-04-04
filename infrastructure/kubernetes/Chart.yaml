@@ -1,0 +1,17 @@
+apiVersion: v2
+name: nexora
+description: Nexora application Helm chart — deploys backend, frontend, MySQL, and Redis
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - nexora
+  - web
+  - api
+
+maintainers:
+  - name: Nexora Platform Team
+    email: platform@nexora.example.com
+
+dependencies: []

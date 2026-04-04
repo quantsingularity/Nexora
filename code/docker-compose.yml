@@ -65,9 +65,17 @@ services:
     image: nexora:latest
     container_name: nexora-ui
     restart: unless-stopped
-    command: ["python", "-m", "streamlit", "run", "interfaces/streamlit_app.py",
-              "--server.port=8501", "--server.address=0.0.0.0",
-              "--server.headless=true"]
+    command:
+      [
+        "python",
+        "-m",
+        "streamlit",
+        "run",
+        "interfaces/streamlit_app.py",
+        "--server.port=8501",
+        "--server.address=0.0.0.0",
+        "--server.headless=true",
+      ]
     ports:
       - "${UI_PORT:-8501}:8501"
     environment:
