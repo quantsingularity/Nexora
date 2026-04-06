@@ -234,6 +234,7 @@ class FHIRConnector:
         if headers:
             request_headers.update(headers)
         retries = 0
+        last_response = None
         while retries <= self.max_retries:
             try:
                 response = self.session.request(
@@ -253,11 +254,13 @@ class FHIRConnector:
                     )
                     time.sleep(retry_after)
                     retries += 1
+                    last_response = response
                     continue
                 if response.status_code >= 500:
                     logger.warning(f"Server error {response.status_code}, retrying")
                     time.sleep(self.retry_delay)
                     retries += 1
+                    last_response = response
                     continue
                 if response.status_code == 401 and self.auth_type == "oauth2":
                     logger.warning("Authentication error, refreshing token")
@@ -278,6 +281,11 @@ class FHIRConnector:
                         f"Request failed after {self.max_retries} retries: {str(e)}"
                     )
                     raise
+        if last_response is not None:
+            last_response.raise_for_status()
+        raise requests.exceptions.RetryError(
+            f"Max retries ({self.max_retries}) exceeded for {url}"
+        )
 
     def get_capability_statement(self) -> Dict:
         """

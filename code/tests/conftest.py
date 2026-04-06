@@ -1,10 +1,15 @@
+import os
+import sys
 from typing import Any
 
 import pytest
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from data.synthetic_clinical_data import ClinicalDataGenerator
 from fastapi.testclient import TestClient
-from src.data.synthetic_clinical_data import ClinicalDataGenerator
-from src.serving.rest_api import app
-from src.utils.fhir_ops import FHIRClinicalConnector
+from serving.rest_api import app
+from utils.fhir_ops import FHIRClinicalConnector
 
 
 @pytest.fixture
@@ -34,7 +39,7 @@ def mock_model_registry() -> Any:
 
                 def predict(self, data):
                     return {
-                        "risk": 0.75,
+                        "risk_score": 0.75,
                         "top_features": ["age", "previous_admissions", "diabetes"],
                     }
 
@@ -51,7 +56,9 @@ def mock_audit_logger() -> Any:
 
     class MockAuditLogger:
 
-        def log_prediction_request(self, patient_id):
+        def log_prediction_request(
+            self, patient_id, user_id="API_USER", model_used="UNKNOWN"
+        ):
             return True
 
     return MockAuditLogger()

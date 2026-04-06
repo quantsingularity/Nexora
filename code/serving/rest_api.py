@@ -94,8 +94,8 @@ async def predict(request: PredictionRequest):
             request.model_name, request.model_version
         )
 
-        predictions = model.predict(request.patient_data.dict())
-        explanations = model.explain(request.patient_data.dict())
+        predictions = model.predict(request.patient_data.model_dump())
+        explanations = model.explain(request.patient_data.model_dump())
 
         return PredictionResponse(
             request_id=request.request_id,

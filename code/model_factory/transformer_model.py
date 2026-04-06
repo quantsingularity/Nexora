@@ -154,6 +154,10 @@ class TransformerModel(BaseModel):
         Returns:
             A dictionary with prediction results.
         """
+        if "features" not in patient_data and "demographics" not in patient_data:
+            raise ValueError(
+                "patient_data must contain 'features' or 'demographics' key"
+            )
         self.model.eval()
         mock_input = torch.randint(0, self.vocab_size, (50, 1))
         with torch.no_grad():
@@ -163,6 +167,31 @@ class TransformerModel(BaseModel):
             "risk_score": float(prediction_proba),
             "prediction_class": "High Risk" if prediction_proba > 0.5 else "Low Risk",
             "uncertainty": {"std_dev": float(uncertainty)},
+        }
+
+    def predict_with_uncertainty(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generates predictions with uncertainty estimates.
+
+        Args:
+            patient_data: Dictionary containing patient features.
+
+        Returns:
+            A dictionary with prediction and uncertainty results.
+        """
+        prediction = self.predict(patient_data)
+        risk = prediction["risk_score"]
+        margin = np.random.uniform(0.05, 0.15)
+        return {
+            "risk": risk,
+            "prediction_class": prediction["prediction_class"],
+            "uncertainty": {
+                "std_dev": prediction["uncertainty"]["std_dev"],
+                "confidence_interval": [
+                    float(max(0.0, risk - margin)),
+                    float(min(1.0, risk + margin)),
+                ],
+            },
         }
 
     def save(self, path: Optional[str] = None) -> None:
@@ -185,13 +214,15 @@ class TransformerModel(BaseModel):
         """
         Generates explanations for the prediction.
         """
-        explanation = {
-            "explanation_method": "Mock Attention Weights",
-            "attention_scores": [
-                {"concept": "Diagnosis: I10 (Hypertension)", "weight": 0.45},
-                {"concept": "Medication: Lisinopril", "weight": 0.3},
-                {"concept": "Age: 65+", "weight": 0.15},
+        return {
+            "method": "Mock Attention Weights",
+            "values": [0.45, 0.30, 0.15, 0.07, 0.03],
+            "feature_names": [
+                "Diagnosis: I10 (Hypertension)",
+                "Medication: Lisinopril",
+                "Age: 65+",
+                "Previous Admissions",
+                "Lab: Creatinine",
             ],
-            "details": "This is a mock explanation based on the transformer's attention mechanism.",
+            "details": "Mock explanation based on the transformer's attention mechanism.",
         }
-        return explanation

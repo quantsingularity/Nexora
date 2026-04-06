@@ -48,14 +48,14 @@ class PHIAuditLogger:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS access_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp TEXT NOT NULL,
                 user_id TEXT NOT NULL,
                 patient_id TEXT NOT NULL,
                 resource_type TEXT NOT NULL,
                 operation TEXT NOT NULL,
                 justification TEXT NOT NULL,
-                model_used TEXT,
-                PRIMARY KEY (timestamp, user_id, patient_id)
+                model_used TEXT
             )
         """
         )
@@ -106,7 +106,8 @@ class PHIAuditLogger:
             cursor = self.conn.cursor()
             cursor.execute(
                 """
-                INSERT INTO access_logs VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO access_logs (timestamp, user_id, patient_id, resource_type, operation, justification, model_used)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     datetime.utcnow().isoformat(),
@@ -174,6 +175,7 @@ class PHIAuditLogger:
             df = pd.DataFrame(
                 rows,
                 columns=[
+                    "id",
                     "timestamp",
                     "user",
                     "patient",
@@ -182,10 +184,6 @@ class PHIAuditLogger:
                     "reason",
                     "model",
                 ],
-            )
-
-            logger.info(
-                f"Generated audit report: {len(df)} entries between {start_date} and {end_date}"
             )
 
             return df
@@ -220,6 +218,7 @@ class PHIAuditLogger:
             df = pd.DataFrame(
                 rows,
                 columns=[
+                    "id",
                     "timestamp",
                     "user",
                     "patient",

@@ -163,6 +163,8 @@ class PHIDeidentifier:
                     result[col] = result[col].apply(
                         lambda x: self._hash_identifier(str(x)) if pd.notna(x) else x
                     )
+            else:
+                result[col] = "[REDACTED]"
         if self.config.k_anonymity_threshold > 1:
             result = self._apply_k_anonymity(result)
         return result

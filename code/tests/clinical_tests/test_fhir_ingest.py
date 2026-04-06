@@ -1,449 +1,30 @@
 import json
 import os
 import sys
-import tempfile
-import unittest
-from typing import Any
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 import pandas as pd
+import pytest
+from data_pipeline.data_validation import DataValidator
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
-from code.data_pipeline.data_validation import DataValidator
-
-
-class TestFHIRIngest(unittest.TestCase):
-    """Test suite for FHIR data ingestion functionality."""
-
-    def setUp(self) -> Any:
-        """Set up test fixtures."""
-        self.mock_config = {
-            "base_url": "http://test-fhir-server.example.com/fhir",
-            "auth_type": "none",
-            "verify_ssl": False,
-            "timeout": 10,
-            "max_retries": 2,
-        }
-        self.sample_patient = {
-            "resourceType": "Patient",
-            "id": "patient-001",
-            "meta": {"versionId": "1", "lastUpdated": "2023-05-15T10:15:00Z"},
-            "identifier": [
-                {
-                    "system": "http://hospital.example.org/identifiers/patients",
-                    "value": "P123456",
-                },
-                {"system": "http://hl7.org/fhir/sid/us-ssn", "value": "123-45-6789"},
-            ],
-            "name": [
-                {"use": "official", "family": "Smith", "given": ["John", "Edward"]}
-            ],
-            "gender": "male",
-            "birthDate": "1970-01-25",
-            "address": [
-                {
-                    "use": "home",
-                    "line": ["123 Main St"],
-                    "city": "Anytown",
-                    "state": "CA",
-                    "postalCode": "12345",
-                    "country": "USA",
-                }
-            ],
-            "telecom": [
-                {"system": "phone", "value": "555-123-4567", "use": "home"},
-                {"system": "email", "value": "john.smith@example.com"},
-            ],
-            "maritalStatus": {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
-                        "code": "M",
-                        "display": "Married",
-                    }
-                ]
-            },
-            "communication": [
-                {
-                    "language": {
-                        "coding": [
-                            {
-                                "system": "urn:ietf:bcp:47",
-                                "code": "en",
-                                "display": "English",
-                            }
-                        ]
-                    },
-                    "preferred": True,
-                }
-            ],
-        }
-        self.sample_observation = {
-            "resourceType": "Observation",
-            "id": "observation-001",
-            "meta": {"versionId": "1", "lastUpdated": "2023-05-15T10:30:00Z"},
-            "status": "final",
-            "category": [
-                {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                            "code": "vital-signs",
-                            "display": "Vital Signs",
-                        }
-                    ]
-                }
-            ],
-            "code": {
-                "coding": [
-                    {
-                        "system": "http://loinc.org",
-                        "code": "8480-6",
-                        "display": "Systolic blood pressure",
-                    }
-                ],
-                "text": "Systolic blood pressure",
-            },
-            "subject": {"reference": "Patient/patient-001"},
-            "effectiveDateTime": "2023-05-15T10:25:00Z",
-            "valueQuantity": {
-                "value": 120,
-                "unit": "mmHg",
-                "system": "http://unitsofmeasure.org",
-                "code": "mm[Hg]",
-            },
-        }
-        self.sample_condition = {
-            "resourceType": "Condition",
-            "id": "condition-001",
-            "meta": {"versionId": "1", "lastUpdated": "2023-05-15T10:35:00Z"},
-            "clinicalStatus": {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                        "code": "active",
-                        "display": "Active",
-                    }
-                ]
-            },
-            "verificationStatus": {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
-                        "code": "confirmed",
-                        "display": "Confirmed",
-                    }
-                ]
-            },
-            "category": [
-                {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-category",
-                            "code": "problem-list-item",
-                            "display": "Problem List Item",
-                        }
-                    ]
-                }
-            ],
-            "code": {
-                "coding": [
-                    {
-                        "system": "http://snomed.info/sct",
-                        "code": "38341003",
-                        "display": "Hypertension",
-                    },
-                    {
-                        "system": "http://hl7.org/fhir/sid/icd-10-cm",
-                        "code": "I10",
-                        "display": "Essential (primary) hypertension",
-                    },
-                ],
-                "text": "Hypertension",
-            },
-            "subject": {"reference": "Patient/patient-001"},
-            "onsetDateTime": "2022-01-10",
-            "recordedDate": "2022-01-15",
-        }
-        self.sample_medication_request = {
-            "resourceType": "MedicationRequest",
-            "id": "medication-request-001",
-            "meta": {"versionId": "1", "lastUpdated": "2023-05-15T10:40:00Z"},
-            "status": "active",
-            "intent": "order",
-            "medicationCodeableConcept": {
-                "coding": [
-                    {
-                        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
-                        "code": "197361",
-                        "display": "Amlodipine 5 MG Oral Tablet",
-                    }
-                ],
-                "text": "Amlodipine 5 MG Oral Tablet",
-            },
-            "subject": {"reference": "Patient/patient-001"},
-            "authoredOn": "2023-05-15",
-            "requester": {
-                "reference": "Practitioner/practitioner-001",
-                "display": "Dr. Jane Doe",
-            },
-            "dosageInstruction": [
-                {
-                    "text": "Take 1 tablet by mouth once daily",
-                    "timing": {
-                        "repeat": {"frequency": 1, "period": 1, "periodUnit": "d"}
-                    },
-                    "route": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "26643006",
-                                "display": "Oral route",
-                            }
-                        ]
-                    },
-                    "doseAndRate": [
-                        {
-                            "doseQuantity": {
-                                "value": 1,
-                                "unit": "tablet",
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-orderableDrugForm",
-                                "code": "TAB",
-                            }
-                        }
-                    ],
-                }
-            ],
-        }
-        self.mock_connector = MockFHIRConnector(
-            patients=[self.sample_patient],
-            observations=[self.sample_observation],
-            conditions=[self.sample_condition],
-            medications=[self.sample_medication_request],
-        )
-        self.validator = DataValidator()
-
-    def test_patient_conversion(self) -> Any:
-        """Test conversion of FHIR Patient resources to DataFrame."""
-        patients_df = self.mock_connector.patients_to_dataframe([self.sample_patient])
-        self.assertIsInstance(patients_df, pd.DataFrame)
-        self.assertGreater(len(patients_df), 0)
-        essential_columns = [
-            "patient_id",
-            "family_name",
-            "given_name",
-            "gender",
-            "birth_date",
-        ]
-        for column in essential_columns:
-            self.assertIn(column, patients_df.columns)
-        self.assertEqual(patients_df.iloc[0]["patient_id"], "patient-001")
-        self.assertEqual(patients_df.iloc[0]["family_name"], "Smith")
-        self.assertEqual(patients_df.iloc[0]["gender"], "male")
-        self.assertEqual(patients_df.iloc[0]["birth_date"], "1970-01-25")
-
-    def test_observation_conversion(self) -> Any:
-        """Test conversion of FHIR Observation resources to DataFrame."""
-        observations_df = self.mock_connector.observations_to_dataframe(
-            [self.sample_observation]
-        )
-        self.assertIsInstance(observations_df, pd.DataFrame)
-        self.assertGreater(len(observations_df), 0)
-        essential_columns = [
-            "observation_id",
-            "patient_id",
-            "code",
-            "display",
-            "value",
-            "unit",
-            "date",
-        ]
-        for column in essential_columns:
-            self.assertIn(column, observations_df.columns)
-        self.assertEqual(observations_df.iloc[0]["observation_id"], "observation-001")
-        self.assertEqual(observations_df.iloc[0]["patient_id"], "patient-001")
-        self.assertEqual(observations_df.iloc[0]["code"], "8480-6")
-        self.assertEqual(observations_df.iloc[0]["value"], 120)
-        self.assertEqual(observations_df.iloc[0]["unit"], "mmHg")
-
-    def test_condition_conversion(self) -> Any:
-        """Test conversion of FHIR Condition resources to DataFrame."""
-        conditions_df = self.mock_connector.conditions_to_dataframe(
-            [self.sample_condition]
-        )
-        self.assertIsInstance(conditions_df, pd.DataFrame)
-        self.assertGreater(len(conditions_df), 0)
-        essential_columns = [
-            "condition_id",
-            "patient_id",
-            "code",
-            "display",
-            "onset_date",
-            "clinical_status",
-        ]
-        for column in essential_columns:
-            self.assertIn(column, conditions_df.columns)
-        self.assertEqual(conditions_df.iloc[0]["condition_id"], "condition-001")
-        self.assertEqual(conditions_df.iloc[0]["patient_id"], "patient-001")
-        self.assertEqual(conditions_df.iloc[0]["clinical_status"], "active")
-        self.assertIn("I10", conditions_df.iloc[0]["code"])
-
-    def test_medication_conversion(self) -> Any:
-        """Test conversion of FHIR MedicationRequest resources to DataFrame."""
-        medications_df = self.mock_connector.medications_to_dataframe(
-            [self.sample_medication_request]
-        )
-        self.assertIsInstance(medications_df, pd.DataFrame)
-        self.assertGreater(len(medications_df), 0)
-        essential_columns = [
-            "medication_id",
-            "patient_id",
-            "medication_display",
-            "status",
-            "authored_date",
-        ]
-        for column in essential_columns:
-            self.assertIn(column, medications_df.columns)
-        self.assertEqual(
-            medications_df.iloc[0]["medication_id"], "medication-request-001"
-        )
-        self.assertEqual(medications_df.iloc[0]["patient_id"], "patient-001")
-        self.assertEqual(medications_df.iloc[0]["status"], "active")
-        self.assertIn("Amlodipine", medications_df.iloc[0]["medication_display"])
-
-    def test_bulk_export(self) -> Any:
-        """Test bulk export of FHIR resources."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            result = self.mock_connector.bulk_export(
-                resource_types=[
-                    "Patient",
-                    "Observation",
-                    "Condition",
-                    "MedicationRequest",
-                ],
-                output_dir=temp_dir,
-                format_type="json",
-            )
-            self.assertIsInstance(result, dict)
-            self.assertEqual(len(result), 4)
-            for resource_type in [
-                "Patient",
-                "Observation",
-                "Condition",
-                "MedicationRequest",
-            ]:
-                file_path = os.path.join(temp_dir, f"{resource_type}.json")
-                self.assertTrue(os.path.exists(file_path))
-                with open(file_path, "r") as f:
-                    content = json.load(f)
-                    self.assertIsInstance(content, list)
-                    self.assertGreater(len(content), 0)
-
-    def test_dataframe_to_fhir(self) -> Any:
-        """Test conversion of DataFrames back to FHIR resources."""
-        patients_df = self.mock_connector.patients_to_dataframe([self.sample_patient])
-        fhir_patients = self.mock_connector.dataframe_to_patients(patients_df)
-        self.assertIsInstance(fhir_patients, list)
-        self.assertGreater(len(fhir_patients), 0)
-        self.assertEqual(fhir_patients[0]["resourceType"], "Patient")
-        self.assertEqual(fhir_patients[0]["id"], "patient-001")
-
-    def test_data_validation_integration(self) -> Any:
-        """Test integration with data validation."""
-        patients_df = self.mock_connector.patients_to_dataframe([self.sample_patient])
-        patient_schema = {
-            "patient_id": {"type": "string", "required": True, "unique": True},
-            "family_name": {"type": "string", "required": True},
-            "given_name": {"type": "string", "required": True},
-            "gender": {
-                "type": "category",
-                "required": True,
-                "categories": ["male", "female", "other", "unknown"],
-            },
-            "birth_date": {"type": "string", "required": True},
-        }
-        result = self.validator.validate_schema(patients_df, patient_schema)
-        self.assertIsInstance(result, dict)
-        self.assertTrue(result["valid"])
-        self.assertEqual(len(result.get("errors", [])), 0)
-
-    def test_search_functionality(self) -> Any:
-        """Test FHIR search functionality."""
-        patients = self.mock_connector.search("Patient", {"name": "Smith"})
-        self.assertIsInstance(patients, list)
-        self.assertGreater(len(patients), 0)
-        observations = self.mock_connector.search("Observation", {"code": "8480-6"})
-        self.assertIsInstance(observations, list)
-        self.assertGreater(len(observations), 0)
-        conditions = self.mock_connector.search("Condition", {"code": "I10"})
-        self.assertIsInstance(conditions, list)
-        self.assertGreater(len(conditions), 0)
-
-    def test_error_handling(self) -> Any:
-        """Test error handling in FHIR connector."""
-        with self.assertRaises(ValueError):
-            self.mock_connector.search("InvalidResourceType")
-        error_connector = MockFHIRConnector(connection_error=True)
-        with self.assertRaises(Exception):
-            error_connector.search("Patient")
-        auth_error_connector = MockFHIRConnector(auth_error=True)
-        with self.assertRaises(Exception):
-            auth_error_connector.search("Patient")
-
-    def test_pagination(self) -> Any:
-        """Test pagination of FHIR search results."""
-        many_patients = [self.sample_patient.copy() for _ in range(20)]
-        for i, patient in enumerate(many_patients):
-            patient["id"] = f"patient-{i + 1:03d}"
-        pagination_connector = MockFHIRConnector(patients=many_patients)
-        patients = pagination_connector.search("Patient", max_count=10)
-        self.assertIsInstance(patients, list)
-        self.assertEqual(len(patients), 10)
-        all_patients = pagination_connector.search("Patient")
-        self.assertIsInstance(all_patients, list)
-        self.assertEqual(len(all_patients), 20)
-
-    def test_data_integration(self) -> Any:
-        """Test integration of different FHIR resource types."""
-        patients_df = self.mock_connector.patients_to_dataframe([self.sample_patient])
-        observations_df = self.mock_connector.observations_to_dataframe(
-            [self.sample_observation]
-        )
-        conditions_df = self.mock_connector.conditions_to_dataframe(
-            [self.sample_condition]
-        )
-        medications_df = self.mock_connector.medications_to_dataframe(
-            [self.sample_medication_request]
-        )
-        patient_observations = pd.merge(
-            patients_df, observations_df, on="patient_id", how="inner"
-        )
-        patient_conditions = pd.merge(
-            patients_df, conditions_df, on="patient_id", how="inner"
-        )
-        patient_medications = pd.merge(
-            patients_df, medications_df, on="patient_id", how="inner"
-        )
-        self.assertGreater(len(patient_observations), 0)
-        self.assertGreater(len(patient_conditions), 0)
-        self.assertGreater(len(patient_medications), 0)
-        self.assertEqual(patient_observations.iloc[0]["family_name"], "Smith")
-        self.assertEqual(patient_conditions.iloc[0]["family_name"], "Smith")
-        self.assertEqual(patient_medications.iloc[0]["family_name"], "Smith")
+# ---------------------------------------------------------------------------
+# MockFHIRConnector mirrors the real FHIRConnector API for offline tests
+# ---------------------------------------------------------------------------
 
 
 class MockFHIRConnector:
-    """Mock implementation of FHIRConnector for testing."""
+    RESOURCE_TYPES = ["Patient", "Observation", "Condition", "MedicationRequest"]
 
     def __init__(
         self,
-        patients: Any = None,
-        observations: Any = None,
-        conditions: Any = None,
-        medications: Any = None,
-        connection_error: Any = False,
-        auth_error: Any = False,
-    ) -> None:
-        """Initialize the mock connector."""
+        patients=None,
+        observations=None,
+        conditions=None,
+        medications=None,
+        connection_error=False,
+        auth_error=False,
+    ):
         self.patients = patients or []
         self.observations = observations or []
         self.conditions = conditions or []
@@ -457,217 +38,160 @@ class MockFHIRConnector:
             "MedicationRequest": self.medications,
         }
 
-    def search(
-        self, resource_type: Any, params: Any = None, max_count: Any = None
-    ) -> Any:
-        """Mock search functionality."""
+    def search(self, resource_type, params=None, max_count=None):
         if self.connection_error:
             raise Exception("Connection error")
         if self.auth_error:
             raise Exception("Authentication error")
         if resource_type not in self.resources:
             raise ValueError(f"Unknown resource type: {resource_type}")
-        resources = self.resources[resource_type]
+        resources = list(self.resources[resource_type])
         if params:
-            filtered_resources = []
-            for resource in resources:
+            filtered = []
+            for r in resources:
                 match = True
                 for key, value in params.items():
-                    if key == "name" and resource.get("resourceType") == "Patient":
-                        patient_name = resource.get("name", [{}])[0].get("family", "")
-                        if value not in patient_name:
+                    if key == "name" and r.get("resourceType") == "Patient":
+                        fam = r.get("name", [{}])[0].get("family", "")
+                        if value not in fam:
                             match = False
-                            break
                     elif key == "code":
-                        if resource.get("resourceType") == "Observation":
-                            code_value = (
-                                resource.get("code", {})
-                                .get("coding", [{}])[0]
-                                .get("code", "")
+                        if r.get("resourceType") == "Observation":
+                            c = r.get("code", {}).get("coding", [{}])[0].get("code", "")
+                            if value != c:
+                                match = False
+                        elif r.get("resourceType") == "Condition":
+                            found = any(
+                                coding.get("code") == value
+                                for coding in r.get("code", {}).get("coding", [])
                             )
-                            if value != code_value:
+                            if not found:
                                 match = False
-                                break
-                        elif resource.get("resourceType") == "Condition":
-                            code_found = False
-                            for coding in resource.get("code", {}).get("coding", []):
-                                if coding.get("code") == value:
-                                    code_found = True
-                                    break
-                            if not code_found:
-                                match = False
-                                break
                 if match:
-                    filtered_resources.append(resource)
-            resources = filtered_resources
-        if max_count is not None and max_count < len(resources):
+                    filtered.append(r)
+            resources = filtered
+        if max_count is not None:
             resources = resources[:max_count]
         return resources
 
-    def get(self, resource_type: Any, resource_id: Any) -> Any:
-        """Mock get functionality."""
-        if self.connection_error:
-            raise Exception("Connection error")
-        if self.auth_error:
-            raise Exception("Authentication error")
-        if resource_type not in self.resources:
-            raise ValueError(f"Unknown resource type: {resource_type}")
-        for resource in self.resources[resource_type]:
-            if resource.get("id") == resource_id:
-                return resource
-        raise Exception(f"Resource not found: {resource_type}/{resource_id}")
-
-    def patients_to_dataframe(self, patients: Any) -> Any:
-        """Convert Patient resources to DataFrame."""
+    def patients_to_dataframe(self, patients):
         data = []
-        for patient in patients:
-            patient_id = patient.get("id", "")
-            name = patient.get("name", [{}])[0]
-            family = name.get("family", "")
-            given = " ".join(name.get("given", []))
-            gender = patient.get("gender", "")
-            birth_date = patient.get("birthDate", "")
-            address = patient.get("address", [{}])[0]
-            address_line = ", ".join(address.get("line", []))
-            city = address.get("city", "")
-            state = address.get("state", "")
-            postal_code = address.get("postalCode", "")
-            country = address.get("country", "")
-            telecom = patient.get("telecom", [])
-            phone = next(
-                (t.get("value", "") for t in telecom if t.get("system") == "phone"), ""
+        for p in patients:
+            name = p.get("name", [{}])[0]
+            telecom = p.get("telecom", [])
+            addr = p.get("address", [{}])[0]
+            data.append(
+                {
+                    "patient_id": p.get("id", ""),
+                    "family_name": name.get("family", ""),
+                    "given_name": " ".join(name.get("given", [])),
+                    "gender": p.get("gender", ""),
+                    "birth_date": p.get("birthDate", ""),
+                    "address_line": ", ".join(addr.get("line", [])),
+                    "city": addr.get("city", ""),
+                    "state": addr.get("state", ""),
+                    "postal_code": addr.get("postalCode", ""),
+                    "country": addr.get("country", ""),
+                    "phone": next(
+                        (t["value"] for t in telecom if t.get("system") == "phone"), ""
+                    ),
+                    "email": next(
+                        (t["value"] for t in telecom if t.get("system") == "email"), ""
+                    ),
+                }
             )
-            email = next(
-                (t.get("value", "") for t in telecom if t.get("system") == "email"), ""
-            )
-            row = {
-                "patient_id": patient_id,
-                "family_name": family,
-                "given_name": given,
-                "gender": gender,
-                "birth_date": birth_date,
-                "address_line": address_line,
-                "city": city,
-                "state": state,
-                "postal_code": postal_code,
-                "country": country,
-                "phone": phone,
-                "email": email,
-            }
-            data.append(row)
         return pd.DataFrame(data)
 
-    def observations_to_dataframe(self, observations: Any) -> Any:
-        """Convert Observation resources to DataFrame."""
+    def observations_to_dataframe(self, observations):
         data = []
         for obs in observations:
-            obs_id = obs.get("id", "")
-            patient_id = (
-                obs.get("subject", {}).get("reference", "").replace("Patient/", "")
-            )
-            effective_date = obs.get("effectiveDateTime", "")
             coding = obs.get("code", {}).get("coding", [{}])[0]
-            code = coding.get("code", "")
-            system = coding.get("system", "")
-            display = coding.get("display", "")
-            value = None
-            unit = ""
+            value, unit = None, ""
             if "valueQuantity" in obs:
-                value = obs["valueQuantity"].get("value", "")
+                value = obs["valueQuantity"].get("value")
                 unit = obs["valueQuantity"].get("unit", "")
-            row = {
-                "observation_id": obs_id,
-                "patient_id": patient_id,
-                "date": effective_date,
-                "code": code,
-                "system": system,
-                "display": display,
-                "value": value,
-                "unit": unit,
-                "status": obs.get("status", ""),
-            }
-            data.append(row)
+            data.append(
+                {
+                    "observation_id": obs.get("id", ""),
+                    "patient_id": obs.get("subject", {})
+                    .get("reference", "")
+                    .replace("Patient/", ""),
+                    "date": obs.get("effectiveDateTime", ""),
+                    "code": coding.get("code", ""),
+                    "system": coding.get("system", ""),
+                    "display": coding.get("display", ""),
+                    "value": value,
+                    "unit": unit,
+                    "status": obs.get("status", ""),
+                }
+            )
         return pd.DataFrame(data)
 
-    def conditions_to_dataframe(self, conditions: Any) -> Any:
-        """Convert Condition resources to DataFrame."""
+    def conditions_to_dataframe(self, conditions):
         data = []
-        for condition in conditions:
-            condition_id = condition.get("id", "")
-            patient_id = (
-                condition.get("subject", {})
-                .get("reference", "")
-                .replace("Patient/", "")
-            )
-            onset_date = condition.get("onsetDateTime", "")
-            code = ""
-            system = ""
-            display = ""
-            for coding in condition.get("code", {}).get("coding", []):
+        for cond in conditions:
+            code, system, display = "", "", ""
+            for coding in cond.get("code", {}).get("coding", []):
                 if coding.get("system") == "http://hl7.org/fhir/sid/icd-10-cm":
-                    code = coding.get("code", "")
-                    system = coding.get("system", "")
-                    display = coding.get("display", "")
+                    code, system, display = (
+                        coding.get("code", ""),
+                        coding.get("system", ""),
+                        coding.get("display", ""),
+                    )
                     break
-            if not code and condition.get("code", {}).get("coding", []):
-                coding = condition.get("code", {}).get("coding", [{}])[0]
-                code = coding.get("code", "")
-                system = coding.get("system", "")
-                display = coding.get("display", "")
-            clinical_status = (
-                condition.get("clinicalStatus", {})
-                .get("coding", [{}])[0]
-                .get("code", "")
+            if not code and cond.get("code", {}).get("coding"):
+                c0 = cond["code"]["coding"][0]
+                code, system, display = (
+                    c0.get("code", ""),
+                    c0.get("system", ""),
+                    c0.get("display", ""),
+                )
+            data.append(
+                {
+                    "condition_id": cond.get("id", ""),
+                    "patient_id": cond.get("subject", {})
+                    .get("reference", "")
+                    .replace("Patient/", ""),
+                    "onset_date": cond.get("onsetDateTime", ""),
+                    "code": code,
+                    "system": system,
+                    "display": display,
+                    "clinical_status": cond.get("clinicalStatus", {})
+                    .get("coding", [{}])[0]
+                    .get("code", ""),
+                }
             )
-            row = {
-                "condition_id": condition_id,
-                "patient_id": patient_id,
-                "onset_date": onset_date,
-                "code": code,
-                "system": system,
-                "display": display,
-                "clinical_status": clinical_status,
-            }
-            data.append(row)
         return pd.DataFrame(data)
 
-    def medications_to_dataframe(self, medications: Any) -> Any:
-        """Convert MedicationRequest resources to DataFrame."""
+    def medications_to_dataframe(self, medications):
         data = []
         for med in medications:
-            med_id = med.get("id", "")
-            patient_id = (
-                med.get("subject", {}).get("reference", "").replace("Patient/", "")
-            )
-            authored_date = med.get("authoredOn", "")
-            medication_display = ""
-            code = ""
-            system = ""
+            med_display, code, system = "", "", ""
             if "medicationCodeableConcept" in med:
-                medication_coding = med["medicationCodeableConcept"].get(
-                    "coding", [{}]
-                )[0]
-                medication_display = medication_coding.get("display", "")
-                code = medication_coding.get("code", "")
-                system = medication_coding.get("system", "")
+                mc = med["medicationCodeableConcept"].get("coding", [{}])[0]
+                med_display = mc.get("display", "")
+                code = mc.get("code", "")
+                system = mc.get("system", "")
             dosage_text = ""
-            if "dosageInstruction" in med and med["dosageInstruction"]:
+            if med.get("dosageInstruction"):
                 dosage_text = med["dosageInstruction"][0].get("text", "")
-            row = {
-                "medication_id": med_id,
-                "patient_id": patient_id,
-                "authored_date": authored_date,
-                "medication_display": medication_display,
-                "code": code,
-                "system": system,
-                "dosage_text": dosage_text,
-                "status": med.get("status", ""),
-            }
-            data.append(row)
+            data.append(
+                {
+                    "medication_id": med.get("id", ""),
+                    "patient_id": med.get("subject", {})
+                    .get("reference", "")
+                    .replace("Patient/", ""),
+                    "authored_date": med.get("authoredOn", ""),
+                    "medication_display": med_display,
+                    "code": code,
+                    "system": system,
+                    "dosage_text": dosage_text,
+                    "status": med.get("status", ""),
+                }
+            )
         return pd.DataFrame(data)
 
-    def dataframe_to_patients(self, df: Any) -> Any:
-        """Convert DataFrame back to Patient resources."""
+    def dataframe_to_patients(self, df):
         patients = []
         for _, row in df.iterrows():
             patient = {
@@ -686,62 +210,323 @@ class MockFHIRConnector:
                 "gender": row.get("gender", ""),
                 "birthDate": row.get("birth_date", ""),
             }
-            if (
-                row.get("address_line")
-                or row.get("city")
-                or row.get("state")
-                or row.get("postal_code")
-            ):
-                patient["address"] = [
-                    {
-                        "line": (
-                            [row.get("address_line", "")]
-                            if row.get("address_line")
-                            else []
-                        ),
-                        "city": row.get("city", ""),
-                        "state": row.get("state", ""),
-                        "postalCode": row.get("postal_code", ""),
-                        "country": row.get("country", ""),
-                    }
-                ]
-            telecom = []
-            if row.get("phone"):
-                telecom.append({"system": "phone", "value": row.get("phone", "")})
-            if row.get("email"):
-                telecom.append({"system": "email", "value": row.get("email", "")})
-            if telecom:
-                patient["telecom"] = telecom
             patients.append(patient)
         return patients
 
-    def bulk_export(
-        self, resource_types: Any, output_dir: Any, format_type: Any = "json"
-    ) -> Any:
-        """Mock bulk export functionality."""
+    def bulk_export(self, resource_types, output_dir, format_type="json"):
         if self.connection_error:
             raise Exception("Connection error")
-        if self.auth_error:
-            raise Exception("Authentication error")
         os.makedirs(output_dir, exist_ok=True)
         result = {}
-        for resource_type in resource_types:
-            if resource_type not in self.resources:
+        for rt in resource_types:
+            if rt not in self.resources or not self.resources[rt]:
                 continue
-            resources = self.resources[resource_type]
-            if not resources:
-                continue
-            file_path = os.path.join(output_dir, f"{resource_type}.{format_type}")
-            if format_type == "json":
-                with open(file_path, "w") as f:
-                    json.dump(resources, f, indent=2)
-            elif format_type == "ndjson":
-                with open(file_path, "w") as f:
-                    for resource in resources:
-                        f.write(json.dumps(resource) + "\n")
-            result[resource_type] = file_path
+            fp = os.path.join(output_dir, f"{rt}.{format_type}")
+            with open(fp, "w") as f:
+                json.dump(self.resources[rt], f)
+            result[rt] = fp
         return result
 
 
-if __name__ == "__main__":
-    unittest.main()
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def sample_patient():
+    return {
+        "resourceType": "Patient",
+        "id": "patient-001",
+        "name": [{"use": "official", "family": "Smith", "given": ["John", "Edward"]}],
+        "gender": "male",
+        "birthDate": "1970-01-25",
+        "address": [
+            {
+                "use": "home",
+                "line": ["123 Main St"],
+                "city": "Anytown",
+                "state": "CA",
+                "postalCode": "12345",
+                "country": "USA",
+            }
+        ],
+        "telecom": [
+            {"system": "phone", "value": "555-123-4567"},
+            {"system": "email", "value": "john.smith@example.com"},
+        ],
+        "identifier": [
+            {"system": "http://hl7.org/fhir/sid/us-ssn", "value": "123-45-6789"}
+        ],
+    }
+
+
+@pytest.fixture
+def sample_observation():
+    return {
+        "resourceType": "Observation",
+        "id": "observation-001",
+        "status": "final",
+        "code": {
+            "coding": [
+                {
+                    "system": "http://loinc.org",
+                    "code": "8480-6",
+                    "display": "Systolic blood pressure",
+                }
+            ]
+        },
+        "subject": {"reference": "Patient/patient-001"},
+        "effectiveDateTime": "2023-05-15T10:25:00Z",
+        "valueQuantity": {"value": 120, "unit": "mmHg"},
+    }
+
+
+@pytest.fixture
+def sample_condition():
+    return {
+        "resourceType": "Condition",
+        "id": "condition-001",
+        "clinicalStatus": {
+            "coding": [
+                {
+                    "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                    "code": "active",
+                }
+            ]
+        },
+        "code": {
+            "coding": [
+                {
+                    "system": "http://hl7.org/fhir/sid/icd-10-cm",
+                    "code": "I10",
+                    "display": "Essential (primary) hypertension",
+                },
+                {
+                    "system": "http://snomed.info/sct",
+                    "code": "38341003",
+                    "display": "Hypertension",
+                },
+            ]
+        },
+        "subject": {"reference": "Patient/patient-001"},
+        "onsetDateTime": "2022-01-10",
+    }
+
+
+@pytest.fixture
+def sample_medication():
+    return {
+        "resourceType": "MedicationRequest",
+        "id": "medication-request-001",
+        "status": "active",
+        "medicationCodeableConcept": {
+            "coding": [
+                {
+                    "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+                    "code": "197361",
+                    "display": "Amlodipine 5 MG Oral Tablet",
+                }
+            ]
+        },
+        "subject": {"reference": "Patient/patient-001"},
+        "authoredOn": "2023-05-15",
+        "dosageInstruction": [{"text": "Take 1 tablet by mouth once daily"}],
+    }
+
+
+@pytest.fixture
+def mock_connector(
+    sample_patient, sample_observation, sample_condition, sample_medication
+):
+    return MockFHIRConnector(
+        patients=[sample_patient],
+        observations=[sample_observation],
+        conditions=[sample_condition],
+        medications=[sample_medication],
+    )
+
+
+@pytest.fixture
+def validator():
+    return DataValidator()
+
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+
+
+def test_patient_conversion(mock_connector, sample_patient):
+    df = mock_connector.patients_to_dataframe([sample_patient])
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) > 0
+    for col in ["patient_id", "family_name", "given_name", "gender", "birth_date"]:
+        assert col in df.columns
+    assert df.iloc[0]["patient_id"] == "patient-001"
+    assert df.iloc[0]["family_name"] == "Smith"
+    assert df.iloc[0]["gender"] == "male"
+    assert df.iloc[0]["birth_date"] == "1970-01-25"
+
+
+def test_observation_conversion(mock_connector, sample_observation):
+    df = mock_connector.observations_to_dataframe([sample_observation])
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) > 0
+    for col in [
+        "observation_id",
+        "patient_id",
+        "code",
+        "display",
+        "value",
+        "unit",
+        "date",
+    ]:
+        assert col in df.columns
+    assert df.iloc[0]["observation_id"] == "observation-001"
+    assert df.iloc[0]["patient_id"] == "patient-001"
+    assert df.iloc[0]["code"] == "8480-6"
+    assert df.iloc[0]["value"] == 120
+    assert df.iloc[0]["unit"] == "mmHg"
+
+
+def test_condition_conversion(mock_connector, sample_condition):
+    df = mock_connector.conditions_to_dataframe([sample_condition])
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) > 0
+    for col in [
+        "condition_id",
+        "patient_id",
+        "code",
+        "display",
+        "onset_date",
+        "clinical_status",
+    ]:
+        assert col in df.columns
+    assert df.iloc[0]["condition_id"] == "condition-001"
+    assert df.iloc[0]["patient_id"] == "patient-001"
+    assert df.iloc[0]["clinical_status"] == "active"
+    assert "I10" in df.iloc[0]["code"]
+
+
+def test_medication_conversion(mock_connector, sample_medication):
+    df = mock_connector.medications_to_dataframe([sample_medication])
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) > 0
+    for col in [
+        "medication_id",
+        "patient_id",
+        "medication_display",
+        "status",
+        "authored_date",
+    ]:
+        assert col in df.columns
+    assert df.iloc[0]["medication_id"] == "medication-request-001"
+    assert df.iloc[0]["patient_id"] == "patient-001"
+    assert df.iloc[0]["status"] == "active"
+    assert "Amlodipine" in df.iloc[0]["medication_display"]
+
+
+def test_bulk_export(mock_connector, tmp_path):
+    result = mock_connector.bulk_export(
+        resource_types=["Patient", "Observation", "Condition", "MedicationRequest"],
+        output_dir=str(tmp_path),
+        format_type="json",
+    )
+    assert isinstance(result, dict)
+    assert len(result) == 4
+    for rt in ["Patient", "Observation", "Condition", "MedicationRequest"]:
+        fp = os.path.join(str(tmp_path), f"{rt}.json")
+        assert os.path.exists(fp)
+        with open(fp) as f:
+            content = json.load(f)
+        assert isinstance(content, list)
+        assert len(content) > 0
+
+
+def test_dataframe_to_fhir(mock_connector, sample_patient):
+    df = mock_connector.patients_to_dataframe([sample_patient])
+    fhir_patients = mock_connector.dataframe_to_patients(df)
+    assert isinstance(fhir_patients, list)
+    assert len(fhir_patients) > 0
+    assert fhir_patients[0]["resourceType"] == "Patient"
+    assert fhir_patients[0]["id"] == "patient-001"
+
+
+def test_data_validation_integration(mock_connector, sample_patient, validator):
+    df = mock_connector.patients_to_dataframe([sample_patient])
+    schema = {
+        "patient_id": {"type": "string", "required": True, "unique": True},
+        "family_name": {"type": "string", "required": True},
+        "given_name": {"type": "string", "required": True},
+        "gender": {
+            "type": "category",
+            "required": True,
+            "categories": ["male", "female", "other", "unknown"],
+        },
+        "birth_date": {"type": "string", "required": True},
+    }
+    result = validator.validate_schema(df, schema)
+    assert isinstance(result, dict)
+    assert result["valid"]
+    assert len(result.get("errors", [])) == 0
+
+
+def test_search_functionality(mock_connector):
+    patients = mock_connector.search("Patient", {"name": "Smith"})
+    assert isinstance(patients, list)
+    assert len(patients) > 0
+    obs = mock_connector.search("Observation", {"code": "8480-6"})
+    assert len(obs) > 0
+    conds = mock_connector.search("Condition", {"code": "I10"})
+    assert len(conds) > 0
+
+
+def test_error_handling_invalid_resource(mock_connector):
+    with pytest.raises(ValueError):
+        mock_connector.search("InvalidResourceType")
+
+
+def test_error_handling_connection_error():
+    conn = MockFHIRConnector(connection_error=True)
+    with pytest.raises(Exception):
+        conn.search("Patient")
+
+
+def test_error_handling_auth_error():
+    conn = MockFHIRConnector(auth_error=True)
+    with pytest.raises(Exception):
+        conn.search("Patient")
+
+
+def test_pagination(sample_patient):
+    many = [dict(sample_patient, id=f"patient-{i:03d}") for i in range(20)]
+    conn = MockFHIRConnector(patients=many)
+    ten = conn.search("Patient", max_count=10)
+    assert len(ten) == 10
+    all_p = conn.search("Patient")
+    assert len(all_p) == 20
+
+
+def test_data_integration(
+    mock_connector,
+    sample_patient,
+    sample_observation,
+    sample_condition,
+    sample_medication,
+):
+    patients_df = mock_connector.patients_to_dataframe([sample_patient])
+    obs_df = mock_connector.observations_to_dataframe([sample_observation])
+    cond_df = mock_connector.conditions_to_dataframe([sample_condition])
+    med_df = mock_connector.medications_to_dataframe([sample_medication])
+
+    po = pd.merge(patients_df, obs_df, on="patient_id", how="inner")
+    pc = pd.merge(patients_df, cond_df, on="patient_id", how="inner")
+    pm = pd.merge(patients_df, med_df, on="patient_id", how="inner")
+
+    assert len(po) > 0
+    assert len(pc) > 0
+    assert len(pm) > 0
+    assert po.iloc[0]["family_name"] == "Smith"
+    assert pc.iloc[0]["family_name"] == "Smith"
+    assert pm.iloc[0]["family_name"] == "Smith"

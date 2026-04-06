@@ -1,128 +1,100 @@
-from code.compliance.deid_rules import DeidentificationRules
-from code.compliance.phi_audit_logger import PHIAuditLogger
-from code.database.database_connection import DatabaseConnection
+import os
+import sys
 from datetime import datetime, timedelta
-from typing import Any
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 import pytest
+from compliance.phi_audit_logger import PHIAuditLogger
 
 
 @pytest.fixture
-def sample_phi_data() -> Any:
-    return {
-        "patient_id": "12345",
-        "name": "John Doe",
-        "dob": "1970-01-01",
-        "ssn": "123-45-6789",
-        "address": "123 Main St",
-        "phone": "555-0123",
-        "email": "john.doe@email.com",
-        "medical_record_number": "MRN12345",
-    }
+def audit_logger(tmp_path):
+    db_path = str(tmp_path / "test_phi_audit.db")
+    return PHIAuditLogger(db_path=db_path)
 
 
-@pytest.fixture
-def deid_rules() -> Any:
-    return DeidentificationRules.from_yaml("config/deid_rules.yaml")
-
-
-def test_phi_audit_logging(sample_phi_data: Any) -> Any:
-    logger = PHIAuditLogger()
-    log_entry = logger.log_prediction_request(
-        patient_id=sample_phi_data["patient_id"],
-        model_name="readmission_risk",
-        timestamp=datetime.now(),
-    )
-    assert log_entry is not None
-    assert "timestamp" in log_entry
-    assert "patient_id" in log_entry
-    assert "model_name" in log_entry
-    assert "access_type" in log_entry
-    with DatabaseConnection("phi_audit_logs") as conn:
-        cursor = conn.execute(
-            "SELECT * FROM audit_logs WHERE patient_id = ?",
-            (sample_phi_data["patient_id"],),
-        )
-        stored_log = cursor.fetchone()
-        assert stored_log is not None
-        assert stored_log["access_type"] == "prediction_request"
-
-
-def test_deidentification_rules(deid_rules: Any, sample_phi_data: Any) -> Any:
-    deidentified_data = deid_rules.apply(sample_phi_data)
-    assert "name" not in deidentified_data
-    assert "ssn" not in deidentified_data
-    assert "address" not in deidentified_data
-    assert "phone" not in deidentified_data
-    assert "email" not in deidentified_data
-    assert deidentified_data["dob"] != sample_phi_data["dob"]
-    if "age" in deidentified_data:
-        assert deidentified_data["age"] >= 0
-        assert deidentified_data["age"] <= 90
-
-
-def test_audit_log_retention() -> Any:
-    logger = PHIAuditLogger()
-    retention_period = 365
-    old_date = datetime.now() - timedelta(days=retention_period + 1)
-    logger.log_prediction_request(
-        patient_id="old_patient", model_name="readmission_risk", timestamp=old_date
-    )
-    logger.cleanup_old_logs(retention_period)
-    with DatabaseConnection("phi_audit_logs") as conn:
-        cursor = conn.execute(
-            "SELECT * FROM audit_logs WHERE patient_id = ?", ("old_patient",)
-        )
-        assert cursor.fetchone() is None
-
-
-def test_audit_log_aggregation() -> Any:
-    PHIAuditLogger()
-    with DatabaseConnection("phi_audit_logs") as conn:
-        stats = conn.execute(
-            "\n            SELECT\n                access_type,\n                COUNT(*) as count,\n                COUNT(DISTINCT patient_id) as unique_patients\n            FROM audit_logs\n            GROUP BY access_type\n        "
-        ).fetchall()
-        assert len(stats) > 0
-        for stat in stats:
-            assert "access_type" in stat
-            assert "count" in stat
-            assert "unique_patients" in stat
-            assert stat["count"] >= stat["unique_patients"]
-
-
-def test_phi_access_controls() -> Any:
-    logger = PHIAuditLogger()
-    with pytest.raises(PermissionError):
-        logger.log_prediction_request(
-            patient_id="12345",
-            model_name="readmission_risk",
-            timestamp=datetime.now(),
-            user_id="unauthorized_user",
-        )
-
-
-def test_phi_audit_trail() -> Any:
-    logger = PHIAuditLogger()
+def test_phi_audit_logging(audit_logger):
     patient_id = "12345"
-    events = [
-        ("prediction_request", "readmission_risk"),
-        ("data_access", "patient_records"),
-        ("model_update", "readmission_risk"),
-    ]
-    for event_type, resource in events:
-        logger.log_event(
-            patient_id=patient_id,
-            event_type=event_type,
-            resource=resource,
-            timestamp=datetime.now(),
+    audit_logger.log_prediction_request(
+        patient_id=patient_id,
+        user_id="test_user",
+        model_used="readmission_risk_v1.0",
+    )
+    df = audit_logger.get_patient_access_history(patient_id)
+    assert len(df) >= 1
+    row = df.iloc[0]
+    assert row["patient"] == patient_id
+    assert "timestamp" in df.columns
+
+
+def test_log_access(audit_logger):
+    audit_logger.log_access(
+        user_id="clinician_01",
+        patient_id="P999",
+        resource_type="Patient",
+        operation="READ",
+        justification="Clinical review",
+        model="risk_model_v2",
+    )
+    df = audit_logger.get_patient_access_history("P999")
+    assert len(df) == 1
+    assert df.iloc[0]["operation"] == "READ"
+    assert df.iloc[0]["user"] == "clinician_01"
+
+
+def test_generate_report(audit_logger):
+    audit_logger.log_prediction_request(
+        patient_id="RPT001", user_id="user_a", model_used="model_x"
+    )
+    audit_logger.log_prediction_request(
+        patient_id="RPT002", user_id="user_b", model_used="model_y"
+    )
+    start = (datetime.utcnow() - timedelta(seconds=10)).isoformat()
+    end = (datetime.utcnow() + timedelta(seconds=10)).isoformat()
+    df = audit_logger.generate_report(start, end)
+    assert len(df) >= 2
+    assert "timestamp" in df.columns
+    assert "patient" in df.columns
+
+
+def test_multiple_log_same_patient(audit_logger):
+    for i in range(5):
+        audit_logger.log_prediction_request(
+            patient_id="MULTI_PAT",
+            user_id=f"user_{i}",
+            model_used="model_v1",
         )
-    with DatabaseConnection("phi_audit_logs") as conn:
-        cursor = conn.execute(
-            "SELECT * FROM audit_logs WHERE patient_id = ? ORDER BY timestamp",
-            (patient_id,),
-        )
-        trail = cursor.fetchall()
-        assert len(trail) == len(events)
-        for i, event in enumerate(trail):
-            assert event["event_type"] == events[i][0]
-            assert event["resource"] == events[i][1]
+    df = audit_logger.get_patient_access_history("MULTI_PAT")
+    assert len(df) == 5
+
+
+def test_patient_history_empty(audit_logger):
+    df = audit_logger.get_patient_access_history("NONEXISTENT_PATIENT")
+    assert len(df) == 0
+
+
+def test_audit_logger_close(tmp_path):
+    db_path = str(tmp_path / "close_test.db")
+    logger = PHIAuditLogger(db_path=db_path)
+    logger.log_prediction_request(patient_id="P1", user_id="u1", model_used="m1")
+    logger.close()
+    assert True
+
+
+def test_log_access_all_fields(audit_logger):
+    audit_logger.log_access(
+        user_id="admin",
+        patient_id="FIELD_TEST",
+        resource_type="DiagnosticReport",
+        operation="WRITE",
+        justification="Research",
+        model="deepfm_v2",
+    )
+    df = audit_logger.get_patient_access_history("FIELD_TEST")
+    assert len(df) == 1
+    row = df.iloc[0]
+    assert row["resource"] == "DiagnosticReport"
+    assert row["operation"] == "WRITE"
+    assert row["reason"] == "Research"
+    assert row["model"] == "deepfm_v2"

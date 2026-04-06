@@ -53,14 +53,32 @@ class ModelRegistry:
             json.dump(self.metadata, f, indent=4)
 
     def register_model(
-        self, model_name: str, version: str, path: str, config: Dict[str, Any]
+        self,
+        model_name: str,
+        version: str,
+        model_or_path,
+        config: Optional[Dict[str, Any]] = None,
     ) -> None:
-        """Registers a new model version."""
+        """Registers a new model version. model_or_path can be a BaseModel instance or a file path string."""
         if model_name not in self.metadata:
             self.metadata[model_name] = {}
-        self.metadata[model_name][version] = {"path": path, "config": config}
+        if isinstance(model_or_path, BaseModel):
+            model_instance = model_or_path
+            path = config.get("path", "") if config else ""
+            model_config = config or getattr(
+                model_instance, "config", {"name": model_name, "version": version}
+            )
+        else:
+            path = model_or_path
+            model_config = config or {"name": model_name, "version": version}
+            model_instance = None
+        self.metadata[model_name][version] = {"path": path, "config": model_config}
         self.metadata[model_name]["latest"] = self.metadata[model_name][version]
         self._save_registry()
+        if model_instance is not None:
+            if model_name not in self.models:
+                self.models[model_name] = {}
+            self.models[model_name][version] = model_instance
 
     def get_model(
         self, model_name: str, version: Optional[str] = "latest"
