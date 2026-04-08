@@ -1,6 +1,5 @@
 import os
 import sys
-from typing import Any
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -9,20 +8,13 @@ from data.synthetic_clinical_data import ClinicalDataGenerator
 
 
 @pytest.fixture
-def synthetic_data() -> Any:
+def synthetic_data():
     generator = ClinicalDataGenerator(seed=42)
     return generator.generate_patient_records(n=100)
 
 
 @pytest.fixture
-def fhir_connector() -> Any:
-    from utils.fhir_ops import FHIRClinicalConnector
-
-    return FHIRClinicalConnector(base_url="http://test-fhir-server")
-
-
-@pytest.fixture
-def mock_model_registry() -> Any:
+def mock_model_registry():
     class MockModelRegistry:
         def get_model(self, name, version=None):
             class MockModel:
@@ -41,7 +33,7 @@ def mock_model_registry() -> Any:
 
 
 @pytest.fixture
-def mock_audit_logger() -> Any:
+def mock_audit_logger():
     class MockAuditLogger:
         def log_prediction_request(
             self, patient_id, user_id="API_USER", model_used="UNKNOWN"
@@ -51,17 +43,16 @@ def mock_audit_logger() -> Any:
     return MockAuditLogger()
 
 
-# Only expose test_client if fastapi/httpx are available
 try:
     from fastapi.testclient import TestClient
     from serving.rest_api import app
 
     @pytest.fixture
-    def test_client() -> Any:
+    def test_client():
         return TestClient(app)
 
 except ImportError:
 
     @pytest.fixture
-    def test_client() -> Any:
+    def test_client():
         pytest.skip("fastapi/httpx not installed")

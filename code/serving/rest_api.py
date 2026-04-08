@@ -5,7 +5,8 @@ from typing import Any, Dict, List, Optional
 
 try:
     import uvicorn
-    from fastapi import FastAPI, HTTPException
+    from fastapi import FastAPI, HTTPException, Query
+    from fastapi.middleware.cors import CORSMiddleware
     from pydantic import BaseModel, Field
 
     _FASTAPI_AVAILABLE = True
@@ -27,7 +28,14 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Nexora Clinical API",
         description="API for clinical prediction and decision support",
-        version="1.0.0",
+        version="2.0.0",
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     _audit_db_path = os.environ.get("AUDIT_DB_PATH", "audit/phi_access.db")
@@ -38,6 +46,7 @@ if _FASTAPI_AVAILABLE:
     audit_logger = PHIAuditLogger(db_path=_audit_db_path)
     model_registry = ModelRegistry()
 
+    # ------------------------------------------------------------------ schemas
     class PatientData(BaseModel):
         patient_id: str
         demographics: Dict[str, Any]
@@ -46,11 +55,9 @@ if _FASTAPI_AVAILABLE:
         medications: Optional[List[Dict[str, Any]]] = None
 
     class PredictionRequest(BaseModel):
-        model_name: str = Field(
-            ..., description="Name of the model to use for prediction"
-        )
+        model_name: str = Field(..., description="Name of the model to use")
         model_version: Optional[str] = Field(
-            None, description="Version of the model to use"
+            None, description="Version (default: latest)"
         )
         patient_data: PatientData
         request_id: Optional[str] = None
@@ -64,6 +71,12 @@ if _FASTAPI_AVAILABLE:
         explanations: Optional[Dict[str, Any]] = None
         uncertainty: Optional[Dict[str, Any]] = None
 
+    class HealthResponse(BaseModel):
+        status: str
+        timestamp: str
+        version: str
+
+    # ------------------------------------------------------------------ middleware
     @app.middleware("http")
     async def log_requests(request, call_next):
         request_id = request.headers.get("X-Request-ID", "unknown")
@@ -72,9 +85,14 @@ if _FASTAPI_AVAILABLE:
         logger.info(f"Response {request_id}: {response.status_code}")
         return response
 
-    @app.get("/health")
+    # ------------------------------------------------------------------ routes
+    @app.get("/health", response_model=HealthResponse)
     async def health_check():
-        return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+        return HealthResponse(
+            status="healthy",
+            timestamp=datetime.now().isoformat(),
+            version="2.0.0",
+        )
 
     @app.get("/models")
     async def list_models():
@@ -87,7 +105,6 @@ if _FASTAPI_AVAILABLE:
             if not request.request_id:
                 request.request_id = f"req_{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
 
-            # BUG FIX: resolve version once and use it consistently
             model_version = request.model_version or "latest"
 
             audit_logger.log_prediction_request(
@@ -98,9 +115,13 @@ if _FASTAPI_AVAILABLE:
             model: MLBaseModel = model_registry.get_model(
                 request.model_name, model_version
             )
+            patient_dict = request.patient_data.model_dump()
+            predictions = model.predict(patient_dict)
+            explanations = model.explain(patient_dict)
 
-            predictions = model.predict(request.patient_data.model_dump())
-            explanations = model.explain(request.patient_data.model_dump())
+            uncertainty = predictions.pop(
+                "uncertainty", {"confidence_interval": [0.65, 0.85]}
+            )
 
             return PredictionResponse(
                 request_id=request.request_id,
@@ -109,18 +130,21 @@ if _FASTAPI_AVAILABLE:
                 timestamp=datetime.now().isoformat(),
                 predictions=predictions,
                 explanations=explanations,
-                uncertainty=predictions.get(
-                    "uncertainty", {"confidence_interval": [0.65, 0.85]}
-                ),
+                uncertainty=uncertainty,
             )
 
+        except (ValueError, NotImplementedError) as e:
+            logger.error(f"Prediction error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
         except Exception as e:
-            logger.error(f"Error processing prediction request: {str(e)}")
+            logger.error(f"Unexpected error: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.post("/fhir/patient/{patient_id}/predict")
     async def predict_from_fhir(
-        patient_id: str, model_name: str, model_version: Optional[str] = None
+        patient_id: str,
+        model_name: str = Query(...),
+        model_version: Optional[str] = Query(None),
     ):
         try:
             fhir_server_url = os.environ.get(
@@ -129,14 +153,14 @@ if _FASTAPI_AVAILABLE:
             fhir_connector = FHIRConnector(base_url=fhir_server_url)
             patient_data_dict = fhir_connector.get_patient_data(patient_id)
             patient_data = PatientData(**patient_data_dict)
-            request = PredictionRequest(
+            req = PredictionRequest(
                 model_name=model_name,
                 model_version=model_version,
                 patient_data=patient_data,
             )
-            return await predict(request)
+            return await predict(req)
         except Exception as e:
-            logger.error(f"Error processing FHIR prediction request: {str(e)}")
+            logger.error(f"FHIR prediction error: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/metrics")
@@ -159,8 +183,16 @@ if _FASTAPI_AVAILABLE:
                 "access_history": df.to_dict(orient="records"),
             }
         except Exception as e:
-            logger.error(f"Error fetching audit history for {patient_id}: {str(e)}")
+            logger.error(f"Audit history error for {patient_id}: {e}")
             raise HTTPException(status_code=500, detail=str(e))
+
+    @app.delete("/models/{model_name}/{version}")
+    async def delete_model(model_name: str, version: str):
+        try:
+            model_registry.delete_model(model_name, version)
+            return {"status": "deleted", "model_name": model_name, "version": version}
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
 
     if __name__ == "__main__":
         port = int(os.environ.get("PORT", 8000))
@@ -168,7 +200,6 @@ if _FASTAPI_AVAILABLE:
         uvicorn.run(app, host=host, port=port, reload=False)
 
 else:
-    # Stub so other modules can import this file without fastapi
     logger.warning("FastAPI not available; rest_api endpoints are not active.")
     app = None  # type: ignore
     audit_logger = None  # type: ignore

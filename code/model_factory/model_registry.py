@@ -11,7 +11,6 @@ class ModelRegistry:
     """
 
     def __init__(self, registry_path: str = "model_registry.json") -> None:
-        # Handle both absolute paths (tests pass tmp_path) and bare filenames
         if os.path.isabs(registry_path):
             self.registry_path = registry_path
         else:
@@ -49,7 +48,6 @@ class ModelRegistry:
             self.metadata = json.load(f)
 
     def _save_registry(self) -> None:
-        # BUG FIX: guard against empty dirname (bare filename in cwd)
         registry_dir = os.path.dirname(self.registry_path)
         if registry_dir:
             os.makedirs(registry_dir, exist_ok=True)
@@ -78,6 +76,7 @@ class ModelRegistry:
             model_instance = None
 
         self.metadata[model_name][version] = {"path": path, "config": model_config}
+        # Update "latest" alias to point to the most recently registered version
         self.metadata[model_name]["latest"] = self.metadata[model_name][version]
         self._save_registry()
 
@@ -85,6 +84,8 @@ class ModelRegistry:
             if model_name not in self.models:
                 self.models[model_name] = {}
             self.models[model_name][version] = model_instance
+            # Cache under "latest" key as well so get_model("latest") hits cache
+            self.models[model_name]["latest"] = model_instance
 
     def get_model(
         self, model_name: str, version: Optional[str] = "latest"
@@ -132,3 +133,27 @@ class ModelRegistry:
             }
             for name, versions in self.metadata.items()
         }
+
+    def delete_model(self, model_name: str, version: str) -> None:
+        """Remove a specific model version from the registry."""
+        if model_name not in self.metadata:
+            raise ValueError(f"Model {model_name} not found in registry.")
+        if version not in self.metadata[model_name]:
+            raise ValueError(
+                f"Version {version} of model {model_name} not found in registry."
+            )
+        del self.metadata[model_name][version]
+        # Clean up in-memory cache
+        if model_name in self.models and version in self.models[model_name]:
+            del self.models[model_name][version]
+        # Rebuild latest if needed
+        remaining = [v for v in self.metadata[model_name] if v != "latest"]
+        if remaining:
+            self.metadata[model_name]["latest"] = self.metadata[model_name][
+                remaining[-1]
+            ]
+        elif "latest" in self.metadata[model_name]:
+            del self.metadata[model_name]["latest"]
+        if not self.metadata[model_name]:
+            del self.metadata[model_name]
+        self._save_registry()

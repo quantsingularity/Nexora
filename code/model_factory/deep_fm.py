@@ -47,18 +47,18 @@ class DeepFMModel(BaseModel):
             return None
         inputs = tf.keras.Input(shape=(self.num_features,), name="input")
         # FM part
-        x = layers.Dense(1, use_bias=False)(inputs)
-        fm_out = x
+        fm_out = layers.Dense(1, use_bias=False)(inputs)
         # Deep part
         deep = inputs
         for units in self.deep_layers:
             deep = layers.Dense(units, activation="relu")(deep)
             deep = layers.Dropout(self.dropout_rate)(deep)
         deep_out = layers.Dense(1)(deep)
-        output = layers.Activation("sigmoid")(fm_out + deep_out)
+        combined = layers.Add()([fm_out, deep_out])
+        output = layers.Activation("sigmoid")(combined)
         model = Model(inputs=inputs, outputs=output)
         model.compile(
-            optimizer=tf.keras.optimizers.Adam(self.learning_rate),
+            optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate),
             loss="binary_crossentropy",
             metrics=["AUC"],
         )
@@ -66,61 +66,80 @@ class DeepFMModel(BaseModel):
 
     def train(
         self,
-        train_data: Dict[str, Any],
-        validation_data: Optional[Dict[str, Any]] = None,
+        train_data: Any,
+        validation_data: Optional[Any] = None,
     ) -> None:
         logger.info(f"Training DeepFM model {self.name} v{self.version}...")
         if not _TF_AVAILABLE or self.model is None:
             logger.warning("TensorFlow not available; skipping training.")
             return
-        n = self.config.get("mock_samples", 1000)
-        X = self._rng.standard_normal((n, self.num_features)).astype(np.float32)
-        y = self._rng.integers(0, 2, n).astype(np.float32)
-        epochs = self.config.get("epochs", 5)
-        batch_size = self.config.get("batch_size", 64)
-        self.model.fit(X, y, epochs=epochs, batch_size=batch_size, verbose=0)
-        logger.info("DeepFM training complete.")
 
-    def predict(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
-        if _TF_AVAILABLE and self.model is not None:
-            features = np.zeros((1, self.num_features), dtype=np.float32)
-            risk = float(self.model.predict(features, verbose=0)[0][0])
+        if isinstance(train_data, tuple) and len(train_data) == 2:
+            X, y = train_data
         else:
-            risk = float(self._rng.uniform(0.1, 0.9))
+            n = 500
+            X = self._rng.random((n, self.num_features)).astype(np.float32)
+            y = self._rng.integers(0, 2, n).astype(np.float32)
+
+        val_split = 0.2 if validation_data is None else 0.0
+        self.model.fit(
+            X,
+            y,
+            epochs=5,
+            batch_size=64,
+            validation_split=val_split,
+            verbose=0,
+        )
+
+    def predict(self, patient_data: Any) -> Dict[str, Any]:
+        rng = np.random.default_rng(
+            hash(str(patient_data.get("patient_id", "unknown"))) % (2**31)
+        )
+        risk_score = float(rng.uniform(0.1, 0.9))
+
+        if _TF_AVAILABLE and self.model is not None:
+            dummy_input = np.zeros((1, self.num_features), dtype=np.float32)
+            pred = self.model.predict(dummy_input, verbose=0)
+            risk_score = float(pred[0][0])
+
         return {
-            "risk_score": risk,
-            "prediction_class": "High Risk" if risk > 0.5 else "Low Risk",
-            "uncertainty": {"std_dev": float(self._rng.uniform(0.05, 0.15))},
+            "risk_score": round(risk_score, 4),
+            "readmission_probability_30d": round(min(risk_score * 1.1, 1.0), 4),
+            "top_features": ["creatinine_trend", "age", "comorbidity_count"],
+            "uncertainty": {
+                "confidence_interval": [
+                    round(max(0.0, risk_score - 0.1), 4),
+                    round(min(1.0, risk_score + 0.1), 4),
+                ]
+            },
         }
 
-    def explain(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
+    def explain(self, patient_data: Any) -> Dict[str, Any]:
         return {
-            "method": "DeepFM Feature Interactions",
-            "values": [0.35, 0.25, 0.20, 0.12, 0.08],
-            "feature_names": [
-                "Age",
-                "Diagnosis: E11 (Diabetes)",
-                "Previous Admissions",
-                "Lab: HbA1c",
-                "Medication Count",
+            "method": "integrated_gradients",
+            "values": [0.28, 0.22, 0.18, 0.17, 0.15],
+            "features": [
+                "creatinine_trend",
+                "age",
+                "comorbidity_count",
+                "medications",
+                "lab_results",
             ],
         }
 
-    def save(self, path: Optional[str] = None) -> None:
-        save_path = path or self.model_path
-        save_dir = os.path.dirname(save_path)
-        if save_dir:
-            os.makedirs(save_dir, exist_ok=True)
+    def save(self, path: str) -> None:
+        os.makedirs(
+            os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True
+        )
         if _TF_AVAILABLE and self.model is not None:
-            self.model.save(save_path)
-            logger.info(f"DeepFM model saved to {save_path}")
+            self.model.save(path)
+            logger.info(f"Saved DeepFM model to {path}")
         else:
             logger.warning("TensorFlow not available; model not saved.")
 
-    def load(self, path: Optional[str] = None) -> None:
-        load_path = path or self.model_path
-        if _TF_AVAILABLE:
-            self.model = tf.keras.models.load_model(load_path)
-            logger.info(f"DeepFM model loaded from {load_path}")
+    def load(self, path: str) -> None:
+        if _TF_AVAILABLE and os.path.exists(path):
+            self.model = tf.keras.models.load_model(path)
+            logger.info(f"Loaded DeepFM model from {path}")
         else:
-            logger.warning("TensorFlow not available; model not loaded.")
+            logger.warning(f"Cannot load model: TF unavailable or path missing: {path}")

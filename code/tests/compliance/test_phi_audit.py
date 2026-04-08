@@ -10,21 +10,16 @@ from compliance.phi_audit_logger import PHIAuditLogger
 
 @pytest.fixture
 def audit_logger(tmp_path):
-    db_path = str(tmp_path / "test_phi_audit.db")
-    return PHIAuditLogger(db_path=db_path)
+    return PHIAuditLogger(db_path=str(tmp_path / "test_phi_audit.db"))
 
 
 def test_phi_audit_logging(audit_logger):
-    patient_id = "12345"
     audit_logger.log_prediction_request(
-        patient_id=patient_id,
-        user_id="test_user",
-        model_used="readmission_risk_v1.0",
+        patient_id="12345", user_id="test_user", model_used="readmission_risk_v1.0"
     )
-    df = audit_logger.get_patient_access_history(patient_id)
+    df = audit_logger.get_patient_access_history("12345")
     assert len(df) >= 1
-    row = df.iloc[0]
-    assert row["patient"] == patient_id
+    assert df.iloc[0]["patient"] == "12345"
     assert "timestamp" in df.columns
 
 
@@ -61,9 +56,7 @@ def test_generate_report(audit_logger):
 def test_multiple_log_same_patient(audit_logger):
     for i in range(5):
         audit_logger.log_prediction_request(
-            patient_id="MULTI_PAT",
-            user_id=f"user_{i}",
-            model_used="model_v1",
+            patient_id="MULTI_PAT", user_id=f"user_{i}", model_used="model_v1"
         )
     df = audit_logger.get_patient_access_history("MULTI_PAT")
     assert len(df) == 5
@@ -75,11 +68,9 @@ def test_patient_history_empty(audit_logger):
 
 
 def test_audit_logger_close(tmp_path):
-    db_path = str(tmp_path / "close_test.db")
-    logger = PHIAuditLogger(db_path=db_path)
+    logger = PHIAuditLogger(db_path=str(tmp_path / "close_test.db"))
     logger.log_prediction_request(patient_id="P1", user_id="u1", model_used="m1")
     logger.close()
-    assert True
 
 
 def test_log_access_all_fields(audit_logger):
@@ -98,3 +89,47 @@ def test_log_access_all_fields(audit_logger):
     assert row["operation"] == "WRITE"
     assert row["reason"] == "Research"
     assert row["model"] == "deepfm_v2"
+
+
+def test_column_aliases_correct(audit_logger):
+    audit_logger.log_access(
+        user_id="u1",
+        patient_id="COL_TEST",
+        resource_type="R",
+        operation="READ",
+        justification="J",
+        model="M",
+    )
+    df = audit_logger.get_patient_access_history("COL_TEST")
+    assert "user" in df.columns
+    assert "patient" in df.columns
+    assert "resource" in df.columns
+    assert "reason" in df.columns
+    assert "model" in df.columns
+
+
+def test_prediction_request_operation_is_read(audit_logger):
+    audit_logger.log_prediction_request(
+        patient_id="OP_TEST", user_id="u", model_used="m"
+    )
+    df = audit_logger.get_patient_access_history("OP_TEST")
+    assert df.iloc[0]["operation"] == "READ"
+
+
+def test_report_column_names(audit_logger):
+    audit_logger.log_prediction_request(
+        patient_id="COL_RPT", user_id="u", model_used="m"
+    )
+    start = (datetime.utcnow() - timedelta(seconds=5)).isoformat()
+    end = (datetime.utcnow() + timedelta(seconds=5)).isoformat()
+    df = audit_logger.generate_report(start, end)
+    for col in [
+        "timestamp",
+        "user",
+        "patient",
+        "resource",
+        "operation",
+        "reason",
+        "model",
+    ]:
+        assert col in df.columns, f"Missing column: {col}"
