@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from backend.app.core.config import settings
@@ -47,7 +47,7 @@ _registry = ModelRegistry()
 async def health_check() -> HealthResponse:
     return HealthResponse(
         status="healthy",
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=datetime.now(timezone.utc).isoformat(),
         version=settings.APP_VERSION,
     )
 
@@ -75,7 +75,9 @@ async def delete_model(model_name: str, version: str):
 @router.post("/predict", response_model=PredictionResponse, tags=["Prediction"])
 async def predict(request: PredictionRequest) -> PredictionResponse:
     if not request.request_id:
-        request.request_id = f"req_{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
+        request.request_id = (
+            f"req_{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')}"
+        )
 
     model_version = request.model_version or "latest"
 
@@ -92,8 +94,11 @@ async def predict(request: PredictionRequest) -> PredictionResponse:
         uncertainty = predictions.pop(
             "uncertainty", {"confidence_interval": [0.65, 0.85]}
         )
-    except (ValueError, NotImplementedError) as e:
-        logger.error(f"Prediction error: {e}")
+    except ValueError as e:
+        logger.error(f"Model not found: {e}")
+        raise HTTPException(status_code=404, detail=str(e))
+    except NotImplementedError as e:
+        logger.error(f"Prediction not implemented: {e}")
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         logger.error(f"Unexpected prediction error: {e}", exc_info=True)
@@ -103,7 +108,7 @@ async def predict(request: PredictionRequest) -> PredictionResponse:
         request_id=request.request_id,
         model_name=request.model_name,
         model_version=model_version,
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=datetime.now(timezone.utc).isoformat(),
         predictions=predictions,
         explanations=explanations,
         uncertainty=uncertainty,
@@ -117,7 +122,9 @@ async def predict_batch(request: BatchPredictionRequest) -> BatchPredictionRespo
     model_version = request.model_version or "latest"
     try:
         model = _registry.get_model(request.model_name, model_version)
-    except (ValueError, NotImplementedError) as e:
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except NotImplementedError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
     results = []
@@ -138,7 +145,7 @@ async def predict_batch(request: BatchPredictionRequest) -> BatchPredictionRespo
     return BatchPredictionResponse(
         model_name=request.model_name,
         model_version=model_version,
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=datetime.now(timezone.utc).isoformat(),
         results=results,
         total=len(results),
     )
@@ -178,7 +185,7 @@ async def get_metrics():
     metrics = ClinicalMetrics()
     return {
         "status": "ok",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "cohort_metrics": metrics.calculate_cohort_metrics("global"),
     }
 

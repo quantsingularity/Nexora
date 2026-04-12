@@ -7,7 +7,7 @@ Tracks all access to Protected Health Information (PHI) for HIPAA compliance.
 import logging
 import os
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 import pandas as pd
@@ -97,7 +97,7 @@ class PHIAuditLogger:
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    datetime.utcnow().isoformat(),
+                    datetime.now(timezone.utc).isoformat(),
                     user_id,
                     patient_id,
                     resource_type,

@@ -17,7 +17,7 @@ import json
 import logging
 import os
 from concurrent import futures
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
@@ -112,7 +112,7 @@ class NexoraPredictionServicer:
                     "patient_id": patient_id,
                     "model_name": model_name,
                     "model_version": model_version,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                     "predictions": predictions,
                     "explanations": explanations,
                     "uncertainty": uncertainty,
@@ -126,7 +126,7 @@ class NexoraPredictionServicer:
         return json.dumps(
             {
                 "status": "SERVING",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
         )
 

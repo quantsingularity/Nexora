@@ -16,7 +16,7 @@ import json
 import logging
 import os
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -117,7 +117,7 @@ class ModelArtifactStore:
             "model_name": model_name,
             "version": version,
             "stage": ModelStage.DEVELOPMENT,
-            "registered_at": datetime.utcnow().isoformat(),
+            "registered_at": datetime.now(timezone.utc).isoformat(),
             "artifact_path": dest_path,
             "checksum_sha256": checksum,
             "metrics": metrics or {},
@@ -244,7 +244,7 @@ class ModelArtifactStore:
                 "from_stage": current_stage,
                 "to_stage": target_stage,
                 "promoted_by": promoted_by,
-                "promoted_at": datetime.utcnow().isoformat(),
+                "promoted_at": datetime.now(timezone.utc).isoformat(),
                 "notes": notes,
             }
         )

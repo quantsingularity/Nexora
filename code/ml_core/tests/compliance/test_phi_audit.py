@@ -1,6 +1,6 @@
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -47,8 +47,8 @@ def test_generate_report(audit_logger):
     audit_logger.log_prediction_request(
         patient_id="RPT002", user_id="user_b", model_used="model_y"
     )
-    start = (datetime.utcnow() - timedelta(seconds=10)).isoformat()
-    end = (datetime.utcnow() + timedelta(seconds=10)).isoformat()
+    start = (datetime.now(timezone.utc) - timedelta(seconds=10)).isoformat()
+    end = (datetime.now(timezone.utc) + timedelta(seconds=10)).isoformat()
     df = audit_logger.generate_report(start, end)
     assert len(df) >= 2
     assert "timestamp" in df.columns
@@ -122,8 +122,8 @@ def test_report_column_names(audit_logger):
     audit_logger.log_prediction_request(
         patient_id="COL_RPT", user_id="u", model_used="m"
     )
-    start = (datetime.utcnow() - timedelta(seconds=5)).isoformat()
-    end = (datetime.utcnow() + timedelta(seconds=5)).isoformat()
+    start = (datetime.now(timezone.utc) - timedelta(seconds=5)).isoformat()
+    end = (datetime.now(timezone.utc) + timedelta(seconds=5)).isoformat()
     df = audit_logger.generate_report(start, end)
     for col in [
         "timestamp",

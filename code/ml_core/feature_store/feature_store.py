@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -52,11 +52,11 @@ class FeatureStore:
         timestamp: Optional[datetime] = None,
     ) -> None:
         """Insert or update feature row for *patient_id*."""
-        ts = (timestamp or datetime.utcnow()).isoformat()
+        ts = (timestamp or datetime.now(timezone.utc)).isoformat()
         row = {self._PATIENT_COL: patient_id, self._TS_COL: ts, **features}
         self._cache[patient_id] = row
 
-        partition = (timestamp or datetime.utcnow()).strftime("%Y-%m-%d")
+        partition = (timestamp or datetime.now(timezone.utc)).strftime("%Y-%m-%d")
         path = self._partition_path(partition)
         self._append_row(path, row)
         logger.debug(

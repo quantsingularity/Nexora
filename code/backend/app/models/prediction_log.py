@@ -5,7 +5,7 @@ In-memory and SQLite-backed prediction log model.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 
@@ -17,7 +17,9 @@ class PredictionLog:
     patient_id: str
     model_name: str
     model_version: str
-    timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
     risk_score: Optional[float] = None
     predictions: Dict[str, Any] = field(default_factory=dict)
     user_id: str = "API_USER"
