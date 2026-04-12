@@ -30,3 +30,6 @@ pytest>=7.4.0
 pytest-cov>=4.1.0
 pytest-asyncio>=0.21.0
 httpx>=0.24.0          # used by TestClient in FastAPI tests
+
+# ── ML Logic Dependencies (Required by ml_core) ──────────────────────────
+scipy>=1.10.0
