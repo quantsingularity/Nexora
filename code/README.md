@@ -97,12 +97,12 @@ nexora/
 docker compose up --build
 ```
 
-| Service | URL |
-|---------|-----|
-| REST API | http://localhost:8000 |
-| API Docs | http://localhost:8000/docs |
-| Clinician UI | http://localhost:8501 |
-| gRPC | localhost:50051 |
+| Service      | URL                        |
+| ------------ | -------------------------- |
+| REST API     | http://localhost:8000      |
+| API Docs     | http://localhost:8000/docs |
+| Clinician UI | http://localhost:8501      |
+| gRPC         | localhost:50051            |
 
 ### Local development
 
@@ -118,13 +118,13 @@ uvicorn backend.serving.rest_api:app --reload --port 8000
 
 ### Models
 
-| Class | Framework |
-|-------|-----------|
-| `DeepFMModel` | TensorFlow (optional, numpy fallback) |
-| `TransformerModel` | PyTorch (optional, numpy fallback) |
-| `SurvivalAnalysisModel` | lifelines (optional, numpy fallback) |
-| `ModelCalibrator` | scikit-learn |
-| `FairnessEvaluator` | pandas / sklearn |
+| Class                   | Framework                             |
+| ----------------------- | ------------------------------------- |
+| `DeepFMModel`           | TensorFlow (optional, numpy fallback) |
+| `TransformerModel`      | PyTorch (optional, numpy fallback)    |
+| `SurvivalAnalysisModel` | lifelines (optional, numpy fallback)  |
+| `ModelCalibrator`       | scikit-learn                          |
+| `FairnessEvaluator`     | pandas / sklearn                      |
 
 ### Explainability (new)
 
@@ -175,16 +175,16 @@ store.promote("deep_fm", "1.1.0", ModelStage.PRODUCTION)
 
 ## Backend API
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/health` | Health check |
-| `GET` | `/models` | List models |
-| `POST` | `/predict` | Single prediction |
-| `POST` | `/predict/batch` | Batch prediction |
-| `POST` | `/fhir/patient/{id}/predict` | Predict from FHIR |
-| `GET` | `/metrics` | Cohort metrics |
-| `GET` | `/audit/patient/{id}` | PHI audit history |
-| `DELETE` | `/models/{name}/{version}` | Remove model version |
+| Method   | Path                         | Description          |
+| -------- | ---------------------------- | -------------------- |
+| `GET`    | `/health`                    | Health check         |
+| `GET`    | `/models`                    | List models          |
+| `POST`   | `/predict`                   | Single prediction    |
+| `POST`   | `/predict/batch`             | Batch prediction     |
+| `POST`   | `/fhir/patient/{id}/predict` | Predict from FHIR    |
+| `GET`    | `/metrics`                   | Cohort metrics       |
+| `GET`    | `/audit/patient/{id}`        | PHI audit history    |
+| `DELETE` | `/models/{name}/{version}`   | Remove model version |
 
 ---
 
@@ -203,16 +203,16 @@ Streamlit dashboard at http://localhost:8501:
 
 ## Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `8000` | REST API port |
-| `GRPC_PORT` | `50051` | gRPC port |
-| `AUDIT_DB_PATH` | `audit/phi_access.db` | SQLite audit DB |
-| `FHIR_SERVER_URL` | `http://mock-fhir-server/R4` | FHIR R4 base URL |
-| `FEATURE_STORE_PATH` | `data/feature_store` | Feature store root |
-| `ARTIFACT_STORE_PATH` | `artifacts` | Artifact store root |
-| `LOG_LEVEL` | `INFO` | Logging level |
-| `CORS_ORIGINS` | `*` | Comma-separated CORS origins |
+| Variable              | Default                      | Description                  |
+| --------------------- | ---------------------------- | ---------------------------- |
+| `PORT`                | `8000`                       | REST API port                |
+| `GRPC_PORT`           | `50051`                      | gRPC port                    |
+| `AUDIT_DB_PATH`       | `audit/phi_access.db`        | SQLite audit DB              |
+| `FHIR_SERVER_URL`     | `http://mock-fhir-server/R4` | FHIR R4 base URL             |
+| `FEATURE_STORE_PATH`  | `data/feature_store`         | Feature store root           |
+| `ARTIFACT_STORE_PATH` | `artifacts`                  | Artifact store root          |
+| `LOG_LEVEL`           | `INFO`                       | Logging level                |
+| `CORS_ORIGINS`        | `*`                          | Comma-separated CORS origins |
 
 ---
 
@@ -233,13 +233,16 @@ pytest ml_core/tests/model_tests/
 ## Changelog v2.0.0
 
 **Breaking**
+
 - `ml/` renamed to `ml_core/` — all imports updated
 
 **Bug fixes**
+
 - `survival_analysis.py` — silent dead assignment via `locals()[val]=…` fixed with direct variable assignment
 - Duplicate `fairness_metrics.py` removed from `monitoring/` (canonical copy in `models/`)
 
 **New modules**
+
 - `ml_core/explainability/` — SHAP-style, LIME, attention, counterfactuals
 - `ml_core/feature_store/` — Parquet-backed feature persistence
 - `ml_core/versioning/` — SHA-256 artifact store with promotion workflow
@@ -247,6 +250,7 @@ pytest ml_core/tests/model_tests/
 - `backend/interfaces/streamlit_app.py` — Clinician UI (was missing, referenced in docker-compose)
 
 **Improvements**
+
 - `backend/app/` stubs fully implemented (schemas, config, models, routes)
 - `rest_api.py` refactored — routes extracted to `api/routes.py`
 - `fhir_ops.py` exposed via `utils/__init__.py`
