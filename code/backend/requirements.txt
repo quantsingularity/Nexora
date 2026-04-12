@@ -1,0 +1,32 @@
+# Nexora Backend – service dependencies
+# These are the runtime dependencies for the REST API, gRPC server, and Streamlit UI.
+# For ML-core dependencies (model training, pipeline, etc.) see the root requirements.txt.
+
+# ── Web Framework ──────────────────────────────────────────────────────────
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+httpx>=0.24.0
+requests==2.31.0
+
+# ── gRPC (optional – uncomment to enable the gRPC server) ─────────────────
+# grpcio>=1.59.0
+# grpcio-reflection>=1.59.0
+# grpcio-health-checking>=1.59.0
+
+# ── Clinician UI ───────────────────────────────────────────────────────────
+streamlit>=1.28.0
+
+# ── Data ───────────────────────────────────────────────────────────────────
+numpy>=1.24.0
+pandas>=2.0.0
+pyarrow>=14.0.0
+
+# ── Utilities ─────────────────────────────────────────────────────────────
+pyyaml>=6.0.0
+
+# ── Testing ───────────────────────────────────────────────────────────────
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0          # used by TestClient in FastAPI tests

@@ -1,171 +1,257 @@
-# code Directory
+# Nexora Clinical AI Platform
+
+> HIPAA-compliant clinical decision support with fairness monitoring, explainability, and multi-model serving.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Project Structure](#project-structure)
+- [Quickstart](#quickstart)
+- [ML Core Modules](#ml-core-modules)
+- [Backend API](#backend-api)
+- [Clinician UI](#clinician-ui)
+- [Configuration](#configuration)
+- [Testing](#testing)
+- [Changelog v2.0.0](#changelog-v200)
+
+---
 
 ## Overview
 
-The code directory is the core of the Nexora system, containing all the source code for the code components. This directory implements the clinical data processing pipelines, machine learning models, monitoring systems, and service interfaces that power the Nexora platform's healthcare analytics and prediction capabilities.
+Nexora is a production-ready clinical AI platform providing:
 
-## Directory Structure
+- **Risk prediction** – readmission, mortality, and time-to-event models
+- **Explainability** – SHAP-style permutation importance, LIME, counterfactuals
+- **Fairness monitoring** – demographic parity, equal opportunity, calibration by group
+- **HIPAA compliance** – PHI de-identification, audit logging, right-to-erasure
+- **Concept drift detection** – statistical monitoring of feature and prediction distributions
+- **Multi-modal serving** – REST API (FastAPI) and gRPC server
+- **Clinician UI** – Streamlit dashboard for prediction, audit, and fairness inspection
+
+---
+
+## Project Structure
 
 ```
-code/
-├── compliance/
-│   └── phi_audit_logger.py
-├── data/
-│   └── synthetic_clinical_data.py
-├── data_pipeline/
-│   ├── clinical_etl.py
-│   ├── hipaa_compliance/
-│   │   ├── __init__.py
-│   │   ├── deidentifier.py
-│   │   ├── integration.py
-│   │   └── phi_detector.py
-│   ├── icd10_encoder.py
-│   └── temporal_features.py
-├── interfaces/
-│   └── clinician_ui.py
-├── model_factory/
-│   ├── deep_fm.py
-│   ├── survival_analysis.py
-│   └── transformer_model.py
-├── monitoring/
-│   ├── adverse_event_reporting.py
-│   ├── clinical_metrics.py
-│   ├── concept_drift.py
-│   └── fairness_metrics.py
-├── serving/
-│   ├── grpc_server.py
-│   └── rest_api.py
-├── utils/
-│   ├── fhir_connector.py
-│   ├── fhir_ops.py
-│   └── healthcare_metrics.py
-└── validation/
-    ├── pipeline_validator.py
-    ├── run_tests.py
-    └── tests/
-        └── test_hipaa_compliance.py
+nexora/
+├── backend/
+│   ├── app/
+│   │   ├── api/routes.py           ← All FastAPI route handlers
+│   │   ├── core/config.py          ← Settings from environment variables
+│   │   ├── models/prediction_log.py
+│   │   └── schemas/clinical.py     ← Pydantic v2 request/response schemas
+│   ├── interfaces/
+│   │   └── streamlit_app.py        ← Clinician UI  [NEW]
+│   ├── serving/
+│   │   ├── rest_api.py             ← FastAPI app factory
+│   │   └── grpc_server.py          ← gRPC prediction server  [NEW]
+│   └── tests/api/test_rest_api.py
+│
+├── ml_core/                        ← Renamed from ml/
+│   ├── compliance/phi_audit_logger.py
+│   ├── config/
+│   ├── explainability/             ← NEW
+│   │   └── explainer.py            ← SHAP, LIME, attention, counterfactuals
+│   ├── feature_store/              ← NEW
+│   │   └── feature_store.py        ← Parquet-backed patient feature store
+│   ├── models/
+│   │   ├── base_model.py
+│   │   ├── deep_fm.py
+│   │   ├── fairness_metrics.py     ← Canonical copy (duplicate removed)
+│   │   ├── model_calibration.py
+│   │   ├── model_registry.py
+│   │   ├── survival_analysis.py    ← Bug fixed
+│   │   └── transformer_model.py
+│   ├── monitoring/
+│   │   ├── adverse_event_reporting.py
+│   │   ├── clinical_metrics.py
+│   │   └── concept_drift.py
+│   ├── pipeline/
+│   ├── tests/
+│   │   ├── explainability/test_explainer.py   ← NEW
+│   │   ├── test_feature_store.py              ← NEW
+│   │   ├── test_artifact_store.py             ← NEW
+│   │   └── ... (existing test suites)
+│   ├── utils/
+│   │   ├── fhir_connector.py
+│   │   └── fhir_ops.py             ← Now exported via __init__
+│   ├── validation/pipeline_validator.py
+│   └── versioning/                 ← NEW
+│       └── artifact_store.py       ← SHA-256 checksums + promotion workflow
+│
+├── docker-compose.yml
+├── Dockerfile
+├── requirements.txt
+└── README.md
 ```
 
-## Contents Description
+---
 
-### compliance/
+## Quickstart
 
-This directory contains components for ensuring regulatory compliance:
+### Docker (recommended)
 
-- **phi_audit_logger.py**: Implements logging mechanisms for Protected Health Information (PHI) access and usage, creating audit trails required for HIPAA compliance. This module likely records who accessed what data, when, and for what purpose.
+```bash
+docker compose up --build
+```
 
-### data/
+| Service | URL |
+|---------|-----|
+| REST API | http://localhost:8000 |
+| API Docs | http://localhost:8000/docs |
+| Clinician UI | http://localhost:8501 |
+| gRPC | localhost:50051 |
 
-This directory contains data-related utilities:
+### Local development
 
-- **synthetic_clinical_data.py**: Provides functionality for generating synthetic clinical data that mimics real patient data while preserving privacy. This is useful for development, testing, and demonstration purposes without exposing real patient information.
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn backend.serving.rest_api:app --reload --port 8000
+```
 
-### data_pipeline/
+---
 
-This directory contains the data processing pipeline components:
+## ML Core Modules
 
-- **clinical_etl.py**: Implements Extract, Transform, Load (ETL) processes for clinical data, handling the ingestion and preprocessing of healthcare data from various sources.
+### Models
 
-- **hipaa_compliance/**: A submodule focused on HIPAA compliance in data processing:
-  - **deidentifier.py**: Implements algorithms to remove or mask PHI from clinical data.
-  - **integration.py**: Provides integration points for the HIPAA compliance tools with the rest of the data pipeline.
-  - **phi_detector.py**: Implements detection algorithms for identifying PHI in unstructured text.
+| Class | Framework |
+|-------|-----------|
+| `DeepFMModel` | TensorFlow (optional, numpy fallback) |
+| `TransformerModel` | PyTorch (optional, numpy fallback) |
+| `SurvivalAnalysisModel` | lifelines (optional, numpy fallback) |
+| `ModelCalibrator` | scikit-learn |
+| `FairnessEvaluator` | pandas / sklearn |
 
-- **icd10_encoder.py**: Provides encoding and normalization of ICD-10 diagnosis codes, likely converting them to embeddings or categorical features for machine learning models.
+### Explainability (new)
 
-- **temporal_features.py**: Implements extraction of temporal features from clinical time series data, capturing patterns over time in patient records.
+```python
+from ml_core.explainability import ModelExplainer
 
-### interfaces/
+explainer = ModelExplainer(
+    predict_fn=model.predict_proba,
+    feature_names=feature_names,
+    background_data=X_train,
+)
+result = explainer.explain(patient_vector, method="permutation_shap")
+print(result.top_features(n=5))
 
-This directory contains user interface components:
+cf = explainer.explain(patient_vector, method="counterfactual")
+print(cf.counterfactuals)  # minimal changes that flip the prediction
 
-- **clinician_ui.py**: Implements code logic for the clinician-facing user interface, likely providing data and functionality to the web and mobile frontends.
+df = explainer.global_importance(X_test)  # mean |SHAP| across cohort
+```
 
-### model_factory/
+Methods: `permutation_shap`, `lime`, `attention`, `counterfactual`.
 
-This directory contains machine learning model implementations:
+### Feature Store (new)
 
-- **deep_fm.py**: Implements a Deep Factorization Machine model, likely used for patient risk prediction or treatment recommendation.
+```python
+from ml_core.feature_store import FeatureStore
 
-- **survival_analysis.py**: Implements survival analysis models for time-to-event prediction, such as hospital readmission risk over time.
+store = FeatureStore("data/feature_store")
+store.upsert("P001", {"age": 65, "creatinine": 1.2})
+row   = store.get("P001")
+recent = store.get_recent(days=7)
+store.delete_patient("P001")   # HIPAA right-to-erasure
+```
 
-- **transformer_model.py**: Implements transformer-based models, likely for processing sequential clinical data or medical text.
+### Artifact Versioning (new)
 
-### monitoring/
+```python
+from ml_core.versioning import ModelArtifactStore, ModelStage
 
-This directory contains monitoring and evaluation components:
+store = ModelArtifactStore("artifacts")
+store.register("deep_fm", "1.1.0", "trained.h5",
+               metrics={"auc": 0.89}, hyperparameters={"layers": [256, 128]})
+store.promote("deep_fm", "1.1.0", ModelStage.PRODUCTION)
+# Previous production version auto-archived
+```
 
-- **adverse_event_reporting.py**: Implements reporting mechanisms for adverse events detected by the system.
+---
 
-- **clinical_metrics.py**: Implements clinical performance metrics to evaluate the system's impact on healthcare outcomes.
+## Backend API
 
-- **concept_drift.py**: Implements detection of concept drift in model inputs and outputs, alerting when the data distribution changes significantly.
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Health check |
+| `GET` | `/models` | List models |
+| `POST` | `/predict` | Single prediction |
+| `POST` | `/predict/batch` | Batch prediction |
+| `POST` | `/fhir/patient/{id}/predict` | Predict from FHIR |
+| `GET` | `/metrics` | Cohort metrics |
+| `GET` | `/audit/patient/{id}` | PHI audit history |
+| `DELETE` | `/models/{name}/{version}` | Remove model version |
 
-- **fairness_metrics.py**: Implements fairness evaluation metrics to ensure the system performs equitably across different patient demographics.
+---
 
-### serving/
+## Clinician UI
 
-This directory contains model serving components:
+Streamlit dashboard at http://localhost:8501:
 
-- **grpc_server.py**: Implements a gRPC server for high-performance model serving.
+- Single patient risk prediction with feature attribution chart
+- Batch prediction with CSV upload/download
+- Model registry browser
+- Concept drift monitoring per model
+- Fairness metrics by demographic group
+- PHI audit log with date-range and patient filters
 
-- **rest_api.py**: Implements a REST API for model serving and data access.
+---
 
-### utils/
+## Configuration
 
-This directory contains utility functions:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `8000` | REST API port |
+| `GRPC_PORT` | `50051` | gRPC port |
+| `AUDIT_DB_PATH` | `audit/phi_access.db` | SQLite audit DB |
+| `FHIR_SERVER_URL` | `http://mock-fhir-server/R4` | FHIR R4 base URL |
+| `FEATURE_STORE_PATH` | `data/feature_store` | Feature store root |
+| `ARTIFACT_STORE_PATH` | `artifacts` | Artifact store root |
+| `LOG_LEVEL` | `INFO` | Logging level |
+| `CORS_ORIGINS` | `*` | Comma-separated CORS origins |
 
-- **fhir_connector.py**: Provides connectivity to FHIR (Fast Healthcare Interoperability Resources) servers for standardized healthcare data exchange.
+---
 
-- **fhir_ops.py**: Implements operations on FHIR resources, such as querying, filtering, and transformation.
+## Testing
 
-- **healthcare_metrics.py**: Implements healthcare-specific metrics and calculations.
+```bash
+pytest ml_core/tests/ backend/tests/ -v --cov=ml_core --cov=backend
 
-### validation/
+# Individual suites
+pytest ml_core/tests/explainability/
+pytest ml_core/tests/test_feature_store.py
+pytest ml_core/tests/test_artifact_store.py
+pytest ml_core/tests/model_tests/
+```
 
-This directory contains validation and testing components:
+---
 
-- **pipeline_validator.py**: Implements validation of the data pipeline, ensuring data quality and integrity.
+## Changelog v2.0.0
 
-- **run_tests.py**: Script to run validation tests.
+**Breaking**
+- `ml/` renamed to `ml_core/` — all imports updated
 
-- **tests/test_hipaa_compliance.py**: Tests for the HIPAA compliance components.
+**Bug fixes**
+- `survival_analysis.py` — silent dead assignment via `locals()[val]=…` fixed with direct variable assignment
+- Duplicate `fairness_metrics.py` removed from `monitoring/` (canonical copy in `models/`)
 
-## Usage
+**New modules**
+- `ml_core/explainability/` — SHAP-style, LIME, attention, counterfactuals
+- `ml_core/feature_store/` — Parquet-backed feature persistence
+- `ml_core/versioning/` — SHA-256 artifact store with promotion workflow
+- `backend/serving/grpc_server.py` — gRPC server (was missing, referenced in docker-compose)
+- `backend/interfaces/streamlit_app.py` — Clinician UI (was missing, referenced in docker-compose)
 
-The source code in this directory is used in various ways:
-
-1. **Data Processing**:
-
-   ```python
-   from code.data_pipeline.clinical_etl import ClinicalETL
-
-   etl = ClinicalETL(config_path)
-   processed_data = etl.process(raw_data)
-   ```
-
-2. **Model Training**:
-
-   ```python
-   from code.model_factory.deep_fm import DeepFMModel
-
-   model = DeepFMModel(config)
-   model.train(train_data, validation_data)
-   model.save(model_path)
-   ```
-
-3. **Model Serving**:
-
-   ```bash
-   # Start the REST API server
-   python -m code.serving.rest_api
-
-   # Start the gRPC server
-   python -m code.serving.grpc_server
-   ```
-
-4. **Validation**:
-   ```bash
-   # Run validation tests
-   python -m code.validation.run_tests
-   ```
+**Improvements**
+- `backend/app/` stubs fully implemented (schemas, config, models, routes)
+- `rest_api.py` refactored — routes extracted to `api/routes.py`
+- `fhir_ops.py` exposed via `utils/__init__.py`
+- All `__init__.py` files now export `__all__`
+- `docker-compose.yml` — fixed UI path, added `nexora-artifacts` volume
+- `requirements.txt` — added `streamlit`, `pytest-asyncio`
+- New tests: `test_explainer.py`, `test_feature_store.py`, `test_artifact_store.py`
+- Removed all `__pycache__` and `.pytest_cache` directories

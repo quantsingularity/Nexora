@@ -1,13 +1,13 @@
 """
-Backend test conftest.
-Adds the project root (parent of `backend/`) to sys.path so that
-`backend` and `ml` are importable as top-level packages.
+ML test conftest.
+Adds the project root (parent of `ml/`) to sys.path so that
+`ml` and `backend` are importable as top-level packages.
 """
 
 import os
 import sys
 
-# Project root = two levels up from backend/tests/conftest.py
+# Project root = two levels up from ml/tests/conftest.py
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)

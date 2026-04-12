@@ -18,10 +18,13 @@ services:
       AUDIT_DB_PATH: "/app/audit/phi_access.db"
       FHIR_SERVER_URL: "${FHIR_SERVER_URL:-http://mock-fhir-server/R4}"
       LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+      FEATURE_STORE_PATH: "/app/data/feature_store"
+      ARTIFACT_STORE_PATH: "/app/artifacts"
     volumes:
       - nexora-audit:/app/audit
       - nexora-models:/app/models
       - nexora-data:/app/data
+      - nexora-artifacts:/app/artifacts
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -40,7 +43,7 @@ services:
     image: nexora:latest
     container_name: nexora-grpc
     restart: unless-stopped
-    command: ["python", "-m", "serving.grpc_server"]
+    command: ["python", "-m", "backend.serving.grpc_server"]
     ports:
       - "${GRPC_PORT:-50051}:50051"
     environment:
@@ -71,7 +74,7 @@ services:
         "-m",
         "streamlit",
         "run",
-        "interfaces/streamlit_app.py",
+        "backend/interfaces/streamlit_app.py",
         "--server.port=8501",
         "--server.address=0.0.0.0",
         "--server.headless=true",
@@ -80,6 +83,7 @@ services:
       - "${UI_PORT:-8501}:8501"
     environment:
       NEXORA_API_URL: "http://nexora-api:8000"
+      AUDIT_DB_PATH: "/app/audit/phi_access.db"
       LOG_LEVEL: "${LOG_LEVEL:-INFO}"
     depends_on:
       nexora-api:
@@ -93,6 +97,8 @@ volumes:
   nexora-models:
     driver: local
   nexora-data:
+    driver: local
+  nexora-artifacts:
     driver: local
 
 networks:

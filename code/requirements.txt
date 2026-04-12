@@ -1,13 +1,13 @@
-# Nexora - consolidated dependencies
+# Nexora – consolidated dependencies
 
-# Core Framework & Web
+# ── Core Framework & Web ───────────────────────────────────────────────────
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.5.0
 requests==2.31.0
 httpx>=0.24.0
 
-# Data Processing & ML/AI
+# ── Data Processing & ML ──────────────────────────────────────────────────
 numpy>=1.24.0
 pandas>=2.0.0
 pyarrow>=14.0.0
@@ -15,22 +15,29 @@ scipy>=1.11.0
 scikit-learn>=1.3.0
 joblib>=1.3.0
 
-# Healthcare Specific
+# ── Healthcare Specific ───────────────────────────────────────────────────
 lifelines>=0.27.0
 
-# Optional Heavy deps (comment out if not needed)
+# ── UI ────────────────────────────────────────────────────────────────────
+streamlit>=1.28.0
+
+# ── Utilities ─────────────────────────────────────────────────────────────
+faker>=20.0.0
+pyyaml>=6.0.0
+
+# ── Testing ───────────────────────────────────────────────────────────────
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+
+# ── Visualization ─────────────────────────────────────────────────────────
+matplotlib>=3.7.0
+
+# ── Optional Heavy Deps (uncomment if needed) ─────────────────────────────
 # tensorflow==2.15.0
 # torch==2.1.0
 # fhir.resources==7.1.0
+# grpcio>=1.59.0
+# grpcio-reflection>=1.59.0
 # apache-beam[gcp]==2.51.0
-
-# Visualization & UI
-matplotlib>=3.7.0
-# streamlit==1.28.2
-# plotly==5.18.0
-
-# Utilities
-faker>=20.0.0
-pytest>=7.4.0
-pytest-cov>=4.1.0
-pyyaml>=6.0.0
+# plotly>=5.18.0
