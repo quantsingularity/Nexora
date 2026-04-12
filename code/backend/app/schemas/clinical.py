@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # ---------------------------------------------------------------------------
 # Request schemas
@@ -22,6 +22,10 @@ class PatientData(BaseModel):
 
 
 class PredictionRequest(BaseModel):
+    # Suppress Pydantic v2 warning: fields starting with "model_" conflict with
+    # BaseModel's protected namespace. Setting protected_namespaces=() clears it.
+    model_config = ConfigDict(protected_namespaces=())
+
     model_name: str = Field(..., description="Name of the model to use")
     model_version: Optional[str] = Field(None, description="Version (default: latest)")
     patient_data: PatientData
@@ -29,6 +33,8 @@ class PredictionRequest(BaseModel):
 
 
 class BatchPredictionRequest(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     model_name: str
     model_version: Optional[str] = None
     patients: List[PatientData]
@@ -40,6 +46,8 @@ class BatchPredictionRequest(BaseModel):
 
 
 class PredictionResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     request_id: str
     model_name: str
     model_version: str
@@ -50,6 +58,8 @@ class PredictionResponse(BaseModel):
 
 
 class BatchPredictionResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     model_name: str
     model_version: str
     timestamp: str

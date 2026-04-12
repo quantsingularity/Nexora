@@ -94,14 +94,11 @@ async def predict(request: PredictionRequest) -> PredictionResponse:
         uncertainty = predictions.pop(
             "uncertainty", {"confidence_interval": [0.65, 0.85]}
         )
-    except ValueError as e:
-        logger.error(f"Model not found: {e}")
-        raise HTTPException(status_code=404, detail=str(e))
-    except NotImplementedError as e:
-        logger.error(f"Prediction not implemented: {e}")
-        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
-        logger.error(f"Unexpected prediction error: {e}", exc_info=True)
+        # Unknown model, runtime error, or any unexpected failure → 500
+        logger.error(
+            f"Prediction error for model '{request.model_name}': {e}", exc_info=True
+        )
         raise HTTPException(status_code=500, detail="Internal prediction error")
 
     return PredictionResponse(
@@ -122,10 +119,9 @@ async def predict_batch(request: BatchPredictionRequest) -> BatchPredictionRespo
     model_version = request.model_version or "latest"
     try:
         model = _registry.get_model(request.model_name, model_version)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except NotImplementedError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error(f"Batch predict model load error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal prediction error")
 
     results = []
     for patient in request.patients:
@@ -172,8 +168,10 @@ async def predict_from_fhir(
             patient_data=patient_data,
         )
         return await predict(req)
+    except HTTPException:
+        raise  # re-raise HTTP exceptions as-is
     except Exception as e:
-        logger.error(f"FHIR prediction error: {e}")
+        logger.error(f"FHIR prediction error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -202,5 +200,5 @@ async def get_patient_audit_history(patient_id: str):
             "access_history": df.to_dict(orient="records"),
         }
     except Exception as e:
-        logger.error(f"Audit history error for {patient_id}: {e}")
+        logger.error(f"Audit history error for {patient_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
