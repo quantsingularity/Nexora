@@ -4,14 +4,14 @@
   "type": "object",
   "required": ["appName", "environment", "namespace"],
   "properties": {
-    "appName":     { "type": "string", "minLength": 2 },
+    "appName": { "type": "string", "minLength": 2 },
     "environment": { "type": "string", "enum": ["dev", "staging", "prod"] },
-    "namespace":   { "type": "string", "minLength": 2 },
+    "namespace": { "type": "string", "minLength": 2 },
     "code": {
       "type": "object",
       "required": ["replicas", "containerPort"],
       "properties": {
-        "replicas":      { "type": "integer", "minimum": 1 },
+        "replicas": { "type": "integer", "minimum": 1 },
         "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 }
       }
     },
@@ -19,7 +19,7 @@
       "type": "object",
       "required": ["replicas", "containerPort"],
       "properties": {
-        "replicas":      { "type": "integer", "minimum": 1 },
+        "replicas": { "type": "integer", "minimum": 1 },
         "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 }
       }
     },
