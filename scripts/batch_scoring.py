@@ -51,9 +51,7 @@ logger = logging.getLogger(__name__)
 def _json_encode_nested(record: Dict[str, Any]) -> Dict[str, Any]:
     """JSON-encode any dict-valued fields so a record is safe to write to
     CSV/Parquet, which don't support arbitrarily nested Python objects."""
-    return {
-        k: (json.dumps(v) if isinstance(v, dict) else v) for k, v in record.items()
-    }
+    return {k: (json.dumps(v) if isinstance(v, dict) else v) for k, v in record.items()}
 
 
 class BatchScorer:
@@ -78,7 +76,9 @@ class BatchScorer:
 
         self.model = None
         if not self.use_api:
-            registry = ModelRegistry(registry_path) if registry_path else ModelRegistry()
+            registry = (
+                ModelRegistry(registry_path) if registry_path else ModelRegistry()
+            )
             self.model = registry.get_model(self.model_name, self.model_version)
             logger.info(
                 f"Loaded model '{self.model_name}' v{self.model.version} for local scoring."
@@ -128,7 +128,9 @@ class BatchScorer:
         logger.info(f"Generating predictions for {len(data)} records")
         start_time = time.time()
 
-        results = self._score_via_api(data) if self.use_api else self._score_locally(data)
+        results = (
+            self._score_via_api(data) if self.use_api else self._score_locally(data)
+        )
 
         elapsed = time.time() - start_time
         logger.info(
@@ -160,12 +162,16 @@ class BatchScorer:
             chunk = rows[i : i + self.api_batch_size]
             payload = {
                 "model_name": self.model_name,
-                "model_version": None if self.model_version == "latest" else self.model_version,
+                "model_version": (
+                    None if self.model_version == "latest" else self.model_version
+                ),
                 "patients": [self._row_to_patient_data(row) for _, row in chunk],
             }
             response = requests.post(endpoint, json=payload, timeout=60)
             if response.status_code != 200:
-                logger.error(f"API request failed ({response.status_code}): {response.text}")
+                logger.error(
+                    f"API request failed ({response.status_code}): {response.text}"
+                )
                 raise RuntimeError(
                     f"API request failed with status {response.status_code}"
                 )
@@ -200,7 +206,9 @@ class BatchScorer:
         if "status" in predictions.columns:
             n_errors = int((predictions["status"] == "error").sum())
             if n_errors:
-                logger.warning(f"{n_errors} of {len(predictions)} records failed scoring.")
+                logger.warning(
+                    f"{n_errors} of {len(predictions)} records failed scoring."
+                )
         logger.info("Batch scoring completed successfully")
         return predictions
 
@@ -216,10 +224,14 @@ def parse_args() -> argparse.Namespace:
         "--model-version", default=None, help="Model version (default: latest)"
     )
     parser.add_argument(
-        "--input-path", required=True, help="Path to input data (.csv, .parquet, or .json)"
+        "--input-path",
+        required=True,
+        help="Path to input data (.csv, .parquet, or .json)",
     )
     parser.add_argument(
-        "--output-path", required=True, help="Path to save results (.csv, .parquet, or .json)"
+        "--output-path",
+        required=True,
+        help="Path to save results (.csv, .parquet, or .json)",
     )
     parser.add_argument(
         "--use-api",
