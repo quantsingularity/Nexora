@@ -169,20 +169,20 @@ Generate readmission risk prediction for a patient.
 
 | Field           | Type   | Required | Description                     | Example                |
 | --------------- | ------ | -------: | ------------------------------- | ---------------------- |
-| `model_name`    | string |       ✅ | Model identifier                | `"readmission_v1"`     |
-| `model_version` | string |       ❌ | Model version (default: latest) | `"1.0.0"`              |
-| `patient_data`  | object |       ✅ | Patient clinical data           | See PatientData schema |
-| `request_id`    | string |       ❌ | Custom request ID               | `"req_12345"`          |
+| `model_name`    | string |      Yes | Model identifier                | `"readmission_v1"`     |
+| `model_version` | string |       No | Model version (default: latest) | `"1.0.0"`              |
+| `patient_data`  | object |      Yes | Patient clinical data           | See PatientData schema |
+| `request_id`    | string |       No | Custom request ID               | `"req_12345"`          |
 
 **PatientData Schema**:
 
 | Field             | Type   | Required | Description               | Example                                     |
 | ----------------- | ------ | -------: | ------------------------- | ------------------------------------------- |
-| `patient_id`      | string |       ✅ | Unique patient identifier | `"12345"`                                   |
-| `demographics`    | object |       ✅ | Age, gender, race, etc.   | `{"age": 65, "gender": "M"}`                |
-| `clinical_events` | array  |       ✅ | Diagnoses, procedures     | `[{"type": "diagnosis", "code": "I50.9"}]`  |
-| `lab_results`     | array  |       ❌ | Laboratory test results   | `[{"name": "HbA1c", "value": 8.2}]`         |
-| `medications`     | array  |       ❌ | Current medications       | `[{"name": "Metformin", "dose": "1000mg"}]` |
+| `patient_id`      | string |      Yes | Unique patient identifier | `"12345"`                                   |
+| `demographics`    | object |      Yes | Age, gender, race, etc.   | `{"age": 65, "gender": "M"}`                |
+| `clinical_events` | array  |      Yes | Diagnoses, procedures     | `[{"type": "diagnosis", "code": "I50.9"}]`  |
+| `lab_results`     | array  |       No | Laboratory test results   | `[{"name": "HbA1c", "value": 8.2}]`         |
+| `medications`     | array  |       No | Current medications       | `[{"name": "Metformin", "dose": "1000mg"}]` |
 
 **Response**: `200 OK`
 
@@ -293,14 +293,14 @@ Generate prediction using patient data from FHIR server.
 
 | Parameter    | Type   | Required | Description             | Example         |
 | ------------ | ------ | -------: | ----------------------- | --------------- |
-| `patient_id` | string |       ✅ | FHIR patient identifier | `"patient-123"` |
+| `patient_id` | string |      Yes | FHIR patient identifier | `"patient-123"` |
 
 **Query Parameters**:
 
 | Parameter       | Type   | Required | Description   | Example            |
 | --------------- | ------ | -------: | ------------- | ------------------ |
-| `model_name`    | string |       ✅ | Model to use  | `"readmission_v1"` |
-| `model_version` | string |       ❌ | Model version | `"1.0.0"`          |
+| `model_name`    | string |      Yes | Model to use  | `"readmission_v1"` |
+| `model_version` | string |       No | Model version | `"1.0.0"`          |
 
 **Response**: Same as `/predict` endpoint
 

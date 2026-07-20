@@ -1,14 +1,12 @@
 import {
   CheckCircle as CheckCircleIcon,
-  CloudDownload as CloudDownloadIcon,
-  CloudUpload as CloudUploadIcon,
-  Error as ErrorIcon,
+  PlayArrow as PlayArrowIcon,
   Refresh as RefreshIcon,
   Science as ScienceIcon,
-  Tune as TuneIcon,
 } from "@mui/icons-material";
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Card,
@@ -16,19 +14,13 @@ import {
   CardHeader,
   Chip,
   Divider,
-  FormControl,
-  FormControlLabel,
   Grid,
   IconButton,
-  InputLabel,
   LinearProgress,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
-  MenuItem,
-  Select,
-  Switch,
   Tab,
   Tabs,
   TextField,
@@ -40,57 +32,119 @@ import {
   Chart as ChartJS,
   Legend,
   LinearScale,
-  LineElement,
-  PointElement,
   Title,
-  Tooltip,
+  Tooltip as ChartTooltip,
 } from "chart.js";
-import { useEffect, useState } from "react";
-import { Bar, Line } from "react-chartjs-2";
+import { useCallback, useEffect, useState } from "react";
+import { Bar } from "react-chartjs-2";
 import api from "../services/api";
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
   Title,
-  Tooltip,
+  ChartTooltip,
   Legend,
 );
+
+const MODEL_DESCRIPTIONS = {
+  deep_fm:
+    "Factorization-machine deep network trained for 30-day readmission risk from demographics, diagnoses, and utilization history.",
+  survival_analysis:
+    "Time-to-event survival model estimating readmission likelihood over a patient's follow-up window.",
+  transformer_model:
+    "Sequence transformer trained on longitudinal clinical events for higher-order temporal risk patterns.",
+};
 
 const PredictionModels = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [models, setModels] = useState([]);
-  const [activeTab, setActiveTab] = useState(0);
   const [selectedModel, setSelectedModel] = useState(null);
+  const [activeTab, setActiveTab] = useState(0);
+  const [performance, setPerformance] = useState(null);
 
-  const fetchModels = async () => {
+  const [patients, setPatients] = useState([]);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [manualPatientId, setManualPatientId] = useState("");
+  const [running, setRunning] = useState(false);
+  const [predictionResult, setPredictionResult] = useState(null);
+  const [predictionError, setPredictionError] = useState(null);
+
+  const fetchModels = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await api.getModels();
       setModels(data);
-      if (data.length > 0 && !selectedModel) setSelectedModel(data[0]);
+      setSelectedModel((prev) => prev || data[0] || null);
     } catch (err) {
-      console.error("Error fetching models:", err);
-      setError("Failed to load models. Please try again.");
+      setError(err.message || "Failed to load models. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchModels();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchModels]);
+
+  useEffect(() => {
+    api
+      .getDashboardData()
+      .then((d) => setPerformance(d.modelPerformance))
+      .catch(() => setPerformance(null));
+    api
+      .getPatients({ pageSize: 100 })
+      .then(setPatients)
+      .catch(() => setPatients([]));
   }, []);
 
-  const handleTabChange = (_event, newValue) => {
-    setActiveTab(newValue);
+  const handleRunPrediction = async () => {
+    if (!selectedModel) return;
+    const patientId = selectedPatient?.id || manualPatientId.trim();
+    if (!patientId) {
+      setPredictionError("Choose a patient or enter a patient ID.");
+      return;
+    }
+    setRunning(true);
+    setPredictionError(null);
+    setPredictionResult(null);
+    try {
+      const demographics = selectedPatient
+        ? {
+            age: selectedPatient.age,
+            gender: selectedPatient.gender,
+            diagnosis: selectedPatient.diagnosis,
+          }
+        : {};
+      const result = await api.makePrediction(selectedModel.name, undefined, {
+        patient_id: patientId,
+        demographics,
+        clinical_events: [],
+      });
+      setPredictionResult(result);
+    } catch (err) {
+      setPredictionError(err.message || "Prediction request failed.");
+    } finally {
+      setRunning(false);
+    }
   };
+
+  const performanceChart = performance
+    ? {
+        labels: performance.labels,
+        datasets: [
+          {
+            label: "AUC",
+            data: performance.scores,
+            backgroundColor: "rgba(37, 99, 235, 0.75)",
+            borderRadius: 6,
+          },
+        ],
+      }
+    : null;
 
   if (loading) {
     return (
@@ -124,71 +178,20 @@ const PredictionModels = () => {
     );
   }
 
-  const performanceData = {
-    labels: [
-      "Readmission",
-      "Mortality",
-      "LOS",
-      "Complications",
-      "ICU Transfer",
-    ],
-    datasets: [
-      {
-        label: "Current Model",
-        data: [0.82, 0.78, 0.75, 0.81, 0.79],
-        backgroundColor: "rgba(25, 118, 210, 0.7)",
-        borderRadius: 5,
-      },
-      {
-        label: "Previous Version",
-        data: [0.79, 0.76, 0.72, 0.78, 0.75],
-        backgroundColor: "rgba(156, 39, 176, 0.7)",
-        borderRadius: 5,
-      },
-    ],
-  };
-
-  const trainingData = {
-    labels: ["0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"],
-    datasets: [
-      {
-        label: "Training Loss",
-        data: [
-          0.68, 0.58, 0.51, 0.46, 0.42, 0.39, 0.37, 0.35, 0.34, 0.33, 0.32,
-        ],
-        borderColor: "#f44336",
-        backgroundColor: "rgba(244, 67, 54, 0.1)",
-        tension: 0.4,
-      },
-      {
-        label: "Validation Loss",
-        data: [0.69, 0.6, 0.54, 0.5, 0.47, 0.45, 0.44, 0.43, 0.43, 0.42, 0.42],
-        borderColor: "#2196f3",
-        backgroundColor: "rgba(33, 150, 243, 0.1)",
-        tension: 0.4,
-      },
-    ],
-  };
-
   return (
     <Box>
-      <Box
-        sx={{
-          mb: 4,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h4" component="h1" gutterBottom>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
           Prediction Models
         </Typography>
-        <Button variant="contained" startIcon={<CloudUploadIcon />}>
-          Deploy New Model
-        </Button>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          Models registered in the ml_core model registry, available for live
+          scoring
+        </Typography>
       </Box>
 
       <Grid container spacing={3}>
+        {/* Model list */}
         <Grid item xs={12} md={4}>
           <Card>
             <CardHeader
@@ -200,361 +203,271 @@ const PredictionModels = () => {
               }
             />
             <Divider />
-            <CardContent>
-              <List>
-                {models.map((model, index) => (
-                  <ListItem
-                    key={index}
-                    divider={index < models.length - 1}
-                    secondaryAction={
-                      <Chip
-                        icon={
-                          model.status === "Active" ? (
-                            <CheckCircleIcon />
-                          ) : (
-                            <ErrorIcon />
-                          )
-                        }
-                        label={model.status}
-                        color={
-                          model.status === "Active" ? "success" : "default"
-                        }
-                        size="small"
-                      />
-                    }
-                  >
-                    <ListItemIcon>
-                      <ScienceIcon />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={model.name}
-                      secondary={`Version: ${model.version} | Updated: ${model.lastUpdated}`}
+            <List disablePadding>
+              {models.map((model) => (
+                <ListItemButton
+                  key={model.name}
+                  selected={selectedModel?.name === model.name}
+                  onClick={() => setSelectedModel(model)}
+                  sx={{ py: 1.5, px: 2 }}
+                >
+                  <ListItemIcon>
+                    <ScienceIcon
+                      color={
+                        selectedModel?.name === model.name
+                          ? "primary"
+                          : "action"
+                      }
                     />
-                  </ListItem>
-                ))}
-              </List>
-            </CardContent>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={model.displayName}
+                    secondary={`Version ${model.version}`}
+                  />
+                  <Chip
+                    icon={<CheckCircleIcon />}
+                    label={model.status}
+                    color="success"
+                    size="small"
+                  />
+                </ListItemButton>
+              ))}
+              {models.length === 0 && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ p: 3 }}
+                >
+                  No models are currently registered.
+                </Typography>
+              )}
+            </List>
           </Card>
         </Grid>
 
+        {/* Detail panel */}
         <Grid item xs={12} md={8}>
-          <Card sx={{ mb: 3 }}>
+          <Card>
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-              <Tabs
-                value={activeTab}
-                onChange={handleTabChange}
-                aria-label="model tabs"
-              >
-                <Tab label="Performance" />
-                <Tab label="Training History" />
-                <Tab label="Configuration" />
+              <Tabs value={activeTab} onChange={(_e, v) => setActiveTab(v)}>
+                <Tab label="Overview" />
+                <Tab label="Run Prediction" />
               </Tabs>
             </Box>
 
-            {/* Performance Tab */}
             {activeTab === 0 && (
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Model Performance Metrics
-                </Typography>
-                <Box sx={{ height: 300, mb: 4 }}>
-                  <Bar
-                    data={performanceData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: {
-                          position: "top",
-                        },
-                        title: {
-                          display: true,
-                          text: "AUC Score by Prediction Task",
-                        },
-                      },
-                      scales: {
-                        y: {
-                          beginAtZero: true,
-                          max: 1,
-                        },
-                      },
-                    }}
-                  />
-                </Box>
+                {selectedModel ? (
+                  <>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      {selectedModel.displayName}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 3 }}
+                    >
+                      {MODEL_DESCRIPTIONS[selectedModel.name] ||
+                        "Registered clinical prediction model."}
+                    </Typography>
+                    <Grid container spacing={2} sx={{ mb: 3 }}>
+                      <Grid item xs={6} sm={4}>
+                        <Card variant="outlined">
+                          <CardContent>
+                            <Typography
+                              variant="subtitle2"
+                              color="text.secondary"
+                            >
+                              Version
+                            </Typography>
+                            <Typography variant="h6">
+                              {selectedModel.version}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <Card variant="outlined">
+                          <CardContent>
+                            <Typography
+                              variant="subtitle2"
+                              color="text.secondary"
+                            >
+                              Status
+                            </Typography>
+                            <Typography variant="h6" color="success.main">
+                              {selectedModel.status}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    </Grid>
+                  </>
+                ) : (
+                  <Typography color="text.secondary">
+                    Select a model from the list to see details.
+                  </Typography>
+                )}
 
-                <Typography variant="h6" gutterBottom>
-                  Performance Summary
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ fontWeight: 600, mt: 1 }}
+                >
+                  Model Performance (AUC)
                 </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Accuracy
-                        </Typography>
-                        <Typography variant="h5" component="div">
-                          0.85
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Precision
-                        </Typography>
-                        <Typography variant="h5" component="div">
-                          0.78
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Recall
-                        </Typography>
-                        <Typography variant="h5" component="div">
-                          0.81
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          F1 Score
-                        </Typography>
-                        <Typography variant="h5" component="div">
-                          0.79
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
+                {performanceChart ? (
+                  <Box sx={{ height: 260 }}>
+                    <Bar
+                      data={performanceChart}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, max: 1 } },
+                      }}
+                    />
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Performance metrics unavailable.
+                  </Typography>
+                )}
               </CardContent>
             )}
 
-            {/* Training History Tab */}
             {activeTab === 1 && (
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Training History
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  Run a Live Prediction
                 </Typography>
-                <Box sx={{ height: 300, mb: 4 }}>
-                  <Line
-                    data={trainingData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: {
-                          position: "top",
-                        },
-                        title: {
-                          display: true,
-                          text: "Loss vs. Epochs",
-                        },
-                      },
-                      scales: {
-                        y: {
-                          beginAtZero: true,
-                        },
-                        x: {
-                          title: {
-                            display: true,
-                            text: "Epochs",
-                          },
-                        },
-                      },
-                    }}
-                  />
-                </Box>
-
-                <Typography variant="h6" gutterBottom>
-                  Training Details
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Training Dataset
-                        </Typography>
-                        <Typography variant="body1">
-                          120,000 patients (2020-2024)
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Validation Dataset
-                        </Typography>
-                        <Typography variant="body1">
-                          30,000 patients (2024-2025)
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Training Time
-                        </Typography>
-                        <Typography variant="body1">
-                          4.5 hours on GPU cluster
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          Last Retrained
-                        </Typography>
-                        <Typography variant="body1">March 15, 2025</Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            )}
-
-            {/* Configuration Tab */}
-            {activeTab === 2 && (
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Model Configuration
-                </Typography>
-
-                <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth margin="normal">
-                      <InputLabel id="model-type-label">Model Type</InputLabel>
-                      <Select
-                        labelId="model-type-label"
-                        value="deepfm"
-                        label="Model Type"
-                      >
-                        <MenuItem value="deepfm">DeepFM</MenuItem>
-                        <MenuItem value="transformer">Transformer</MenuItem>
-                        <MenuItem value="xgboost">XGBoost</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth margin="normal">
-                      <InputLabel id="prediction-task-label">
-                        Prediction Task
-                      </InputLabel>
-                      <Select
-                        labelId="prediction-task-label"
-                        value="readmission"
-                        label="Prediction Task"
-                      >
-                        <MenuItem value="readmission">
-                          30-day Readmission
-                        </MenuItem>
-                        <MenuItem value="mortality">
-                          In-hospital Mortality
-                        </MenuItem>
-                        <MenuItem value="los">Length of Stay</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Embedding Size"
-                      type="number"
-                      defaultValue={64}
-                      margin="normal"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Learning Rate"
-                      type="number"
-                      defaultValue={0.001}
-                      margin="normal"
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Divider sx={{ my: 2 }} />
-                    <Typography variant="h6" gutterBottom>
-                      Feature Settings
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControlLabel
-                      control={<Switch defaultChecked />}
-                      label="Include Demographics"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControlLabel
-                      control={<Switch defaultChecked />}
-                      label="Include Lab Results"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControlLabel
-                      control={<Switch defaultChecked />}
-                      label="Include Medications"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControlLabel
-                      control={<Switch defaultChecked />}
-                      label="Include Diagnoses"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControlLabel
-                      control={<Switch defaultChecked />}
-                      label="Include Procedures"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControlLabel
-                      control={<Switch defaultChecked />}
-                      label="Include Temporal Features"
-                    />
-                  </Grid>
-                </Grid>
-
-                <Box
-                  sx={{
-                    mt: 3,
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    gap: 2,
-                  }}
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 3 }}
                 >
-                  <Button variant="outlined">Reset to Defaults</Button>
-                  <Button variant="contained">Save Configuration</Button>
-                </Box>
+                  Calls the real <code>/predict</code> endpoint using{" "}
+                  <strong>
+                    {selectedModel?.displayName || "the selected model"}
+                  </strong>
+                  .
+                </Typography>
+
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={12} sm={7}>
+                    <Autocomplete
+                      options={patients}
+                      getOptionLabel={(p) => `${p.name} (${p.id})`}
+                      value={selectedPatient}
+                      onChange={(_e, val) => setSelectedPatient(val)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Search existing patient"
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={5}>
+                    <TextField
+                      fullWidth
+                      label="…or enter a patient ID"
+                      value={manualPatientId}
+                      onChange={(e) => {
+                        setManualPatientId(e.target.value);
+                        setSelectedPatient(null);
+                      }}
+                      disabled={!!selectedPatient}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Button
+                  variant="contained"
+                  startIcon={<PlayArrowIcon />}
+                  onClick={handleRunPrediction}
+                  disabled={running || !selectedModel}
+                  sx={{ mt: 3 }}
+                >
+                  {running ? "Running…" : "Run Prediction"}
+                </Button>
+
+                {predictionError && (
+                  <Alert severity="error" sx={{ mt: 3 }}>
+                    {predictionError}
+                  </Alert>
+                )}
+
+                {predictionResult && (
+                  <Box sx={{ mt: 3 }}>
+                    <Divider sx={{ mb: 2 }} />
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6}>
+                        <Card variant="outlined">
+                          <CardContent>
+                            <Typography
+                              variant="subtitle2"
+                              color="text.secondary"
+                            >
+                              Risk Score
+                            </Typography>
+                            <Typography
+                              variant="h4"
+                              color="primary.main"
+                              sx={{ fontWeight: 700 }}
+                            >
+                              {(
+                                (predictionResult.predictions?.risk_score ??
+                                  predictionResult.predictions?.risk ??
+                                  0) * 100
+                              ).toFixed(1)}
+                              %
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Card variant="outlined">
+                          <CardContent>
+                            <Typography
+                              variant="subtitle2"
+                              color="text.secondary"
+                            >
+                              Top Contributing Features
+                            </Typography>
+                            <Box
+                              sx={{
+                                mt: 1,
+                                display: "flex",
+                                gap: 0.5,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              {(
+                                predictionResult.predictions?.top_features || []
+                              ).map((f) => (
+                                <Chip key={f} label={f} size="small" />
+                              ))}
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    </Grid>
+                    <Typography
+                      variant="caption"
+                      color="text.disabled"
+                      sx={{ mt: 2, display: "block" }}
+                    >
+                      Request ID: {predictionResult.request_id} · Model:{" "}
+                      {predictionResult.model_name}{" "}
+                      {predictionResult.model_version} ·{" "}
+                      {predictionResult.timestamp}
+                    </Typography>
+                  </Box>
+                )}
               </CardContent>
             )}
           </Card>
-
-          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
-            <Button variant="outlined" startIcon={<CloudDownloadIcon />}>
-              Export Model
-            </Button>
-            <Button variant="contained" startIcon={<TuneIcon />}>
-              Retrain Model
-            </Button>
-          </Box>
         </Grid>
       </Grid>
     </Box>

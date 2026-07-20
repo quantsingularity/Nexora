@@ -1,11 +1,17 @@
 ---
 # roles/webserver/tasks/main.yml
+#
+# NOTE: this role installs and configures nginx as a reverse proxy + static
+# file server (see templates/nginx.conf.j2), but does not install or start
+# the actual Nexora backend process (code/backend, a Python/FastAPI app;
+# see ../../../code/Dockerfile) that nginx proxies /api to on localhost:
+# {{ app_port }}. Deploy that separately (e.g. via Docker, as in
+# ../../docker-compose.yml) before relying on this host to serve real
+# traffic.
 - name: Install web server packages
   yum:
     name:
       - nginx
-      - nodejs
-      - npm
     state: present
 
 - name: Create web application directory

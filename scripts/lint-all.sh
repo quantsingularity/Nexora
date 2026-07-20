@@ -9,10 +9,10 @@ set -euo pipefail # Exit on error, exit on unset variable, fail on pipe error
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_PATH="$PROJECT_ROOT/venv"
 FRONTEND_DIR="$PROJECT_ROOT/web-frontend"
-PYTHON_DIRS=("src" "tests" "notebooks")
+PYTHON_DIRS=("code")
 JS_DIRS=("$FRONTEND_DIR/src")
-YAML_DIRS=("config" "deployments" "infrastructure" ".github/workflows")
-TERRAFORM_DIRS=("infrastructure/terraform" "deployments/terraform")
+YAML_DIRS=("infrastructure" ".github/workflows")
+TERRAFORM_DIRS=("infrastructure/terraform")
 
 # --- Utility Functions ---
 
@@ -34,9 +34,9 @@ ensure_venv() {
   echo "Virtual environment activated."
 
   # Install/Update Python dependencies
-  echo "Installing/Updating Python dependencies from src/requirements.txt..."
+  echo "Installing/Updating Python dependencies from code/requirements.txt..."
   pip install --upgrade pip setuptools wheel > /dev/null
-  pip install -r "$PROJECT_ROOT/src/requirements.txt"
+  pip install -r "$PROJECT_ROOT/code/requirements.txt"
   
   # Install linting tools
   echo "Installing/Updating Python linting tools..."
@@ -105,7 +105,7 @@ echo "Running pylint for more comprehensive linting..."
 for dir in "${PYTHON_DIRS[@]}"; do
   if [ -d "$PROJECT_ROOT/$dir" ]; then
     echo "Linting Python files in $dir with pylint..."
-    find "$PROJECT_ROOT/$dir" -type f -name "*.py" | xargs python -m pylint --disable=C0111,C0103,C0303,W0621,C0301,W0612,W0611,R0913,R0914,R0915
+    find "$PROJECT_ROOT/$dir" -type f -name "*.py" -print0 | xargs -0 --no-run-if-empty python -m pylint --disable=C0111,C0103,C0303,W0621,C0301,W0612,W0611,R0913,R0914,R0915
   else
     echo "Directory $dir not found. Skipping pylint."
   fi
@@ -172,7 +172,7 @@ if command_exists terraform; then
   for dir in "${TERRAFORM_DIRS[@]}"; do
     if [ -d "$PROJECT_ROOT/$dir" ]; then
       echo "Processing Terraform files in $dir..."
-      (cd "$PROJECT_ROOT/$dir" && terraform fmt -recursive && terraform init -code=false && terraform validate)
+      (cd "$PROJECT_ROOT/$dir" && terraform fmt -recursive && terraform init -backend=false && terraform validate)
     else
       echo "Directory $dir not found. Skipping Terraform processing."
     fi

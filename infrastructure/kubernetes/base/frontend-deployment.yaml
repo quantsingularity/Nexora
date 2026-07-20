@@ -18,6 +18,11 @@ spec:
         - name: "{{ .Values.appName }}-frontend"
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
           imagePullPolicy: "{{ .Values.frontend.image.pullPolicy }}"
+          # NOTE: this is a static build (Parcel-built React SPA served by
+          # nginx); REACT_APP_API_BASE_URL is compiled into the JS bundle
+          # at `docker build` time (see docker/frontend/Dockerfile) and
+          # cannot be changed by a runtime container env var here. Set
+          # `.Values.frontend.apiUrl` as a Docker build-arg in CI instead.
           ports:
             - containerPort: { { .Values.frontend.containerPort } }
           resources:
@@ -27,20 +32,15 @@ spec:
             requests:
               cpu: "{{ .Values.frontend.resources.requests.cpu }}"
               memory: "{{ .Values.frontend.resources.requests.memory }}"
-          env:
-            - name: REACT_APP_API_URL
-              value: "{{ .Values.frontend.apiUrl }}"
-            - name: REACT_APP_ENV
-              value: "{{ .Values.environment }}"
           livenessProbe:
             httpGet:
-              path: /
+              path: /health
               port: { { .Values.frontend.containerPort } }
             initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /
+              path: /health
               port: { { .Values.frontend.containerPort } }
             initialDelaySeconds: 5
             periodSeconds: 5

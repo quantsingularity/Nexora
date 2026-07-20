@@ -3,11 +3,7 @@ kind: ConfigMap
 metadata:
   name: "{{ .Values.appName }}-config"
 data:
-  API_URL: "{{ .Values.code.apiUrl }}"
-  REDIS_HOST: "{{ .Values.appName }}-redis"
-  REDIS_PORT: "{{ .Values.redis.containerPort }}"
-  DATABASE_HOST: "{{ .Values.appName }}-database"
-  DATABASE_PORT: "{{ .Values.database.containerPort }}"
-  DATABASE_NAME: "{{ .Values.database.name }}"
-  DATABASE_USER: "{{ .Values.database.user }}"
+  FHIR_SERVER_URL: "{{ .Values.backend.fhirServerUrl }}"
+  JWT_ALGORITHM: "{{ .Values.backend.jwtAlgorithm }}"
+  JWT_EXPIRE_MINUTES: "{{ .Values.backend.jwtExpireMinutes }}"
   LOG_LEVEL: "{{ .Values.logLevel }}"

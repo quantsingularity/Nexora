@@ -124,12 +124,17 @@ if [[ ! -d "$RESOURCES_DIR" ]]; then
     exit 1
 fi
 
+if [[ ! "$BATCH_SIZE" =~ ^[0-9]+$ || "$BATCH_SIZE" -eq 0 ]]; then
+    echo "Error: --batch-size must be a positive integer (got: $BATCH_SIZE)"
+    exit 1
+fi
+
 # Setup logging
 log() {
     local level="$1"
     local message="$2"
     local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-    echo "[$timestamp] [$level] $message" | tee -a "$LOG_FILE"
+    echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
 
     if [[ "$VERBOSE" == "true" || "$level" != "DEBUG" ]]; then
         echo "[$level] $message"
@@ -158,9 +163,10 @@ get_oauth_token() {
 
     # Extract token endpoint from FHIR server metadata
     local token_endpoint
-    token_endpoint=$(curl -s "$FHIR_SERVER/metadata" | jq -r '.rest[0].security.extension[] | select(.url=="http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris") | .extension[] | select(.url=="token") | .valueUri')
+    local status
+    token_endpoint=$(curl -s "$FHIR_SERVER/metadata" | jq -r '.rest[0].security.extension[] | select(.url=="http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris") | .extension[] | select(.url=="token") | .valueUri') && status=0 || status=$?
 
-    if [[ -z "$token_endpoint" ]]; then
+    if [[ $status -ne 0 || -z "$token_endpoint" ]]; then
         log "ERROR" "Could not determine OAuth token endpoint from server metadata"
         exit 1
     fi
@@ -170,7 +176,12 @@ get_oauth_token() {
     response=$(curl -s -X POST "$token_endpoint" \
         -d "grant_type=client_credentials" \
         -d "client_id=$CLIENT_ID" \
-        -d "client_secret=$CLIENT_SECRET")
+        -d "client_secret=$CLIENT_SECRET") && status=0 || status=$?
+
+    if [[ $status -ne 0 ]]; then
+        log "ERROR" "Failed to request OAuth token: curl error $status"
+        exit 1
+    fi
 
     AUTH_TOKEN=$(echo "$response" | jq -r '.access_token')
 
@@ -221,9 +232,11 @@ upload_resource() {
     fi
 
     # Execute the curl command
+    # The `&& status=0 || status=$?` form keeps this compatible with
+    # `set -e` while still capturing curl's real exit code.
     local response
-    response=$(eval "$curl_cmd")
-    local status=$?
+    local status
+    response=$(eval "$curl_cmd") && status=0 || status=$?
 
     if [[ $status -ne 0 ]]; then
         log "ERROR" "Failed to upload resource $file: curl error $status"
@@ -294,9 +307,11 @@ upload_batch() {
     fi
 
     # Execute the curl command
+    # (see upload_resource() for the reasoning behind this assignment
+    # pattern with `set -e`)
     local response
-    response=$(eval "$curl_cmd")
-    local status=$?
+    local status
+    response=$(eval "$curl_cmd") && status=0 || status=$?
 
     rm "$batch_file"
 
@@ -360,6 +375,8 @@ main() {
     local processed=0
     local success=0
     local failed=0
+    local batch_num=0
+    local total_batches=$((total_files / BATCH_SIZE + (total_files % BATCH_SIZE > 0 ? 1 : 0)))
 
     while [[ $processed -lt $total_files ]]; do
         local batch=()
@@ -371,7 +388,8 @@ main() {
             processed=$((processed + 1))
         done
 
-        log "INFO" "Uploading batch $((processed / BATCH_SIZE)) of $((total_files / BATCH_SIZE + (total_files % BATCH_SIZE > 0 ? 1 : 0)))..."
+        batch_num=$((batch_num + 1))
+        log "INFO" "Uploading batch $batch_num of $total_batches..."
 
         if upload_batch "${batch[@]}"; then
             success=$((success + batch_size))

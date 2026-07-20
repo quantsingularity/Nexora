@@ -1,6 +1,7 @@
 """Tests for ml_core.feature_store"""
 
 import pytest
+
 from ml_core.feature_store import FeatureStore
 
 

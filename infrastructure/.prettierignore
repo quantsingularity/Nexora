@@ -1,0 +1,46 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Helm chart templates, NOT plain YAML
+# ─────────────────────────────────────────────────────────────────────────────
+# These files contain Go-template syntax (`{{ .Values.x }}`) that only
+# becomes valid YAML *after* `helm template` renders it. Prettier's YAML
+# parser doesn't understand Helm templates and will either fail to parse
+# these files or "fix" the `{{ }}` delimiters into something Helm can no
+# longer parse (e.g. inserting a space: `{{ .Values.x }}` -> `{ { .Values.x
+# } }`). Do not remove this exclusion without also configuring a
+# Helm-aware formatter.
+infrastructure/kubernetes/base/
+infrastructure/kubernetes/templates/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Build output / dependencies / generated files
+# ─────────────────────────────────────────────────────────────────────────────
+node_modules/
+dist/
+build/
+coverage/
+*.egg-info/
+
+# Python
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Package lockfiles (machine-generated, not meant to be reformatted)
+package-lock.json
+yarn.lock
+
+# Logs and local env files
+*.log
+.env
+.env.*
+!.env.example
+
+# Mobile (Expo/React Native) build artifacts
+mobile-frontend/.expo/
+mobile-frontend/dist/

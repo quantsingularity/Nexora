@@ -193,12 +193,12 @@ Process multiple patients and generate predictions in batch mode.
 
 | Argument       | Type    | Required | Default                       | Description                             |
 | -------------- | ------- | -------: | ----------------------------- | --------------------------------------- |
-| `--input`      | path    |       ✅ | N/A                           | Input file with patient data (JSON/CSV) |
-| `--output`     | path    |       ✅ | N/A                           | Output file for predictions             |
-| `--model`      | string  |       ✅ | N/A                           | Model name to use                       |
-| `--config`     | path    |       ❌ | `config/clinical_config.yaml` | Configuration file                      |
-| `--batch-size` | integer |       ❌ | `100`                         | Batch size for processing               |
-| `--verbose`    | flag    |       ❌ | `False`                       | Enable verbose logging                  |
+| `--input`      | path    |      Yes | N/A                           | Input file with patient data (JSON/CSV) |
+| `--output`     | path    |      Yes | N/A                           | Output file for predictions             |
+| `--model`      | string  |      Yes | N/A                           | Model name to use                       |
+| `--config`     | path    |       No | `config/clinical_config.yaml` | Configuration file                      |
+| `--batch-size` | integer |       No | `100`                         | Batch size for processing               |
+| `--verbose`    | flag    |       No | `False`                       | Enable verbose logging                  |
 
 **Examples**:
 
@@ -237,11 +237,11 @@ Generate HIPAA compliance reports from audit logs.
 
 | Argument       | Type   | Required | Default               | Description                    |
 | -------------- | ------ | -------: | --------------------- | ------------------------------ |
-| `--start-date` | date   |       ✅ | N/A                   | Report start date (YYYY-MM-DD) |
-| `--end-date`   | date   |       ✅ | N/A                   | Report end date (YYYY-MM-DD)   |
-| `--output`     | path   |       ✅ | N/A                   | Output PDF file path           |
-| `--audit-db`   | path   |       ❌ | `audit/phi_access.db` | Audit database path            |
-| `--format`     | string |       ❌ | `pdf`                 | Output format (pdf/html/json)  |
+| `--start-date` | date   |      Yes | N/A                   | Report start date (YYYY-MM-DD) |
+| `--end-date`   | date   |      Yes | N/A                   | Report end date (YYYY-MM-DD)   |
+| `--output`     | path   |      Yes | N/A                   | Output PDF file path           |
+| `--audit-db`   | path   |       No | `audit/phi_access.db` | Audit database path            |
+| `--format`     | string |       No | `pdf`                 | Output format (pdf/html/json)  |
 
 **Examples**:
 
@@ -279,9 +279,9 @@ Validate deployment environment and dependencies.
 
 | Argument          | Type   | Required | Default | Description                           |
 | ----------------- | ------ | -------: | ------- | ------------------------------------- |
-| `--components`    | string |       ❌ | `all`   | Components to check (comma-separated) |
-| `--output`        | path   |       ❌ | stdout  | Output file (JSON format)             |
-| `--fail-on-error` | flag   |       ❌ | `False` | Exit with error code on failure       |
+| `--components`    | string |       No | `all`   | Components to check (comma-separated) |
+| `--output`        | path   |       No | stdout  | Output file (JSON format)             |
+| `--fail-on-error` | flag   |       No | `False` | Exit with error code on failure       |
 
 **Examples**:
 
@@ -311,10 +311,10 @@ Track data transformations and provenance.
 
 | Argument            | Type   | Required | Default               | Description               |
 | ------------------- | ------ | -------: | --------------------- | ------------------------- |
-| `--input`           | path   |       ✅ | N/A                   | Input data file           |
-| `--output`          | path   |       ❌ | `lineage_report.html` | Output report file        |
-| `--openlineage-url` | url    |       ❌ | None                  | OpenLineage server URL    |
-| `--format`          | string |       ❌ | `html`                | Output format (html/json) |
+| `--input`           | path   |      Yes | N/A                   | Input data file           |
+| `--output`          | path   |       No | `lineage_report.html` | Output report file        |
+| `--openlineage-url` | url    |       No | None                  | OpenLineage server URL    |
+| `--format`          | string |       No | `html`                | Output format (html/json) |
 
 **Examples**:
 
@@ -344,9 +344,9 @@ Validate deployed services and configurations.
 
 | Argument        | Type   | Required | Default  | Description                                |
 | --------------- | ------ | -------: | -------- | ------------------------------------------ |
-| `--environment` | string |       ✅ | N/A      | Environment to validate (dev/staging/prod) |
-| `--namespace`   | string |       ❌ | `nexora` | Kubernetes namespace                       |
-| `--output`      | path   |       ❌ | stdout   | Validation report output                   |
+| `--environment` | string |      Yes | N/A      | Environment to validate (dev/staging/prod) |
+| `--namespace`   | string |       No | `nexora` | Kubernetes namespace                       |
+| `--output`      | path   |       No | stdout   | Validation report output                   |
 
 **Examples**:
 

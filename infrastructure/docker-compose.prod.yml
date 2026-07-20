@@ -44,45 +44,17 @@ services:
     image: nexora/backend:${APP_VERSION}
     restart: always
     environment:
-      - NODE_ENV=production
-      - LOG_LEVEL=warn
+      - LOG_LEVEL=WARNING
     deploy:
-      replicas: 2
+      # The app persists accounts/patients to SQLite on a shared volume;
+      # SQLite serializes concurrent writers via file locks, so running
+      # more than one replica risks "database is locked" errors under
+      # load. Scale by upgrading to a client-server database first.
+      replicas: 1
       resources:
         limits:
           cpus: "1.00"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 256M
-
-  mysql:
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: "2.00"
           memory: 1G
         reservations:
-          cpus: "0.50"
+          cpus: "0.25"
           memory: 512M
-
-  redis:
-    restart: always
-    command: >
-      redis-server /usr/local/etc/redis/redis.conf
-      --requirepass ${REDIS_PASSWORD}
-      --maxmemory 200mb
-      --maxmemory-policy allkeys-lru
-    deploy:
-      resources:
-        limits:
-          cpus: "0.50"
-          memory: 256M
-        reservations:
-          cpus: "0.10"
-          memory: 128M
-
-  migrate:
-    image: nexora/backend:${APP_VERSION}
-    restart: "no"

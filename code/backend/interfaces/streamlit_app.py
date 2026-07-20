@@ -31,7 +31,6 @@ except ImportError:
 if _ST_AVAILABLE:
     st.set_page_config(
         page_title="Nexora Clinical AI",
-        page_icon="🏥",
         layout="wide",
         initial_sidebar_state="expanded",
     )
@@ -76,10 +75,10 @@ def _get_audit_logger() -> Any:
 
 def _risk_badge(score: float) -> str:
     if score >= 0.7:
-        return f"🔴 HIGH ({score:.0%})"
+        return f"HIGH ({score:.0%})"
     if score >= 0.4:
-        return f"🟡 MODERATE ({score:.0%})"
-    return f"🟢 LOW ({score:.0%})"
+        return f"MODERATE ({score:.0%})"
+    return f"LOW ({score:.0%})"
 
 
 def _make_dummy_patient(patient_id: str) -> Dict[str, Any]:
@@ -119,7 +118,7 @@ def _make_dummy_patient(patient_id: str) -> Dict[str, Any]:
 
 
 def page_predict_single() -> None:
-    st.header("🔍 Single Patient Risk Assessment")
+    st.header("Single Patient Risk Assessment")
 
     col1, col2 = st.columns([1, 2])
     with col1:
@@ -204,7 +203,7 @@ def page_predict_single() -> None:
 
 
 def page_predict_batch() -> None:
-    st.header("📋 Batch Risk Assessment")
+    st.header("Batch Risk Assessment")
     st.markdown(
         "Upload a CSV with a `patient_id` column to run predictions on multiple patients."
     )
@@ -260,7 +259,7 @@ def page_predict_batch() -> None:
 
 
 def page_audit_log() -> None:
-    st.header("🔒 PHI Audit Log")
+    st.header("PHI Audit Log")
 
     audit = _get_audit_logger()
     if not audit:
@@ -320,7 +319,7 @@ def _show_demo_audit_table() -> None:
 
 
 def page_drift_monitoring() -> None:
-    st.header("📡 Concept Drift Monitoring")
+    st.header("Concept Drift Monitoring")
 
     model_options = ["deep_fm", "survival_analysis", "transformer_model"]
     selected = st.selectbox("Select model to monitor", model_options)
@@ -344,8 +343,7 @@ def page_drift_monitoring() -> None:
             result = _demo_drift_result(selected)
 
         status = result.get("status", "Unknown")
-        color = "🟢" if status == "Stable" else "🔴"
-        st.subheader(f"Status: {color} {status}")
+        st.subheader(f"Status: {status}")
         st.json(result)
 
 
@@ -359,7 +357,7 @@ def _demo_drift_result(model_name: str) -> Dict[str, Any]:
 
 
 def page_fairness() -> None:
-    st.header("⚖️ Fairness Metrics")
+    st.header("Fairness Metrics")
     st.markdown(
         "Evaluate model fairness across demographic groups using synthetic cohort data."
     )
@@ -420,13 +418,13 @@ def page_fairness() -> None:
 
 
 def page_model_overview() -> None:
-    st.header("🤖 Registered Models")
+    st.header("Registered Models")
     registry = _get_registry()
     if registry and _ML_AVAILABLE:
         try:
             models = registry.list_models()
             for name, versions in models.items():
-                with st.expander(f"📦 {name}"):
+                with st.expander(f"{name}"):
                     for ver, cfg in versions.items():
                         st.json(cfg)
         except Exception as e:
@@ -447,7 +445,7 @@ def _show_demo_models() -> None:
         },
     }
     for name, versions in demo.items():
-        with st.expander(f"📦 {name}"):
+        with st.expander(f"{name}"):
             st.json(versions)
 
 
@@ -460,7 +458,7 @@ def main() -> None:
     if not _ST_AVAILABLE:
         raise RuntimeError("Streamlit is not installed. Run: pip install streamlit")
 
-    st.sidebar.title("🏥 Nexora Clinical AI")
+    st.sidebar.title("Nexora Clinical AI")
     st.sidebar.markdown("---")
 
     pages = {
@@ -475,7 +473,7 @@ def main() -> None:
     selection = st.sidebar.radio("Navigate", list(pages.keys()))
 
     if not _ML_AVAILABLE:
-        st.sidebar.warning("⚠️ Running in demo mode (ML libraries not fully loaded).")
+        st.sidebar.warning("Running in demo mode (ML libraries not fully loaded).")
 
     st.sidebar.markdown("---")
     st.sidebar.caption(f"Nexora v2.0.0 · {datetime.now().strftime('%Y-%m-%d')}")

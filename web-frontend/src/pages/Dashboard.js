@@ -36,6 +36,8 @@ import {
 } from "chart.js";
 import { useCallback, useEffect, useState } from "react";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 ChartJS.register(
@@ -103,6 +105,8 @@ const StatCard = ({
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
@@ -190,7 +194,9 @@ const Dashboard = () => {
       >
         <Box>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-            Clinical Dashboard
+            {user?.full_name
+              ? `Welcome back, ${user.full_name.split(" ")[0]}`
+              : "Clinical Dashboard"}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             Overview of patient population and model performance
@@ -205,8 +211,12 @@ const Dashboard = () => {
           >
             Refresh
           </Button>
-          <Button variant="contained" startIcon={<AssignmentIcon />}>
-            Generate Report
+          <Button
+            variant="contained"
+            startIcon={<AssignmentIcon />}
+            onClick={() => navigate("/patients?risk=high")}
+          >
+            View High-Risk Patients
           </Button>
         </Box>
       </Box>
@@ -252,8 +262,6 @@ const Dashboard = () => {
                 subtitle="Total patients under care"
                 icon={<PeopleIcon />}
                 color="primary"
-                trend="up"
-                trendValue="12"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -267,15 +275,13 @@ const Dashboard = () => {
                 ).toFixed(1)}% of total patients`}
                 icon={<TrendingUpIcon />}
                 color="error"
-                trend="down"
-                trendValue="3"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <StatCard
                 title="Avg. Length of Stay"
                 value={`${dashboardData.stats.avgLengthOfStay} days`}
-                subtitle="Last 30 days"
+                subtitle="Across current cohort"
                 icon={<AssignmentIcon />}
                 color="info"
               />
@@ -284,7 +290,7 @@ const Dashboard = () => {
               <StatCard
                 title="Active Models"
                 value={dashboardData.stats.activeModels}
-                subtitle="Last updated: Today"
+                subtitle="From the ml_core model registry"
                 icon={<ScienceIcon />}
                 color="success"
               />

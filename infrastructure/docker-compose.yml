@@ -3,6 +3,15 @@ version: "3.9"
 # ─────────────────────────────────────────────────────────────────────────────
 # Nexora – docker-compose.yml
 # Production-ready compose file. Use docker-compose.override.yml for local dev.
+#
+# Services:
+#   nginx    – reverse proxy / gateway (routes /api/* to backend, / to frontend)
+#   frontend – the React (Parcel) SPA in web-frontend/, served via nginx
+#   backend  – the Python/FastAPI clinical prediction API in code/
+#
+# The backend is self-contained (SQLite for accounts/patients, local file
+# volumes for models/artifacts/audit logs); there is no external database
+# or cache service to run.
 # ─────────────────────────────────────────────────────────────────────────────
 
 x-logging: &default-logging
@@ -27,18 +36,18 @@ networks:
   backend-net:
     driver: bridge
     name: nexora-backend-net
-  db-net:
-    driver: bridge
-    name: nexora-db-net
-    internal: true # database network is never reachable from outside
 
 volumes:
-  mysql-data:
-    name: nexora-mysql-data
-  redis-data:
-    name: nexora-redis-data
   nginx-logs:
     name: nexora-nginx-logs
+  nexora-audit:
+    name: nexora-audit
+  nexora-data:
+    name: nexora-data
+  nexora-artifacts:
+    name: nexora-artifacts
+  nexora-models:
+    name: nexora-models
 
 services:
   # ── Gateway / Reverse Proxy ──────────────────────────────────────────────
@@ -74,21 +83,18 @@ services:
           cpus: "0.50"
           memory: 128M
 
-  # ── Frontend (React SPA) ─────────────────────────────────────────────────
+  # ── Frontend (React SPA, built with Parcel) ──────────────────────────────
   frontend:
     build:
-      context: ./docker/frontend
-      dockerfile: Dockerfile
+      context: ../web-frontend
+      dockerfile: ../infrastructure/docker/frontend/Dockerfile
       args:
-        REACT_APP_API_URL: ${REACT_APP_API_URL:-/api}
-        REACT_APP_ENV: ${APP_ENV:-production}
+        REACT_APP_API_BASE_URL: ${REACT_APP_API_BASE_URL:-/api}
     image: nexora/frontend:${APP_VERSION:-latest}
     container_name: nexora-frontend
     <<: *default-restart
     networks:
       - frontend-net
-    environment:
-      - REACT_APP_API_URL=${REACT_APP_API_URL:-/api}
     healthcheck:
       <<: *healthcheck-defaults
       test: ["CMD", "wget", "-qO-", "http://localhost/health"]
@@ -99,11 +105,12 @@ services:
           cpus: "0.25"
           memory: 64M
 
-  # ── Backend (Node.js API) ────────────────────────────────────────────────
+  # ── Backend (Python / FastAPI clinical prediction API) ───────────────────
   backend:
     build:
-      context: ./docker/backend
+      context: ../code
       dockerfile: Dockerfile
+      target: runtime
     image: nexora/backend:${APP_VERSION:-latest}
     container_name: nexora-backend
     <<: *default-restart
@@ -111,117 +118,32 @@ services:
       - frontend-net
       - backend-net
     environment:
-      - NODE_ENV=${APP_ENV:-production}
-      - PORT=3000
-      - DATABASE_URL=mysql://${DB_USER:-appuser}:${DB_PASSWORD}@mysql:3306/${DB_NAME:-nexoradb}
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=${JWT_SECRET}
-      - API_KEY=${API_KEY}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - HOST=0.0.0.0
+      - PORT=8000
+      - AUDIT_DB_PATH=/app/audit/phi_access.db
+      - APP_DB_PATH=/app/data/nexora_app.db
+      - FEATURE_STORE_PATH=/app/data/feature_store
+      - ARTIFACT_STORE_PATH=/app/artifacts
+      - FHIR_SERVER_URL=${FHIR_SERVER_URL:-http://mock-fhir-server/R4}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_EXPIRE_MINUTES=${JWT_EXPIRE_MINUTES:-10080}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
     env_file:
       - .env
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    volumes:
+      - nexora-audit:/app/audit
+      - nexora-data:/app/data
+      - nexora-artifacts:/app/artifacts
+      - nexora-models:/app/models
     healthcheck:
       <<: *healthcheck-defaults
-      test:
-        - "CMD"
-        - "node"
-        - "-e"
-        - "require('http').get('http://localhost:3000/health', r => process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       start_period: 20s
     logging: *default-logging
     deploy:
       resources:
         limits:
           cpus: "1.00"
-          memory: 512M
-
-  # ── MySQL 8 ──────────────────────────────────────────────────────────────
-  mysql:
-    image: mysql:8.0
-    container_name: nexora-mysql
-    <<: *default-restart
-    networks:
-      - backend-net
-      - db-net
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME:-nexoradb}
-      MYSQL_USER: ${DB_USER:-appuser}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - mysql-data:/var/lib/mysql
-      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/nexora.cnf:ro
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-      - --default-authentication-plugin=mysql_native_password
-      - --innodb-buffer-pool-size=256M
-      - --slow-query-log=ON
-      - --slow-query-log-file=/var/log/mysql/slow.log
-      - --long-query-time=2
-      - --general-log=OFF
-      - --bind-address=0.0.0.0
-    healthcheck:
-      <<: *healthcheck-defaults
-      test:
-        - "CMD"
-        - "mysqladmin"
-        - "ping"
-        - "-h"
-        - "localhost"
-        - "-u"
-        - "root"
-        - "--password=${DB_ROOT_PASSWORD}"
-      start_period: 40s
-    logging: *default-logging
-    deploy:
-      resources:
-        limits:
-          cpus: "1.00"
-          memory: 512M
-
-  # ── Redis 7 ──────────────────────────────────────────────────────────────
-  redis:
-    image: redis:7-alpine
-    container_name: nexora-redis
-    <<: *default-restart
-    networks:
-      - backend-net
-    volumes:
-      - redis-data:/data
-      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
-    command: redis-server /usr/local/etc/redis/redis.conf
-    healthcheck:
-      <<: *healthcheck-defaults
-      test: ["CMD", "redis-cli", "ping"]
-      start_period: 10s
-    logging: *default-logging
-    deploy:
-      resources:
-        limits:
-          cpus: "0.50"
-          memory: 256M
-
-  # ── Database migrations (runs once, then exits) ──────────────────────────
-  migrate:
-    image: nexora/backend:${APP_VERSION:-latest}
-    container_name: nexora-migrate
-    networks:
-      - backend-net
-    environment:
-      - DATABASE_URL=mysql://${DB_USER:-appuser}:${DB_PASSWORD}@mysql:3306/${DB_NAME:-nexoradb}
-      - NODE_ENV=${APP_ENV:-production}
-    env_file:
-      - .env
-    depends_on:
-      mysql:
-        condition: service_healthy
-    command: ["node", "dist/migrations/run.js"]
-    restart: "no"
-    logging: *default-logging
+          memory: 1G

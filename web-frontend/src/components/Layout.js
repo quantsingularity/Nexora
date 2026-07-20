@@ -1,9 +1,9 @@
 import {
-  AccountCircle,
   ChevronLeft as ChevronLeftIcon,
   Dashboard as DashboardIcon,
   Home as HomeIcon,
   Menu as MenuIcon,
+  NotificationsActive as NotificationsActiveIcon,
   Notifications as NotificationsIcon,
   People as PeopleIcon,
   Science as ScienceIcon,
@@ -30,8 +30,10 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
 
 const drawerWidth = 240;
 
@@ -39,24 +41,58 @@ const menuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
   { text: "Patients", icon: <PeopleIcon />, path: "/patients" },
   { text: "Models", icon: <ScienceIcon />, path: "/models" },
+  { text: "Alerts", icon: <NotificationsActiveIcon />, path: "/alerts" },
   { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
 ];
+
+const getInitials = (name) =>
+  (name || "")
+    .split(" ")
+    .filter(Boolean)
+    .map((n) => n[0].toUpperCase())
+    .slice(0, 2)
+    .join("");
 
 function Layout() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [systemStatus, setSystemStatus] = useState("checking");
 
   const handleDrawerToggle = () => setOpen((prev) => !prev);
   const handleProfileMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleProfileMenuClose = () => setAnchorEl(null);
 
-  const handleLogout = () => {
+  useEffect(() => {
+    let mounted = true;
+    api
+      .getNotifications()
+      .then((data) => {
+        if (mounted) setUnreadCount(data.unread || 0);
+      })
+      .catch(() => {
+        if (mounted) setUnreadCount(0);
+      });
+    api
+      .checkHealth()
+      .then(() => mounted && setSystemStatus("healthy"))
+      .catch(() => mounted && setSystemStatus("unreachable"));
+    return () => {
+      mounted = false;
+    };
+    // Refresh whenever the route changes so the badge stays current after
+    // visiting the Alerts page.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  const handleLogout = async () => {
     handleProfileMenuClose();
-    localStorage.removeItem("auth_token");
+    await logout();
     navigate("/");
   };
 
@@ -93,7 +129,7 @@ function Layout() {
               variant="h6"
               noWrap
               component={Link}
-              to="/"
+              to="/dashboard"
               sx={{ fontWeight: 800, textDecoration: "none", color: "inherit" }}
             >
               NEXORA
@@ -119,8 +155,8 @@ function Layout() {
               </IconButton>
             </Tooltip>
             <Tooltip title="Notifications">
-              <IconButton color="inherit">
-                <Badge badgeContent={3} color="error">
+              <IconButton color="inherit" component={Link} to="/alerts">
+                <Badge badgeContent={unreadCount} color="error">
                   <NotificationsIcon />
                 </Badge>
               </IconButton>
@@ -134,7 +170,7 @@ function Layout() {
                 color="inherit"
               >
                 <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main" }}>
-                  <AccountCircle />
+                  {getInitials(user?.full_name) || "?"}
                 </Avatar>
               </IconButton>
             </Tooltip>
@@ -144,19 +180,30 @@ function Layout() {
               onClose={handleProfileMenuClose}
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-              PaperProps={{ elevation: 3, sx: { minWidth: 160, mt: 0.5 } }}
+              PaperProps={{ elevation: 3, sx: { minWidth: 220, mt: 0.5 } }}
             >
-              <MenuItem disabled>
-                <Typography variant="caption" color="text.secondary">
-                  Signed in as Admin
-                </Typography>
+              <MenuItem disabled sx={{ opacity: "1 !important" }}>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                    {user?.full_name || "Signed in"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {user?.email}
+                  </Typography>
+                </Box>
               </MenuItem>
               <Divider />
-              <MenuItem onClick={handleProfileMenuClose}>Profile</MenuItem>
-              <MenuItem onClick={handleProfileMenuClose}>My Account</MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleProfileMenuClose();
+                  navigate("/settings");
+                }}
+              >
+                Profile & Settings
+              </MenuItem>
               <Divider />
               <MenuItem onClick={handleLogout} sx={{ color: "error.main" }}>
-                Logout
+                Sign Out
               </MenuItem>
             </Menu>
           </Box>
@@ -193,18 +240,18 @@ function Layout() {
                       borderRadius: "0 24px 24px 0",
                       mx: 1,
                       backgroundColor: active
-                        ? "rgba(25, 118, 210, 0.12)"
+                        ? "rgba(37, 99, 235, 0.12)"
                         : "transparent",
                       "&:hover": {
                         backgroundColor: active
-                          ? "rgba(25, 118, 210, 0.18)"
-                          : "rgba(25, 118, 210, 0.06)",
+                          ? "rgba(37, 99, 235, 0.18)"
+                          : "rgba(37, 99, 235, 0.06)",
                       },
                       "&.Mui-selected": {
-                        backgroundColor: "rgba(25, 118, 210, 0.12)",
+                        backgroundColor: "rgba(37, 99, 235, 0.12)",
                       },
                       "&.Mui-selected:hover": {
-                        backgroundColor: "rgba(25, 118, 210, 0.18)",
+                        backgroundColor: "rgba(37, 99, 235, 0.18)",
                       },
                     }}
                     onClick={isMobile ? handleDrawerToggle : undefined}
@@ -215,7 +262,13 @@ function Layout() {
                         minWidth: 40,
                       }}
                     >
-                      {item.icon}
+                      {item.text === "Alerts" && unreadCount > 0 ? (
+                        <Badge badgeContent={unreadCount} color="error">
+                          {item.icon}
+                        </Badge>
+                      ) : (
+                        item.icon
+                      )}
                     </ListItemIcon>
                     <ListItemText
                       primary={item.text}
@@ -244,8 +297,13 @@ function Layout() {
             <Box
               sx={{
                 p: 1.5,
-                bgcolor: "success.light",
-                color: "success.contrastText",
+                bgcolor:
+                  systemStatus === "healthy"
+                    ? "success.light"
+                    : systemStatus === "checking"
+                      ? "grey.200"
+                      : "error.light",
+                color: systemStatus === "checking" ? "text.secondary" : "white",
                 borderRadius: 2,
                 fontSize: "0.8rem",
                 display: "flex",
@@ -258,23 +316,27 @@ function Layout() {
                   width: 8,
                   height: 8,
                   borderRadius: "50%",
-                  bgcolor: "white",
+                  bgcolor:
+                    systemStatus === "checking" ? "text.disabled" : "white",
                   flexShrink: 0,
                   "@keyframes pulse": {
                     "0%": { boxShadow: "0 0 0 0 rgba(255,255,255,0.6)" },
                     "70%": { boxShadow: "0 0 0 6px rgba(255,255,255,0)" },
                     "100%": { boxShadow: "0 0 0 0 rgba(255,255,255,0)" },
                   },
-                  animation: "pulse 2s infinite",
+                  animation:
+                    systemStatus === "healthy" ? "pulse 2s infinite" : "none",
                 }}
               />
-              All systems operational
+              {systemStatus === "healthy" && "All systems operational"}
+              {systemStatus === "checking" && "Checking backend…"}
+              {systemStatus === "unreachable" && "Backend unreachable"}
             </Box>
           </Box>
 
           <Box sx={{ px: 2, mt: 3 }}>
             <Typography variant="caption" color="text.disabled">
-              Nexora v1.2.0
+              Nexora v1.3.0
             </Typography>
           </Box>
         </Box>

@@ -186,6 +186,7 @@ module "database" {
   source = "./modules/database"
 
   environment         = var.environment
+  app_name            = var.app_name
   vpc_id              = module.network.vpc_id
   private_subnet_ids  = module.network.private_subnet_ids
   database_subnet_ids = module.network.database_subnet_ids

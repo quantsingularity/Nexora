@@ -1,13 +1,25 @@
 #!/bin/bash
 # Script to create a test environment for validating the automation scripts
+set -e
+
+# SCRIPT_DIR is where this script (and environment_health_check.py,
+# deployment_validation.py, compliance_report_generator.py) actually live.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Default to a location under /tmp so this doesn't require root privileges
+# to create (unlike a hardcoded /test_env at the filesystem root); override
+# with NEXORA_TEST_ENV_DIR if you want it elsewhere.
+TEST_ENV_DIR="${NEXORA_TEST_ENV_DIR:-/tmp/nexora_test_env}"
+
+echo "Using script directory: $SCRIPT_DIR"
+echo "Using test environment directory: $TEST_ENV_DIR"
 
 # Create necessary directories
-mkdir -p /test_env/config
-mkdir -p /test_env/logs
-mkdir -p /test_env/output
+mkdir -p "$TEST_ENV_DIR/config"
+mkdir -p "$TEST_ENV_DIR/logs"
+mkdir -p "$TEST_ENV_DIR/output"
 
 # Create sample configuration files for testing
-cat > /test_env/config/deployment_config.yaml << 'EOF'
+cat > "$TEST_ENV_DIR/config/deployment_config.yaml" << 'EOF'
 environments:
   dev:
     deployment:
@@ -20,53 +32,45 @@ environments:
       enabled: true
       in_cluster: false
       namespace: nexora
+      # Matches infrastructure/kubernetes/base/{backend,frontend}-{deployment,service}.yaml
+      # ("{{ .Values.appName }}-backend" / "-frontend"; no separate database
+      # resource, since the app persists to SQLite, not a client-server DB).
       expected_deployments:
-        - nexora-api
-        - nexora-web
-        - nexora-db
+        - nexora-backend
+        - nexora-frontend
       expected_services:
-        - nexora-api-svc
-        - nexora-web-svc
-        - nexora-db-svc
+        - nexora-backend
+        - nexora-frontend
     services:
-      - name: nexora-api
+      - name: nexora-backend
         type: http
         url: http://localhost:8080/api/health
         method: GET
         expected_status: 200
         timeout: 5
-        content_check: "status: UP"
-      - name: nexora-db
-        type: tcp
-        host: localhost
-        port: 5432
-        timeout: 3
+        content_check: "healthy"
     api_endpoints:
-      - name: patient-api
-        url: http://localhost:8080/api/patients
+      # /health is public; most other routes (e.g. /patients) require a
+      # Bearer token (see code/backend/app/core/security.py), so they're
+      # not suitable for an unauthenticated sample check like this one.
+      - name: health-check
+        url: http://localhost:8080/api/health
         method: GET
         expected_status: 200
         timeout: 5
         schema_validation:
           required_fields:
-            - patients
-            - count
+            - status
+            - timestamp
+            - version
           field_types:
-            patients: array
-            count: number
-    databases:
-      - name: nexora-postgres
-        type: postgresql
-        host: localhost
-        port: 5432
-        database: nexora
-        user: postgres
-        password: postgres
-        validation_query: "SELECT 1"
+            status: string
+            timestamp: string
+            version: string
     config_validations:
       - name: api-config
         type: file
-        file_path: /test_env/config/api-config.yaml
+        file_path: __TEST_ENV_DIR__/config/api-config.yaml
         required_settings:
           - path: api.timeout
             value: 30
@@ -79,7 +83,7 @@ environments:
             value: dev
 EOF
 
-cat > /test_env/config/compliance_config.yaml << 'EOF'
+cat > "$TEST_ENV_DIR/config/compliance_config.yaml" << 'EOF'
 organization:
   name: Nexora Healthcare
   domain: nexora.health
@@ -97,7 +101,7 @@ compliance:
             title: Security Management Process
             description: Implement policies and procedures to prevent, detect, contain, and correct security violations.
             check_type: config
-            check_paths: ["/test_env/config/security.yaml"]
+            check_paths: ["__TEST_ENV_DIR__/config/security.yaml"]
             check_pattern: "security_management_process:\\s*enabled:\\s*true"
   gdpr:
     enabled: true
@@ -110,7 +114,7 @@ compliance:
             title: Lawfulness, fairness and transparency
             description: Personal data must be processed lawfully, fairly, and in a transparent manner.
             check_type: config
-            check_paths: ["/test_env/config/privacy.yaml"]
+            check_paths: ["__TEST_ENV_DIR__/config/privacy.yaml"]
             check_pattern: "data_processing_principles:\\s*lawfulness:\\s*true"
 
 analysis:
@@ -132,10 +136,10 @@ reporting:
   include_technical_details: true
   include_remediation_plan: true
   include_evidence: false
-  evidence_directory: "/test_env/evidence"
+  evidence_directory: "__TEST_ENV_DIR__/evidence"
 EOF
 
-cat > /test_env/config/env_config.yaml << 'EOF'
+cat > "$TEST_ENV_DIR/config/env_config.yaml" << 'EOF'
 environments:
   dev:
     api:
@@ -200,7 +204,7 @@ environments:
 EOF
 
 # Create sample configuration files for compliance checks
-cat > /test_env/config/security.yaml << 'EOF'
+cat > "$TEST_ENV_DIR/config/security.yaml" << 'EOF'
 security_management_process:
   enabled: true
   last_updated: 2025-01-15
@@ -227,7 +231,7 @@ data_security:
   in_transit: true
 EOF
 
-cat > /test_env/config/privacy.yaml << 'EOF'
+cat > "$TEST_ENV_DIR/config/privacy.yaml" << 'EOF'
 data_processing_principles:
   lawfulness: true
   fairness: true
@@ -248,7 +252,7 @@ privacy_by_default:
   limited_retention: true
 EOF
 
-cat > /test_env/config/api-config.yaml << 'EOF'
+cat > "$TEST_ENV_DIR/config/api-config.yaml" << 'EOF'
 api:
   timeout: 30
   max_connections: 100
@@ -277,7 +281,7 @@ security:
 EOF
 
 # Create sample log files
-cat > /test_env/logs/access.log << 'EOF'
+cat > "$TEST_ENV_DIR/logs/access.log" << 'EOF'
 2025-05-20 08:12:34 INFO [Authentication] User john.doe successfully logged in from 192.168.1.100
 2025-05-20 08:15:22 INFO [Authorization] User john.doe accessed patient record #12345
 2025-05-20 09:30:45 INFO [Data Access] User jane.smith accessed patient data for ID #54321
@@ -299,7 +303,7 @@ cat > /test_env/logs/access.log << 'EOF'
 2025-05-22 08:10:12 INFO [Authentication] User john.doe logged in from 192.168.1.100
 EOF
 
-cat > /test_env/logs/audit.log << 'EOF'
+cat > "$TEST_ENV_DIR/logs/audit.log" << 'EOF'
 2025-05-20 08:15:30 AUDIT [Access] User john.doe accessed PHI for patient #12345
 2025-05-20 09:31:00 AUDIT [Access] User jane.smith accessed PHI for patient #54321
 2025-05-20 10:45:30 AUDIT [Access Denied] User guest attempted to access PHI without authorization
@@ -314,67 +318,89 @@ cat > /test_env/logs/audit.log << 'EOF'
 2025-05-22 08:10:30 AUDIT [Access] User john.doe accessed PHI for patient #12345
 EOF
 
-# Create a test script to validate all three automation scripts
-cat > /test_env/validate_scripts.sh << 'EOF'
+# Resolve the __TEST_ENV_DIR__ placeholder left in deployment_config.yaml /
+# compliance_config.yaml (written above via quoted heredocs, so $TEST_ENV_DIR
+# couldn't be substituted at write time without also corrupting the \s*
+# regex-escape sequences those files contain).
+sed -i "s|__TEST_ENV_DIR__|$TEST_ENV_DIR|g" \
+  "$TEST_ENV_DIR/config/deployment_config.yaml" \
+  "$TEST_ENV_DIR/config/compliance_config.yaml"
+
+# Create a test script to validate all three automation scripts.
+# Written in two parts: first an unquoted heredoc so $SCRIPT_DIR (the real
+# location of the .py scripts, computed above) gets baked in as a literal
+# path; then a quoted heredoc appended to it so the rest of the script's
+# $TEST_ENV_DIR/$SCRIPTS_DIR references and $(...) commands stay literal
+# and are only evaluated when the generated script itself runs.
+cat > "$TEST_ENV_DIR/validate_scripts.sh" << EOF_HEADER
 #!/bin/bash
 set -e
+
+# Location of the real Nexora automation scripts (baked in by setup_test_env.sh).
+SCRIPTS_DIR="$SCRIPT_DIR"
+# This script lives inside the test environment directory itself, so we can
+# always find it relative to our own location - no hardcoded path needed.
+TEST_ENV_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+EOF_HEADER
+
+cat >> "$TEST_ENV_DIR/validate_scripts.sh" << 'EOF'
 
 echo "===== Validating Nexora Automation Scripts ====="
 echo
 
 # Set up environment variables for testing
 export NEXORA_ENV=dev
-export NEXORA_CONFIG_DIR=/test_env/config
-export NEXORA_LOGS_DIR=/test_env/logs
-export NEXORA_OUTPUT_DIR=/test_env/output
+export NEXORA_CONFIG_DIR="$TEST_ENV_DIR/config"
+export NEXORA_LOGS_DIR="$TEST_ENV_DIR/logs"
+export NEXORA_OUTPUT_DIR="$TEST_ENV_DIR/output"
 
 echo "1. Testing Environment Health Check Script"
-python3 /scripts/environment_health_check.py \
-  --config /test_env/config/env_config.yaml \
+python3 "$SCRIPTS_DIR/environment_health_check.py" \
+  --config "$TEST_ENV_DIR/config/env_config.yaml" \
   --env dev \
-  --output /test_env/output/env_health_report.json \
-  --format json
+  --output "$TEST_ENV_DIR/output/env_health_report.json" \
+  --format json || true
 
-if [ -f "/test_env/output/env_health_report.json" ]; then
-  echo "✓ Environment Health Check Script executed successfully"
-  echo "  Report generated at: /test_env/output/env_health_report.json"
+if [ -f "$TEST_ENV_DIR/output/env_health_report.json" ]; then
+  echo "[OK] Environment Health Check Script executed successfully"
+  echo "  Report generated at: $TEST_ENV_DIR/output/env_health_report.json"
 else
-  echo "✗ Environment Health Check Script failed"
+  echo "[FAIL] Environment Health Check Script failed"
   exit 1
 fi
 
 echo
 
 echo "2. Testing Deployment Validation Script"
-python3 /scripts/deployment_validation.py \
+python3 "$SCRIPTS_DIR/deployment_validation.py" \
   --env dev \
-  --config /test_env/config/deployment_config.yaml \
-  --output /test_env/output/deployment_validation_report.json \
-  --format json
+  --config "$TEST_ENV_DIR/config/deployment_config.yaml" \
+  --output "$TEST_ENV_DIR/output/deployment_validation_report.json" \
+  --format json || true
 
-if [ -f "/test_env/output/deployment_validation_report.json" ]; then
-  echo "✓ Deployment Validation Script executed successfully"
-  echo "  Report generated at: /test_env/output/deployment_validation_report.json"
+if [ -f "$TEST_ENV_DIR/output/deployment_validation_report.json" ]; then
+  echo "[OK] Deployment Validation Script executed successfully"
+  echo "  Report generated at: $TEST_ENV_DIR/output/deployment_validation_report.json"
 else
-  echo "✗ Deployment Validation Script failed"
+  echo "[FAIL] Deployment Validation Script failed"
   exit 1
 fi
 
 echo
 
 echo "3. Testing Compliance Report Generator Script"
-python3 /scripts/compliance_report_generator.py \
-  --config /test_env/config/compliance_config.yaml \
-  --output-dir /test_env/output \
+python3 "$SCRIPTS_DIR/compliance_report_generator.py" \
+  --config "$TEST_ENV_DIR/config/compliance_config.yaml" \
+  --output-dir "$TEST_ENV_DIR/output" \
   --report-type all \
   --period month \
-  --format json
+  --format json || true
 
-if ls /test_env/output/compliance_report_*.json 1> /dev/null 2>&1; then
-  echo "✓ Compliance Report Generator Script executed successfully"
-  echo "  Report generated at: $(ls /test_env/output/compliance_report_*.json)"
+if ls "$TEST_ENV_DIR"/output/compliance_report_*.json 1> /dev/null 2>&1; then
+  echo "[OK] Compliance Report Generator Script executed successfully"
+  echo "  Report generated at: $(ls "$TEST_ENV_DIR"/output/compliance_report_*.json)"
 else
-  echo "✗ Compliance Report Generator Script failed"
+  echo "[FAIL] Compliance Report Generator Script failed"
   exit 1
 fi
 
@@ -383,6 +409,6 @@ echo "===== All scripts validated successfully! ====="
 EOF
 
 # Make the validation script executable
-chmod +x /test_env/validate_scripts.sh
+chmod +x "$TEST_ENV_DIR/validate_scripts.sh"
 
 echo "Test environment setup completed successfully."

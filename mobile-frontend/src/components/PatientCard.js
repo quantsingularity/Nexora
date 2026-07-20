@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Colors, Typography, Spacing } from "../theme/theme";
+import { Colors, Typography, Spacing, getRiskColor } from "../theme/theme";
 import Card from "./Card";
 
 export const PatientCard = ({
@@ -9,18 +9,6 @@ export const PatientCard = ({
   onLongPress,
   testID = "patient-card",
 }) => {
-  const getRiskColor = (risk) => {
-    if (risk > 0.7) return Colors.error;
-    if (risk > 0.5) return Colors.warning;
-    return Colors.success;
-  };
-
-  const getRiskLevel = (risk) => {
-    if (risk > 0.7) return "high";
-    if (risk > 0.5) return "medium";
-    return "low";
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case "active":
@@ -91,7 +79,7 @@ export const PatientCard = ({
                 </Text>
                 {isOutdated(patient.lastUpdated) && (
                   <View style={styles.warningBadge} testID="outdated-warning">
-                    <Text style={styles.warningText}>⚠</Text>
+                    <Text style={styles.warningText}>!</Text>
                   </View>
                 )}
               </View>

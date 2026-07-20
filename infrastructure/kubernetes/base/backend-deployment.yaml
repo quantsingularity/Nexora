@@ -5,7 +5,7 @@ metadata:
   labels:
     app: "{{ .Values.appName }}-backend"
 spec:
-  replicas: { { .Values.code.replicas } }
+  replicas: { { .Values.backend.replicas } }
   selector:
     matchLabels:
       app: "{{ .Values.appName }}-backend"
@@ -16,41 +16,67 @@ spec:
     spec:
       containers:
         - name: "{{ .Values.appName }}-backend"
-          image: "{{ .Values.code.image.repository }}:{{ .Values.code.image.tag }}"
-          imagePullPolicy: "{{ .Values.code.image.pullPolicy }}"
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: "{{ .Values.backend.image.pullPolicy }}"
           ports:
-            - containerPort: { { .Values.code.containerPort } }
+            - containerPort: { { .Values.backend.containerPort } }
           resources:
             limits:
-              cpu: "{{ .Values.code.resources.limits.cpu }}"
-              memory: "{{ .Values.code.resources.limits.memory }}"
+              cpu: "{{ .Values.backend.resources.limits.cpu }}"
+              memory: "{{ .Values.backend.resources.limits.memory }}"
             requests:
-              cpu: "{{ .Values.code.resources.requests.cpu }}"
-              memory: "{{ .Values.code.resources.requests.memory }}"
+              cpu: "{{ .Values.backend.resources.requests.cpu }}"
+              memory: "{{ .Values.backend.resources.requests.memory }}"
           env:
-            - name: NODE_ENV
-              value: "{{ .Values.environment }}"
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.appName }}-secrets"
-                  key: database-url
-            - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.appName }}-secrets"
-                  key: jwt-secret
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "{{ .Values.backend.containerPort }}"
+            - name: AUDIT_DB_PATH
+              value: "/app/audit/phi_access.db"
+            - name: APP_DB_PATH
+              value: "/app/data/nexora_app.db"
+            - name: FEATURE_STORE_PATH
+              value: "/app/data/feature_store"
+            - name: ARTIFACT_STORE_PATH
+              value: "/app/artifacts"
+          envFrom:
+            - configMapRef:
+                name: "{{ .Values.appName }}-config"
+            - secretRef:
+                name: "{{ .Values.appName }}-secrets"
+          volumeMounts:
+            - name: audit
+              mountPath: /app/audit
+            - name: data
+              mountPath: /app/data
+            - name: artifacts
+              mountPath: /app/artifacts
+            - name: models
+              mountPath: /app/models
           livenessProbe:
             httpGet:
               path: /health
-              port: { { .Values.code.containerPort } }
+              port: { { .Values.backend.containerPort } }
             initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /health
-              port: { { .Values.code.containerPort } }
+              port: { { .Values.backend.containerPort } }
             initialDelaySeconds: 5
             periodSeconds: 5
+      volumes:
+        # Ephemeral by default (fine for a single-replica demo deployment;
+        # see docker-compose.prod.yml notes on SQLite + multiple replicas).
+        # Swap these for PersistentVolumeClaims for real persistence.
+        - name: audit
+          emptyDir: {}
+        - name: data
+          emptyDir: {}
+        - name: artifacts
+          emptyDir: {}
+        - name: models
+          emptyDir: {}
       imagePullSecrets:
         - name: "{{ .Values.imagePullSecrets }}"

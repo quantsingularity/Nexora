@@ -38,12 +38,6 @@ from typing import Any, Dict, Optional, Tuple
 
 import yaml
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
-
 try:
     import psutil
 
@@ -80,6 +74,7 @@ try:
     K8S_AVAILABLE = True
 except ImportError:
     K8S_AVAILABLE = False
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -560,7 +555,8 @@ class HealthCheck:
         try:
             processes = []
             for proc in psutil.process_iter(["pid", "name", "cmdline"]):
-                if process_name.lower() in proc.info["name"].lower() or (
+                proc_name = proc.info["name"] or ""
+                if process_name.lower() in proc_name.lower() or (
                     proc.info["cmdline"]
                     and any(
                         (
@@ -1030,7 +1026,12 @@ class HealthCheck:
         """Check if a pod is ready"""
         if pod.status.phase != "Running":
             return False
-        for container_status in pod.status.container_statuses:
+        # `container_statuses` is None while containers haven't been
+        # created yet (e.g. image still pulling), not just an empty list.
+        container_statuses = pod.status.container_statuses or []
+        if not container_statuses:
+            return False
+        for container_status in container_statuses:
             if not container_status.ready:
                 return False
         return True
@@ -1038,7 +1039,7 @@ class HealthCheck:
     def _get_pod_restarts(self, pod: Any) -> int:
         """Get total restarts for a pod"""
         restarts = 0
-        for container_status in pod.status.container_statuses:
+        for container_status in pod.status.container_statuses or []:
             restarts += container_status.restart_count
         return restarts
 
@@ -1355,7 +1356,7 @@ def parse_args() -> Any:
     parser = argparse.ArgumentParser(
         description="Environment Health Check Script for Nexora",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__.split("Usage:")[1],
+        epilog=__doc__.partition("Usage:")[2],
     )
     parser.add_argument(
         "--env",
@@ -1403,7 +1404,7 @@ def main() -> Any:
             format=args.format, output_path=args.output
         )
         if not args.output:
-            logger.info(report)
+            print(report)
         if args.notify and results["status"] in ["FAIL", "ERROR"]:
             logger.info("Notifications would be sent (not implemented)")
         if results["status"] == "PASS":

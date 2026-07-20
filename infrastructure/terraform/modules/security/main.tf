@@ -45,9 +45,12 @@ resource "aws_security_group" "alb" {
     description     = "HTTPS to application servers"
   }
 
-  # Allow ALB to reach app on any configured app port (e.g. 3000 for Node.js)
+  # Allow ALB to reach the app on its configured port (falls back to 8000,
+  # the real backend's port (see code/backend/app/core/config.py) since
+  # var.app_port defaults to null and isn't currently overridden from root
+  # main.tf).
   dynamic "egress" {
-    for_each = var.app_port != null ? [var.app_port] : [3000]
+    for_each = var.app_port != null ? [var.app_port] : [8000]
     content {
       from_port       = egress.value
       to_port         = egress.value

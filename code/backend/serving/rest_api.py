@@ -28,6 +28,10 @@ except ImportError:
     uvicorn = None  # type: ignore
 
 if _FASTAPI_AVAILABLE:
+    from backend.app.api.auth_routes import router as auth_router
+    from backend.app.api.dashboard_routes import router as dashboard_router
+    from backend.app.api.notification_routes import router as notification_router
+    from backend.app.api.patient_routes import router as patient_router
     from backend.app.api.routes import router
     from backend.app.core.config import settings
 
@@ -63,6 +67,10 @@ if _FASTAPI_AVAILABLE:
         )
 
     app.include_router(router)
+    app.include_router(auth_router)
+    app.include_router(patient_router)
+    app.include_router(dashboard_router)
+    app.include_router(notification_router)
 
     if __name__ == "__main__":
         uvicorn.run(

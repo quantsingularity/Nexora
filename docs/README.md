@@ -65,35 +65,35 @@ Nexora is a comprehensive healthcare ML platform that:
 
 ## Key Features
 
-### 🏥 Clinical Decision Support
+### Clinical Decision Support
 
 - 30-day readmission risk prediction
 - Risk factor identification and explanation
 - Evidence-based intervention recommendations
 - Continuous patient monitoring throughout hospital stay
 
-### 🔗 Healthcare Integration
+### Healthcare Integration
 
 - Seamless EHR integration via FHIR R4
 - SMART-on-FHIR launch capability
 - HL7 message support
 - Configurable clinical alerts and notifications
 
-### 🔒 Regulatory Compliance
+### Regulatory Compliance
 
 - Full HIPAA compliance with audit trails
 - PHI de-identification and protection
 - Regulatory-ready model cards
 - Comprehensive access logging
 
-### 🤖 Advanced ML Capabilities
+### Advanced ML Capabilities
 
 - Multiple model architectures (DeepFM, Transformers, Survival Analysis)
 - Fairness-constrained predictions
 - Uncertainty quantification
 - Real-time concept drift detection
 
-### 📊 Monitoring & Observability
+### Monitoring & Observability
 
 - Clinical metrics dashboard
 - Adverse event reporting
@@ -130,12 +130,12 @@ Nexora is a comprehensive healthcare ML platform that:
 
 ### HIPAA Compliance Features
 
-- ✅ Audit logging of all PHI access
-- ✅ Automatic PHI detection and de-identification
-- ✅ Role-based access control (RBAC)
-- ✅ Data encryption at rest and in transit
-- ✅ Regular security audits
-- ✅ Compliance reporting tools
+- Audit logging of all PHI access
+- Automatic PHI detection and de-identification
+- Role-based access control (RBAC)
+- Data encryption at rest and in transit
+- Regular security audits
+- Compliance reporting tools
 
 ### Security Measures
 

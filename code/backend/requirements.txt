@@ -9,6 +9,11 @@ pydantic==2.5.0
 httpx>=0.23.0,<0.28.0
 requests==2.31.0
 
+# ── Auth ───────────────────────────────────────────────────────────────────
+# PyJWT for signing/verifying access tokens. Passwords are hashed with the
+# stdlib `hashlib` (PBKDF2-HMAC-SHA256); no extra dependency needed there.
+PyJWT>=2.7.0,<3.0.0
+
 # ── gRPC (optional – uncomment to enable the gRPC server) ─────────────────
 # grpcio>=1.59.0
 # grpcio-reflection>=1.59.0

@@ -1,57 +1,46 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Colors, Typography, Spacing } from "../theme/theme";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CustomButton from "../components/CustomButton";
 import CustomInput from "../components/CustomInput";
 import ScreenWrapper from "../components/ScreenWrapper";
-import apiService from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import { Colors, Spacing, Typography } from "../theme/theme";
 
 const LoginScreen = ({ navigation }) => {
-  const [username, setUsername] = useState("");
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const validateInput = () => {
-    let isValid = true;
-    setUsernameError("");
+  const validate = () => {
+    let valid = true;
+    setEmailError("");
     setPasswordError("");
-
-    if (!username.trim()) {
-      setUsernameError("Username is required.");
-      isValid = false;
+    if (!email.trim()) {
+      setEmailError("Email is required.");
+      valid = false;
     }
-    if (!password.trim()) {
+    if (!password) {
       setPasswordError("Password is required.");
-      isValid = false;
+      valid = false;
     }
-    return isValid;
+    return valid;
   };
 
   const handleLogin = async () => {
-    if (!validateInput()) {
-      return;
-    }
-
+    if (!validate()) return;
     setLoading(true);
     try {
-      // Use the API service for authentication
-      const response = await apiService.login(username, password);
-
-      if (response.success || response.token) {
-        await AsyncStorage.setItem("userToken", response.token);
-        await AsyncStorage.setItem("username", username);
-        navigation.replace("Home");
-      } else {
-        Alert.alert("Login Failed", "Invalid response from server.");
-      }
+      await login({ email: email.trim(), password });
+      // AppNavigator swaps to the Main tab navigator automatically once
+      // isAuthenticated flips to true; no manual navigation needed here.
     } catch (error) {
-      console.error("Login error:", error);
       Alert.alert(
-        "Login Failed",
-        error.message || "Invalid username or password.",
+        "Sign In Failed",
+        error.message || "Invalid email or password.",
       );
     } finally {
       setLoading(false);
@@ -59,26 +48,41 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <ScreenWrapper
-      style={styles.container}
-      useSafeArea={true}
-      testID="login-screen"
-    >
+    <ScreenWrapper style={styles.container} testID="login-screen">
+      <TouchableOpacity
+        style={styles.backLink}
+        onPress={() => navigation.goBack()}
+      >
+        <MaterialCommunityIcons
+          name="arrow-left"
+          size={20}
+          color={Colors.textSecondary}
+        />
+        <Text style={styles.backLinkText}>Back</Text>
+      </TouchableOpacity>
+
       <View style={styles.logoContainer} testID="welcome">
-        <Text style={styles.title}>Nexora Mobile</Text>
-        <Text style={styles.subtitle}>Clinical Decision Support</Text>
+        <View style={styles.logoBadge}>
+          <MaterialCommunityIcons
+            name="hospital-box"
+            size={30}
+            color={Colors.surface}
+          />
+        </View>
+        <Text style={styles.title}>NEXORA</Text>
+        <Text style={styles.subtitle}>Sign in to your account</Text>
       </View>
 
       <View style={styles.formContainer}>
         <CustomInput
-          label="Username"
-          placeholder="Enter your username"
-          value={username}
-          onChangeText={setUsername}
+          label="Email address"
+          placeholder="you@hospital.org"
+          value={email}
+          onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
-          error={usernameError}
-          testID="username-input"
+          error={emailError}
+          testID="email-input"
         />
         <CustomInput
           label="Password"
@@ -90,15 +94,22 @@ const LoginScreen = ({ navigation }) => {
           testID="password-input"
         />
         <CustomButton
-          title="Login"
+          title={loading ? "Signing in…" : "Sign In"}
           onPress={handleLogin}
           loading={loading}
           style={styles.loginButton}
           testID="login-button"
         />
-        <Text style={styles.hintText}>
-          Demo credentials: clinician / password123
-        </Text>
+
+        <TouchableOpacity
+          style={styles.signupLink}
+          onPress={() => navigation.navigate("SignUp")}
+        >
+          <Text style={styles.signupLinkText}>
+            Need an account?{" "}
+            <Text style={styles.signupLinkBold}>Create one</Text>
+          </Text>
+        </TouchableOpacity>
       </View>
     </ScreenWrapper>
   );
@@ -109,14 +120,36 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: Spacing.lg,
   },
+  backLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "absolute",
+    top: Spacing.md,
+    left: Spacing.md,
+  },
+  backLinkText: {
+    ...Typography.body2,
+    color: Colors.textSecondary,
+    marginLeft: 4,
+  },
   logoContainer: {
     alignItems: "center",
     marginBottom: Spacing.xxl,
   },
+  logoBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: Colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.sm,
+  },
   title: {
     ...Typography.h2,
-    color: Colors.primary,
+    color: Colors.text,
     marginBottom: Spacing.xs,
+    letterSpacing: 1,
   },
   subtitle: {
     ...Typography.body2,
@@ -128,11 +161,17 @@ const styles = StyleSheet.create({
   loginButton: {
     marginTop: Spacing.md,
   },
-  hintText: {
-    ...Typography.caption,
+  signupLink: {
+    marginTop: Spacing.lg,
+    alignItems: "center",
+  },
+  signupLinkText: {
+    ...Typography.body2,
     color: Colors.textSecondary,
-    textAlign: "center",
-    marginTop: Spacing.md,
+  },
+  signupLinkBold: {
+    color: Colors.primary,
+    fontWeight: "700",
   },
 });
 

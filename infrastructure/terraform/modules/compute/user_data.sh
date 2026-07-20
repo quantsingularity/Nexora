@@ -19,6 +19,15 @@ log() {
 
 log "Starting user data script for $APP_NAME $ENVIRONMENT instance"
 
+# NOTE: this script provisions the instance (OS hardening, Docker, CloudWatch,
+# SSM) and starts a standalone health-check endpoint below, but it does not
+# pull/run the actual Nexora application containers (nexora/backend,
+# nexora/frontend; see ../../docker-compose.yml). Wire that up here (or via
+# a separate deploy step / configuration-management run) before relying on
+# this ASG to serve real traffic. As written, the ALB target group will
+# receive healthy checks from the stub server on port 80 below even though
+# no application is actually running.
+
 # Update system packages
 log "Updating system packages"
 yum update -y

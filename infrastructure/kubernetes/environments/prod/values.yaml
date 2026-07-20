@@ -2,14 +2,18 @@ namespace: nexora
 appName: nexora
 environment: prod
 
-# code configuration
-code:
-  replicas: 5
+# Backend configuration (Python/FastAPI; see code/backend)
+# NOTE: the backend persists accounts/patients to SQLite on a local volume.
+# Keep replicas at 1 unless/until the app is upgraded to a client-server
+# database; multiple replicas writing to separate SQLite files would give
+# each pod an inconsistent view of the data (see docker-compose.prod.yml).
+backend:
+  replicas: 1
   image:
-    repository: registry.example.com/app/code
+    repository: registry.example.com/app/backend
     tag: production
     pullPolicy: Always
-  containerPort: 3000
+  containerPort: 8000
   servicePort: 80
   resources:
     limits:
@@ -18,11 +22,12 @@ code:
     requests:
       cpu: 1000m
       memory: 1Gi
-  apiUrl: http://app-code
-  jwtSecret: CHANGE_ME_in_sealed_secret
-  apiKey: CHANGE_ME_in_sealed_secret
+  fhirServerUrl: http://mock-fhir-server/R4
+  jwtAlgorithm: HS256
+  jwtExpireMinutes: 10080
+  jwtSecretKey: CHANGE_ME_in_sealed_secret
 
-# Frontend configuration
+# Frontend configuration (React/Parcel; see web-frontend)
 frontend:
   replicas: 5
   image:
@@ -31,6 +36,8 @@ frontend:
     pullPolicy: Always
   containerPort: 80
   servicePort: 80
+  # NOTE: baked into the JS bundle at `docker build` time; must be passed
+  # as a Docker build-arg in CI, has no effect as a runtime setting here.
   apiUrl: /api
   service:
     type: ClusterIP
@@ -42,49 +49,6 @@ frontend:
       cpu: 500m
       memory: 512Mi
 
-# Database configuration
-database:
-  replicas: 3
-  image:
-    repository: mysql
-    tag: 8.0
-    pullPolicy: IfNotPresent
-  containerPort: 3306
-  servicePort: 3306
-  name: nexoradb
-  user: appuser
-  password: CHANGE_ME_use_sealed_secrets
-  rootPassword: CHANGE_ME_use_sealed_secrets
-  url: mysql://appuser:CHANGE_ME@app-database:3306/appdb
-  storageClass: premium-rwo
-  storage: 50Gi
-  resources:
-    limits:
-      cpu: 4000m
-      memory: 8Gi
-    requests:
-      cpu: 2000m
-      memory: 4Gi
-
-# Redis configuration
-redis:
-  replicas: 3
-  image:
-    repository: redis
-    tag: "7-alpine"
-    pullPolicy: IfNotPresent
-  containerPort: 6379
-  servicePort: 6379
-  storageClass: premium-rwo
-  storage: 20Gi
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 2Gi
-    requests:
-      cpu: 500m
-      memory: 1Gi
-
 # Ingress configuration
 ingress:
   host: nexora.example.com
@@ -94,5 +58,5 @@ ingress:
     issuer: letsencrypt-prod
 
 # General configuration
-logLevel: warn
+logLevel: WARNING
 imagePullSecrets: regcred

@@ -1,11 +1,15 @@
 import {
   ArrowBack as ArrowBackIcon,
   Assignment as AssignmentIcon,
+  Autorenew as AutorenewIcon,
   CalendarToday as CalendarIcon,
   Download as DownloadIcon,
+  Email as EmailIcon,
   Event as EventIcon,
   LocalHospital as HospitalIcon,
+  LocationOn as LocationOnIcon,
   Medication as MedicationIcon,
+  Phone as PhoneIcon,
   Science as ScienceIcon,
   Timeline as TimelineIcon,
   Warning as WarningIcon,
@@ -42,7 +46,7 @@ import {
   Title,
   Tooltip as ChartTooltip,
 } from "chart.js";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Bar, Line } from "react-chartjs-2";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
@@ -59,7 +63,7 @@ ChartJS.register(
 );
 
 const getRiskColor = (risk) => {
-  if (risk >= 0.7) return "error";
+  if (risk >= 0.75) return "error";
   if (risk >= 0.4) return "warning";
   return "success";
 };
@@ -73,23 +77,42 @@ const PatientDetail = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState("");
+  const [recomputing, setRecomputing] = useState(false);
+
+  const fetchPatient = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.getPatientDetail(id);
+      setPatient(data);
+    } catch (err) {
+      console.error(`Error fetching patient ${id}:`, err);
+      setError("Failed to load patient details. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
   useEffect(() => {
-    const fetchPatient = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await api.getPatientDetail(id);
-        setPatient(data);
-      } catch (err) {
-        console.error(`Error fetching patient ${id}:`, err);
-        setError("Failed to load patient details. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPatient();
-  }, [id]);
+  }, [fetchPatient]);
+
+  const handleRecomputeRisk = async () => {
+    setRecomputing(true);
+    try {
+      const updated = await api.recomputeRisk(id);
+      setPatient(updated);
+      setSnackbarMsg(
+        `Risk score refreshed: ${(updated.riskScore * 100).toFixed(0)}% (${updated.riskBand} risk).`,
+      );
+      setSnackbarOpen(true);
+    } catch (err) {
+      setSnackbarMsg("Failed to recompute risk score. Please try again.");
+      setSnackbarOpen(true);
+    } finally {
+      setRecomputing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -151,7 +174,7 @@ const PatientDetail = () => {
     );
   }
 
-  // Chart data — built after null-guard so always safe
+  // Chart data, built after null-guard so always safe
   const labResultsData = {
     labels: patient.labResults.map((l) => l.date),
     datasets: [
@@ -312,19 +335,49 @@ const PatientDetail = () => {
               >
                 Contact Information
               </Typography>
-              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                📞 {patient.phone}
+              <Typography
+                variant="body2"
+                sx={{
+                  mb: 0.5,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.75,
+                }}
+              >
+                <PhoneIcon fontSize="small" color="action" /> {patient.phone}
               </Typography>
-              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                ✉️ {patient.email}
+              <Typography
+                variant="body2"
+                sx={{
+                  mb: 0.5,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.75,
+                }}
+              >
+                <EmailIcon fontSize="small" color="action" /> {patient.email}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                📍 {patient.address}
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
+              >
+                <LocationOnIcon fontSize="small" color="action" />{" "}
+                {patient.address}
               </Typography>
 
               <Divider sx={{ my: 2 }} />
 
               <Box sx={{ display: "flex", gap: 1, flexDirection: "column" }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<AutorenewIcon />}
+                  onClick={handleRecomputeRisk}
+                  disabled={recomputing}
+                >
+                  {recomputing ? "Recomputing…" : "Recompute Risk Score"}
+                </Button>
                 <Button
                   fullWidth
                   variant="outlined"
@@ -364,7 +417,7 @@ const PatientDetail = () => {
               </Tabs>
             </Box>
 
-            {/* Tab 0 — Clinical Data */}
+            {/* Tab 0: Clinical Data */}
             {activeTab === 0 && (
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
@@ -417,7 +470,7 @@ const PatientDetail = () => {
               </CardContent>
             )}
 
-            {/* Tab 1 — Risk Analysis */}
+            {/* Tab 1: Risk Analysis */}
             {activeTab === 1 && (
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
@@ -480,7 +533,7 @@ const PatientDetail = () => {
               </CardContent>
             )}
 
-            {/* Tab 2 — Medications */}
+            {/* Tab 2: Medications */}
             {activeTab === 2 && (
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
@@ -525,7 +578,7 @@ const PatientDetail = () => {
               </CardContent>
             )}
 
-            {/* Tab 3 — Timeline */}
+            {/* Tab 3: Timeline */}
             {activeTab === 3 && (
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
@@ -582,7 +635,7 @@ const PatientDetail = () => {
                             )}
                           </Box>
                         }
-                        secondary={`${event.date} — ${event.description}`}
+                        secondary={`${event.date}: ${event.description}`}
                       />
                     </ListItem>
                   ))}

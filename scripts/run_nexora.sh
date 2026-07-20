@@ -9,7 +9,7 @@ set -euo pipefail # Exit on error, exit on unset variable, fail on pipe error
 # --- Configuration ---
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_PATH="$PROJECT_ROOT/venv"
-code_DIR="$PROJECT_ROOT/src"
+CODE_DIR="$PROJECT_ROOT/code"
 FRONTEND_DIR="$PROJECT_ROOT/web-frontend"
 
 # Colors for terminal output
@@ -38,7 +38,7 @@ ensure_venv() {
 # Function to install dependencies
 install_dependencies() {
   echo -e "${BLUE}Installing/Updating Python dependencies...${NC}"
-  pip install -r "$code_DIR/requirements.txt" > /dev/null
+  pip install -r "$CODE_DIR/requirements.txt" > /dev/null
   
   echo -e "${BLUE}Installing/Updating Node.js dependencies in $FRONTEND_DIR...${NC}"
   if [ -d "$FRONTEND_DIR" ]; then
@@ -67,15 +67,18 @@ fi
 ensure_venv
 install_dependencies
 
-# 3. Start code Server
-echo -e "${BLUE}Starting code server...${NC}"
-# Use gunicorn or similar for production, but for a simple run script, python is fine.
-# Running from the project root to ensure correct path resolution
-python "$code_DIR/app.py" &
-code_PID=$!
+# 3. Start API Server
+echo -e "${BLUE}Starting API server...${NC}"
+# The FastAPI app lives at backend/serving/rest_api.py; --app-dir points
+# uvicorn's import resolution at code/ so `backend.*` imports resolve
+# correctly (see code/README.md "Local development") without needing to
+# `cd` in a subshell, which would make $! capture the subshell's PID
+# instead of uvicorn's and break the cleanup trap below.
+uvicorn backend.serving.rest_api:app --app-dir "$CODE_DIR" --host 0.0.0.0 --port 8000 &
+API_PID=$!
 
 # Wait for code to initialize (simple sleep for demonstration)
-echo -e "${BLUE}Waiting for code to initialize...${NC}"
+echo -e "${BLUE}Waiting for API to initialize...${NC}"
 sleep 5
 
 # 4. Start Frontend
@@ -90,8 +93,8 @@ function cleanup {
   if kill -0 "$FRONTEND_PID" 2>/dev/null; then
     kill "$FRONTEND_PID"
   fi
-  if kill -0 "$code_PID" 2>/dev/null; then
-    kill "$code_PID"
+  if kill -0 "$API_PID" 2>/dev/null; then
+    kill "$API_PID"
   fi
   echo -e "${GREEN}All services stopped${NC}"
   exit 0
@@ -100,7 +103,7 @@ function cleanup {
 trap cleanup SIGINT SIGTERM
 
 echo -e "${GREEN}Nexora application is running!${NC}"
-echo -e "${GREEN}code running with PID: ${code_PID}${NC}"
+echo -e "${GREEN}API running with PID: ${API_PID}${NC}"
 echo -e "${GREEN}Frontend running with PID: ${FRONTEND_PID}${NC}"
 echo -e "${GREEN}Access the application at: http://localhost:3000${NC}"
 echo -e "${BLUE}Press Ctrl+C to stop all services${NC}"

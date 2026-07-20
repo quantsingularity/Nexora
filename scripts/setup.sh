@@ -8,7 +8,7 @@ set -euo pipefail
 # --- Configuration ---
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_PATH="$PROJECT_ROOT/venv"
-code_DIR="$PROJECT_ROOT/src"
+CODE_DIR="$PROJECT_ROOT/code"
 FRONTEND_DIR="$PROJECT_ROOT/web-frontend"
 
 # Colors for terminal output
@@ -38,7 +38,7 @@ ensure_venv() {
 install_dependencies() {
   echo -e "${BLUE}Installing/Updating Python dependencies...${NC}"
   pip install --upgrade pip setuptools wheel > /dev/null
-  pip install -r "$code_DIR/requirements.txt"
+  pip install -r "$CODE_DIR/requirements.txt"
   
   echo -e "${BLUE}Installing/Updating Node.js dependencies in $FRONTEND_DIR...${NC}"
   if [ -d "$FRONTEND_DIR" ]; then

@@ -38,12 +38,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
-
 try:
     import requests
 
@@ -63,15 +57,12 @@ try:
 except ImportError:
     POSTGRES_AVAILABLE = False
 try:
-    K8S_AVAILABLE = True
-except ImportError:
-    K8S_AVAILABLE = False
-try:
     from kubernetes import client, config
 
     K8S_CLIENT_AVAILABLE = True
 except ImportError:
     K8S_CLIENT_AVAILABLE = False
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -587,16 +578,16 @@ class DeploymentValidator:
                                     "path": path.path,
                                     "path_type": path.path_type,
                                 }
-                                if path.code:
+                                if path.backend:
                                     if (
-                                        hasattr(path.code, "service")
-                                        and path.code.service
+                                        hasattr(path.backend, "service")
+                                        and path.backend.service
                                     ):
-                                        path_info["code"] = {
-                                            "service_name": path.code.service.name,
+                                        path_info["backend"] = {
+                                            "service_name": path.backend.service.name,
                                             "service_port": (
-                                                path.code.service.port.number
-                                                if path.code.service.port
+                                                path.backend.service.port.number
+                                                if path.backend.service.port
                                                 else None
                                             ),
                                         }
@@ -1261,21 +1252,21 @@ class DeploymentValidator:
             cursor.execute("SELECT version();")
             version = cursor.fetchone()[0]
             has_migrations_table = False
+            latest_migration = None
             try:
                 cursor.execute(
                     "\n                    SELECT EXISTS (\n                        SELECT FROM information_schema.tables\n                        WHERE table_name = 'migrations'\n                    );\n                "
                 )
                 has_migrations_table = cursor.fetchone()[0]
-                latest_migration = None
                 if has_migrations_table:
                     try:
                         cursor.execute(
                             "SELECT version FROM migrations ORDER BY id DESC LIMIT 1;"
                         )
                         latest_migration = cursor.fetchone()[0]
-                    except:
+                    except Exception:
                         pass
-            except:
+            except Exception:
                 pass
             cursor.close()
             conn.close()
@@ -1983,7 +1974,7 @@ def parse_args() -> Any:
     parser = argparse.ArgumentParser(
         description="Deployment Validation Script for Nexora",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__.split("Usage:")[1],
+        epilog=__doc__.partition("Usage:")[2],
     )
     parser.add_argument(
         "--env",
@@ -2037,7 +2028,7 @@ def main() -> Any:
         results = validator.run_all_validations()
         report = validator.generate_report(format=args.format, output_path=args.output)
         if not args.output:
-            logger.info(report)
+            print(report)
         if args.notify and results["status"] in ["FAIL", "ERROR"]:
             logger.info("Notifications would be sent (not implemented)")
         if results["status"] == "PASS":

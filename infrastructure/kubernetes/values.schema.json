@@ -7,7 +7,7 @@
     "appName": { "type": "string", "minLength": 2 },
     "environment": { "type": "string", "enum": ["dev", "staging", "prod"] },
     "namespace": { "type": "string", "minLength": 2 },
-    "code": {
+    "backend": {
       "type": "object",
       "required": ["replicas", "containerPort"],
       "properties": {
@@ -21,21 +21,6 @@
       "properties": {
         "replicas": { "type": "integer", "minimum": 1 },
         "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 }
-      }
-    },
-    "database": {
-      "type": "object",
-      "required": ["name", "user"],
-      "properties": {
-        "name": { "type": "string", "minLength": 1 },
-        "user": { "type": "string", "minLength": 1 }
-      }
-    },
-    "redis": {
-      "type": "object",
-      "required": ["replicas"],
-      "properties": {
-        "replicas": { "type": "integer", "minimum": 1 }
       }
     }
   }

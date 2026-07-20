@@ -22,6 +22,8 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { brand } from "../assets/styles/theme";
+import { useAuth } from "../context/AuthContext";
 
 const features = [
   {
@@ -42,7 +44,7 @@ const features = [
     icon: <TimelineIcon fontSize="large" />,
     title: "Clinical Timeline Tracking",
     description:
-      "Comprehensive longitudinal patient histories with lab results, diagnoses, medications, and clinical events — all in one unified view.",
+      "Comprehensive longitudinal patient histories with lab results, diagnoses, medications, and clinical events, all in one unified view.",
     color: "info",
   },
   {
@@ -77,6 +79,8 @@ const stats = [
 
 const Homepage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const primaryDestination = isAuthenticated ? "/dashboard" : "/signup";
 
   return (
     <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
@@ -110,28 +114,39 @@ const Homepage = () => {
           </Box>
         </Box>
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-          <Button
-            variant="text"
-            color="inherit"
-            onClick={() => navigate("/dashboard")}
-          >
-            Dashboard
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => navigate("/dashboard")}
-            endIcon={<ArrowForwardIcon />}
-          >
-            Enter System
-          </Button>
+          {isAuthenticated ? (
+            <Button
+              variant="contained"
+              onClick={() => navigate("/dashboard")}
+              endIcon={<ArrowForwardIcon />}
+            >
+              Go to Dashboard
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="text"
+                color="inherit"
+                onClick={() => navigate("/login")}
+              >
+                Sign In
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => navigate("/signup")}
+                endIcon={<ArrowForwardIcon />}
+              >
+                Get Started
+              </Button>
+            </>
+          )}
         </Box>
       </Box>
 
       {/* Hero Section */}
       <Box
         sx={{
-          background:
-            "linear-gradient(135deg, #1565c0 0%, #1976d2 50%, #42a5f5 100%)",
+          background: brand.gradient,
           color: "white",
           py: { xs: 8, md: 14 },
           px: 4,
@@ -203,13 +218,13 @@ const Homepage = () => {
             >
               Nexora uses advanced machine learning to help clinicians
               proactively identify high-risk patients, reduce readmissions, and
-              optimize care pathways — all from a single intelligent platform.
+              optimize care pathways, all from a single intelligent platform.
             </Typography>
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <Button
                 variant="contained"
                 size="large"
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate(primaryDestination)}
                 endIcon={<ArrowForwardIcon />}
                 sx={{
                   bgcolor: "white",
@@ -222,12 +237,14 @@ const Homepage = () => {
                   },
                 }}
               >
-                Open Dashboard
+                {isAuthenticated ? "Open Dashboard" : "Get Started Free"}
               </Button>
               <Button
                 variant="outlined"
                 size="large"
-                onClick={() => navigate("/patients")}
+                onClick={() =>
+                  navigate(isAuthenticated ? "/patients" : "/login")
+                }
                 sx={{
                   borderColor: "rgba(255,255,255,0.5)",
                   color: "white",
@@ -239,7 +256,7 @@ const Homepage = () => {
                   },
                 }}
               >
-                View Patients
+                {isAuthenticated ? "View Patients" : "Sign In"}
               </Button>
             </Box>
           </Box>
@@ -363,17 +380,17 @@ const Homepage = () => {
             variant="h6"
             sx={{ opacity: 0.7, mb: 5, fontWeight: 400 }}
           >
-            Access the full clinical prediction platform right now — no setup
+            Access the full clinical prediction platform right now. No setup
             required.
           </Typography>
           <Button
             variant="contained"
             size="large"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate(primaryDestination)}
             endIcon={<ArrowForwardIcon />}
             sx={{ px: 5, py: 1.8, fontSize: "1.1rem", fontWeight: 700 }}
           >
-            Launch Dashboard
+            {isAuthenticated ? "Launch Dashboard" : "Create Free Account"}
           </Button>
         </Container>
       </Box>

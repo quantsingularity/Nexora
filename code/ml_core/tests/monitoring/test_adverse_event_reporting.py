@@ -7,6 +7,7 @@ sys.path.insert(
 )
 
 import pytest
+
 from ml_core.monitoring.adverse_event_reporting import AdverseEventReporter
 
 

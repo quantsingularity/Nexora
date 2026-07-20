@@ -11,10 +11,11 @@ matplotlib.use("Agg")
 import numpy as np
 import pandas as pd
 import pytest
-from ml_core.models.model_calibration import ModelCalibrator
-from ml_core.utils.healthcare_metrics import HealthcareMetrics
 from sklearn.calibration import calibration_curve
 from sklearn.metrics import brier_score_loss
+
+from ml_core.models.model_calibration import ModelCalibrator
+from ml_core.utils.healthcare_metrics import HealthcareMetrics
 
 
 @pytest.fixture

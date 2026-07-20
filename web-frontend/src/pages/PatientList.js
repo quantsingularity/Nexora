@@ -19,6 +19,7 @@ import {
   DialogTitle,
   Divider,
   FormControl,
+  Grid,
   IconButton,
   InputAdornment,
   InputLabel,
@@ -26,6 +27,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -39,27 +41,42 @@ import {
   Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 
 const getRiskColor = (risk) => {
-  if (risk >= 0.7) return "error";
+  if (risk >= 0.75) return "error";
   if (risk >= 0.4) return "warning";
   return "success";
 };
 
 const getRiskLabel = (risk) => {
-  if (risk >= 0.7) return "High";
+  if (risk >= 0.75) return "High";
   if (risk >= 0.4) return "Medium";
   return "Low";
 };
 
+const emptyPatientForm = {
+  name: "",
+  age: "",
+  gender: "Female",
+  diagnosis: "",
+  mrn: "",
+  phone: "",
+  email: "",
+  address: "",
+};
+
 const PatientList = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialRisk = searchParams.get("risk");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [riskFilter, setRiskFilter] = useState("all");
+  const [riskFilter, setRiskFilter] = useState(
+    ["high", "medium", "low"].includes(initialRisk) ? initialRisk : "all",
+  );
   const [genderFilter, setGenderFilter] = useState("all");
   const [orderBy, setOrderBy] = useState("name");
   const [order, setOrder] = useState("asc");
@@ -67,6 +84,11 @@ const PatientList = () => {
   const [error, setError] = useState(null);
   const [patients, setPatients] = useState([]);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState(emptyPatientForm);
+  const [addSubmitting, setAddSubmitting] = useState(false);
+  const [addError, setAddError] = useState("");
+  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
 
   const fetchPatients = useCallback(async () => {
     try {
@@ -102,6 +124,50 @@ const PatientList = () => {
     navigate(`/patients/${patientId}`);
   };
 
+  const handleAddFormChange = (field) => (e) =>
+    setAddForm((f) => ({ ...f, [field]: e.target.value }));
+
+  const handleOpenAdd = () => {
+    setAddForm(emptyPatientForm);
+    setAddError("");
+    setAddOpen(true);
+  };
+
+  const handleCloseAdd = () => {
+    if (!addSubmitting) setAddOpen(false);
+  };
+
+  const handleSubmitAdd = async () => {
+    if (!addForm.name.trim()) {
+      setAddError("Patient name is required.");
+      return;
+    }
+    setAddSubmitting(true);
+    setAddError("");
+    try {
+      const created = await api.addPatient({
+        name: addForm.name.trim(),
+        age: addForm.age ? Number(addForm.age) : undefined,
+        gender: addForm.gender || undefined,
+        diagnosis: addForm.diagnosis.trim() || undefined,
+        mrn: addForm.mrn.trim() || undefined,
+        phone: addForm.phone.trim() || undefined,
+        email: addForm.email.trim() || undefined,
+        address: addForm.address.trim() || undefined,
+      });
+      setAddOpen(false);
+      setSnackbar({
+        open: true,
+        message: `${created.name} was added with a computed risk score of ${(created.riskScore * 100).toFixed(0)}%.`,
+      });
+      fetchPatients();
+    } catch (err) {
+      setAddError(err.message || "Failed to add patient. Please try again.");
+    } finally {
+      setAddSubmitting(false);
+    }
+  };
+
   const filteredAndSorted = useMemo(() => {
     let result = patients.filter((p) => {
       const matchesSearch =
@@ -112,8 +178,8 @@ const PatientList = () => {
 
       const matchesRisk =
         riskFilter === "all" ||
-        (riskFilter === "high" && p.riskScore >= 0.7) ||
-        (riskFilter === "medium" && p.riskScore >= 0.4 && p.riskScore < 0.7) ||
+        (riskFilter === "high" && p.riskScore >= 0.75) ||
+        (riskFilter === "medium" && p.riskScore >= 0.4 && p.riskScore < 0.75) ||
         (riskFilter === "low" && p.riskScore < 0.4);
 
       const matchesGender =
@@ -176,7 +242,11 @@ const PatientList = () => {
           >
             Refresh
           </Button>
-          <Button variant="contained" startIcon={<AddIcon />}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenAdd}
+          >
             Add Patient
           </Button>
         </Box>
@@ -446,8 +516,8 @@ const PatientList = () => {
               onChange={(e) => setRiskFilter(e.target.value)}
             >
               <MenuItem value="all">All</MenuItem>
-              <MenuItem value="high">High (≥ 70%)</MenuItem>
-              <MenuItem value="medium">Medium (40–69%)</MenuItem>
+              <MenuItem value="high">High (≥ 75%)</MenuItem>
+              <MenuItem value="medium">Medium (40–74%)</MenuItem>
               <MenuItem value="low">Low (&lt; 40%)</MenuItem>
             </Select>
           </FormControl>
@@ -484,6 +554,128 @@ const PatientList = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Add Patient Dialog */}
+      <Dialog open={addOpen} onClose={handleCloseAdd} maxWidth="sm" fullWidth>
+        <DialogTitle>Add New Patient</DialogTitle>
+        <DialogContent>
+          {addError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {addError}
+            </Alert>
+          )}
+          <Grid container spacing={2} sx={{ mt: 0.5 }}>
+            <Grid item xs={12} sm={8}>
+              <TextField
+                fullWidth
+                label="Full Name"
+                value={addForm.name}
+                onChange={handleAddFormChange("name")}
+                required
+                autoFocus
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Age"
+                type="number"
+                value={addForm.age}
+                onChange={handleAddFormChange("age")}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Gender</InputLabel>
+                <Select
+                  value={addForm.gender}
+                  label="Gender"
+                  onChange={handleAddFormChange("gender")}
+                >
+                  <MenuItem value="Female">Female</MenuItem>
+                  <MenuItem value="Male">Male</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Primary Diagnosis"
+                value={addForm.diagnosis}
+                onChange={handleAddFormChange("diagnosis")}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="MRN (optional)"
+                value={addForm.mrn}
+                onChange={handleAddFormChange("mrn")}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Phone"
+                value={addForm.phone}
+                onChange={handleAddFormChange("phone")}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Email"
+                value={addForm.email}
+                onChange={handleAddFormChange("email")}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Address"
+                value={addForm.address}
+                onChange={handleAddFormChange("address")}
+              />
+            </Grid>
+          </Grid>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mt: 2, display: "block" }}
+          >
+            A readmission risk score will be computed automatically using the
+            deep_fm model as soon as the patient is created.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAdd} disabled={addSubmitting}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmitAdd}
+            disabled={addSubmitting}
+          >
+            {addSubmitting ? "Adding…" : "Add Patient"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ open: false, message: "" })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          severity="success"
+          onClose={() => setSnackbar({ open: false, message: "" })}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

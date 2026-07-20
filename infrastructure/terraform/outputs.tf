@@ -250,7 +250,7 @@ output "backup_plan_arn" {
 
 output "backup_iam_role_arn" {
   description = "ARN of the AWS Backup IAM role"
-  value       = module.backup.backup_iam_role_arn
+  value       = module.backup.backup_role_arn
 }
 
 # Compliance and Audit Outputs

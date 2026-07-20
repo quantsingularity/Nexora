@@ -10,10 +10,10 @@ all:
       hosts:
         web1:
           ansible_host: 10.0.1.10
-          ansible_user: ubuntu
+          ansible_user: ec2-user
         web2:
           ansible_host: 10.0.1.11
-          ansible_user: ubuntu
+          ansible_user: ec2-user
       vars:
         # Web server specific variables
         nginx_worker_processes: auto
@@ -24,11 +24,11 @@ all:
       hosts:
         db1:
           ansible_host: 10.0.2.10
-          ansible_user: ubuntu
+          ansible_user: ec2-user
           mysql_server_id: 1
         db2:
           ansible_host: 10.0.2.11
-          ansible_user: ubuntu
+          ansible_user: ec2-user
           mysql_server_id: 2
       vars:
         # Database specific variables

@@ -1,335 +1,269 @@
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 import Constants from "expo-constants";
 
-// Get API base URL from environment or use default
+// ─── Configuration ───────────────────────────────────────────────────────
 const API_BASE_URL =
   Constants.expoConfig?.extra?.apiBaseUrl ||
   process.env.API_BASE_URL ||
   "http://localhost:8000";
 
-// Create axios instance
+const TOKEN_KEY = "nexora_token";
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  timeout: 10000, // 10 second timeout
+  headers: { "Content-Type": "application/json" },
+  timeout: 20000,
 });
 
-// Request interceptor to add auth token
 apiClient.interceptors.request.use(
   async (config) => {
     try {
-      const token = await AsyncStorage.getItem("userToken");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch (error) {
-      console.warn("Failed to retrieve auth token:", error);
+      const token = await AsyncStorage.getItem(TOKEN_KEY);
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+    } catch (e) {
+      // Ignore; request proceeds unauthenticated.
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
-// Response interceptor for error handling
+const extractErrorMessage = (error, fallback) => {
+  const detail = error?.response?.data?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail) && detail.length > 0) {
+    return detail.map((d) => d.msg || JSON.stringify(d)).join(" ");
+  }
+  if (error?.message === "Network Error") {
+    return "Can't reach the Nexora backend. Check that the API server is running and reachable from your device.";
+  }
+  return fallback;
+};
+
+let onUnauthorized = null;
+export const setUnauthorizedHandler = (fn) => {
+  onUnauthorized = fn;
+};
+
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response) {
-      // Server responded with error status
-      console.error(
-        "API Error Response:",
-        error.response.status,
-        error.response.data,
-      );
-    } else if (error.request) {
-      // Request made but no response received
-      console.error("API No Response:", error.request);
-    } else {
-      // Error in request setup
-      console.error("API Request Error:", error.message);
+  async (error) => {
+    if (error?.response?.status === 401) {
+      await AsyncStorage.removeItem(TOKEN_KEY);
+      if (onUnauthorized) onUnauthorized();
     }
-    return Promise.reject(error);
+    return Promise.reject(
+      Object.assign(new Error(extractErrorMessage(error, "Request failed.")), {
+        original: error,
+        status: error?.response?.status,
+      }),
+    );
   },
 );
 
-// API Service Functions
-
-/**
- * Health check endpoint
- */
-const getHealth = () => {
-  return apiClient.get("/health");
+export const setAuthToken = async (token) => {
+  if (token) await AsyncStorage.setItem(TOKEN_KEY, token);
+  else await AsyncStorage.removeItem(TOKEN_KEY);
 };
 
-/**
- * List available models
- */
-const listModels = () => {
-  return apiClient.get("/models");
+export const getAuthToken = () => AsyncStorage.getItem(TOKEN_KEY);
+
+// ─── Auth ────────────────────────────────────────────────────────────────
+
+const register = async ({
+  fullName,
+  email,
+  password,
+  organization,
+  specialty,
+}) => {
+  const { data } = await apiClient.post("/auth/register", {
+    full_name: fullName,
+    email,
+    password,
+    organization: organization || null,
+    specialty: specialty || null,
+  });
+  return data;
 };
 
-/**
- * Get list of patients
- * Note: This endpoint may not exist in the code yet.
- * Falls back to mock data if the request fails.
- */
-const getPatients = async () => {
-  try {
-    // Try to fetch from code first
-    const response = await apiClient.get("/patients");
-    return response.data;
-  } catch (error) {
-    console.warn(
-      "Failed to fetch patients from code, using mock data:",
-      error.message,
-    );
-    // Fallback to mock data
-    return getMockPatients();
-  }
+const login = async ({ email, password }) => {
+  const { data } = await apiClient.post("/auth/login", { email, password });
+  return data;
 };
 
-/**
- * Get patient details including predictions
- */
-const getPatientDetails = async (patientId) => {
-  try {
-    // Try to fetch from code first
-    const response = await apiClient.get(`/patients/${patientId}`);
-    return response.data;
-  } catch (error) {
-    console.warn(
-      `Failed to fetch patient ${patientId} from code, using mock data:`,
-      error.message,
-    );
-    // Fallback to mock data
-    return getMockPatientDetails(patientId);
-  }
+const getCurrentUser = async () => {
+  const { data } = await apiClient.get("/auth/me");
+  return data;
 };
 
-/**
- * Submit prediction request
- */
-const postPrediction = async (modelName, patientData, modelVersion = null) => {
-  const payload = {
-    model_name: modelName,
-    patient_data: patientData,
-    model_version: modelVersion,
-  };
-  const response = await apiClient.post("/predict", payload);
-  return response.data;
+const updateProfile = async ({ fullName, organization, specialty }) => {
+  const { data } = await apiClient.patch("/auth/me", {
+    full_name: fullName,
+    organization,
+    specialty,
+  });
+  return data;
 };
 
-/**
- * Get prediction using FHIR patient ID
- */
-const getPredictionFromFHIR = async (
-  patientId,
-  modelName,
-  modelVersion = null,
-) => {
-  const params = {
-    model_name: modelName,
-    ...(modelVersion && { model_version: modelVersion }),
-  };
-  const response = await apiClient.post(
-    `/fhir/patient/${patientId}/predict`,
-    null,
-    {
-      params,
-    },
-  );
-  return response.data;
+const changePassword = async ({ currentPassword, newPassword }) => {
+  const { data } = await apiClient.post("/auth/change-password", {
+    current_password: currentPassword,
+    new_password: newPassword,
+  });
+  return data;
 };
 
-/**
- * Login user (mock implementation - replace with real auth endpoint)
- */
-const login = async (username, password) => {
-  try {
-    // Try real code authentication first
-    const response = await apiClient.post("/auth/login", {
-      username,
-      password,
-    });
-    return response.data;
-  } catch (error) {
-    console.warn("code auth not available, using mock authentication");
-    // Fallback to mock authentication for development
-    if (username === "clinician" && password === "password123") {
-      return {
-        success: true,
-        token: "mock-token-" + Date.now(),
-        username: username,
-      };
-    }
-    throw new Error("Invalid credentials");
-  }
-};
-
-/**
- * Logout user
- */
 const logout = async () => {
   try {
     await apiClient.post("/auth/logout");
-  } catch (error) {
-    console.warn("code logout failed, clearing local session:", error.message);
+  } catch (e) {
+    // Token may already be invalid; local logout still proceeds.
+  } finally {
+    await setAuthToken(null);
   }
-  // Always clear local storage
-  await AsyncStorage.multiRemove(["userToken", "username"]);
 };
 
-// Mock Data Functions (Fallback when code is unavailable)
+// ─── System ──────────────────────────────────────────────────────────────
 
-const getMockPatients = () => {
-  return [
-    {
-      id: "p001",
-      name: "John Doe",
-      age: 65,
-      risk: 0.75,
-      last_update: "2024-04-28",
-    },
-    {
-      id: "p002",
-      name: "Jane Smith",
-      age: 72,
-      risk: 0.4,
-      last_update: "2024-04-29",
-    },
-    {
-      id: "p003",
-      name: "Robert Johnson",
-      age: 58,
-      risk: 0.85,
-      last_update: "2024-04-27",
-    },
-    {
-      id: "p004",
-      name: "Emily Davis",
-      age: 81,
-      risk: 0.6,
-      last_update: "2024-04-29",
-    },
-    {
-      id: "p005",
-      name: "Michael Brown",
-      age: 55,
-      risk: 0.25,
-      last_update: "2024-04-30",
-    },
-    {
-      id: "p006",
-      name: "Sarah Wilson",
-      age: 68,
-      risk: 0.9,
-      last_update: "2024-04-26",
-    },
-    {
-      id: "p007",
-      name: "David Lee",
-      age: 75,
-      risk: 0.55,
-      last_update: "2024-04-30",
-    },
-    {
-      id: "p008",
-      name: "Laura Martinez",
-      age: 62,
-      risk: 0.3,
-      last_update: "2024-04-28",
-    },
-  ];
+const checkHealth = async () => {
+  const { data } = await apiClient.get("/health");
+  return data;
 };
 
-const getMockPatientDetails = (patientId) => {
-  const mockDetails = {
-    p001: {
-      id: "p001",
-      name: "John Doe",
-      age: 65,
-      risk: 0.75,
-      predictions: {
-        risk: 0.75,
-        top_features: [
-          "age > 60",
-          "previous_admissions > 2",
-          "diabetes diagnosis",
-        ],
-        cohort_size: 120,
-        shap_features: ["Age", "Prev Adm", "Diabetes", "HTN", "HF"],
-        shap_values: [0.3, 0.25, 0.2, 0.15, 0.1],
-      },
-      explanations: { method: "SHAP", values: [0.3, 0.25, 0.2, 0.15, 0.1] },
-      uncertainty: { confidence_interval: [0.65, 0.85] },
-      timeline: [
-        { event: "Admission", date: "2024-04-10" },
-        { event: "Lab Test (High Glucose)", date: "2024-04-11" },
-        { event: "Diagnosis: HF", date: "2024-04-12" },
-        { event: "Discharge", date: "2024-04-18" },
-      ],
-    },
-    p003: {
-      id: "p003",
-      name: "Robert Johnson",
-      age: 58,
-      risk: 0.85,
-      predictions: {
-        risk: 0.85,
-        top_features: [
-          "multiple comorbidities",
-          "age > 55",
-          "lab_value_x abnormal",
-        ],
-        cohort_size: 95,
-        shap_features: ["Comorb", "Age", "Lab X", "Med Y", "Prev Adm"],
-        shap_values: [0.4, 0.2, 0.15, 0.05, 0.05],
-      },
-      explanations: { method: "SHAP", values: [0.4, 0.2, 0.15, 0.05, 0.05] },
-      uncertainty: { confidence_interval: [0.78, 0.92] },
-      timeline: [
-        { event: "Admission", date: "2024-04-05" },
-        { event: "Surgery", date: "2024-04-07" },
-        { event: "ICU Stay", date: "2024-04-08" },
-        { event: "Discharge", date: "2024-04-20" },
-      ],
-    },
-  };
+// ─── Models & predictions ────────────────────────────────────────────────
 
-  return (
-    mockDetails[patientId] || {
-      id: patientId,
-      name: "Default Patient",
-      age: 70,
-      risk: 0.55,
-      predictions: {
-        risk: 0.55,
-        top_features: ["feature_a", "feature_b", "feature_c"],
-        cohort_size: 150,
-        shap_features: ["Feat A", "Feat B", "Feat C", "Feat D", "Feat E"],
-        shap_values: [0.2, 0.15, 0.1, 0.05, 0.05],
-      },
-      explanations: { method: "SHAP", values: [0.2, 0.15, 0.1, 0.05, 0.05] },
-      uncertainty: { confidence_interval: [0.45, 0.65] },
-      timeline: [],
-    }
+const getModels = async () => {
+  const { data } = await apiClient.get("/models");
+  const registry = data.models || {};
+  return Object.entries(registry).map(([name, versions]) => {
+    const latest = versions.latest || Object.values(versions)[0] || {};
+    return {
+      name,
+      displayName: name
+        .split("_")
+        .map((w) => w[0].toUpperCase() + w.slice(1))
+        .join(" "),
+      version: latest?.config?.version || "1.0.0",
+      status: "Active",
+    };
+  });
+};
+
+const makePrediction = async (modelName, modelVersion, patientData) => {
+  const { data } = await apiClient.post("/predict", {
+    model_name: modelName,
+    model_version: modelVersion || undefined,
+    patient_data: patientData,
+  });
+  return data;
+};
+
+const getPredictionFromFHIR = async (patientId, modelName, modelVersion) => {
+  const { data } = await apiClient.post(
+    `/fhir/patient/${patientId}/predict`,
+    null,
+    { params: { model_name: modelName, model_version: modelVersion } },
   );
+  return data;
+};
+
+// ─── Patients ────────────────────────────────────────────────────────────
+
+const getPatients = async ({
+  search,
+  riskBand,
+  page = 1,
+  pageSize = 200,
+} = {}) => {
+  const { data } = await apiClient.get("/patients", {
+    params: {
+      search: search || undefined,
+      risk_band: riskBand && riskBand !== "all" ? riskBand : undefined,
+      page,
+      page_size: pageSize,
+    },
+  });
+  return data.patients;
+};
+
+const getPatientDetails = async (patientId) => {
+  const { data } = await apiClient.get(`/patients/${patientId}`);
+  return data;
+};
+
+const addPatient = async (patientData) => {
+  const { data } = await apiClient.post("/patients", patientData);
+  return data;
+};
+
+const updatePatient = async (patientId, patientData) => {
+  const { data } = await apiClient.put(`/patients/${patientId}`, patientData);
+  return data;
+};
+
+const deletePatient = async (patientId) => {
+  const { data } = await apiClient.delete(`/patients/${patientId}`);
+  return data;
+};
+
+const recomputeRisk = async (patientId) => {
+  const { data } = await apiClient.post(
+    `/patients/${patientId}/recompute-risk`,
+  );
+  return data;
+};
+
+// ─── Dashboard ───────────────────────────────────────────────────────────
+
+const getDashboardData = async () => {
+  const { data } = await apiClient.get("/dashboard/summary");
+  return data;
+};
+
+// ─── Notifications ───────────────────────────────────────────────────────
+
+const getNotifications = async () => {
+  const { data } = await apiClient.get("/notifications");
+  return data;
+};
+
+const markNotificationRead = async (notificationId) => {
+  const { data } = await apiClient.patch(
+    `/notifications/${notificationId}/read`,
+  );
+  return data;
+};
+
+const markAllNotificationsRead = async () => {
+  const { data } = await apiClient.post("/notifications/read-all");
+  return data;
 };
 
 export default {
-  getHealth,
-  listModels,
+  setAuthToken,
+  getAuthToken,
+  setUnauthorizedHandler,
+  register,
+  login,
+  getCurrentUser,
+  updateProfile,
+  changePassword,
+  logout,
+  checkHealth,
+  getModels,
+  makePrediction,
+  getPredictionFromFHIR,
   getPatients,
   getPatientDetails,
-  postPrediction,
-  getPredictionFromFHIR,
-  login,
-  logout,
-  // Expose base URL for debugging
+  addPatient,
+  updatePatient,
+  deletePatient,
+  recomputeRisk,
+  getDashboardData,
+  getNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
   getBaseURL: () => API_BASE_URL,
 };

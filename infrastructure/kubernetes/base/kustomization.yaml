@@ -29,11 +29,6 @@ resources:
   - backend-service.yaml
   - frontend-deployment.yaml
   - frontend-service.yaml
-  - database-statefulset.yaml
-  - database-service.yaml
-  - redis-deployment.yaml
-  - redis-service.yaml
-  - redis-pvc.yaml
   - ingress.yaml
 
 commonLabels:
@@ -47,9 +42,3 @@ images:
   - name: frontend-image
     newName: nexora/frontend
     newTag: latest
-  - name: mysql
-    newName: mysql
-    newTag: "8.0"
-  - name: redis
-    newName: redis
-    newTag: "7-alpine"

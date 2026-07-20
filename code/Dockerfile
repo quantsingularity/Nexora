@@ -65,4 +65,4 @@ ENV PYTHONUNBUFFERED=1 \
     FHIR_SERVER_URL=http://mock-fhir-server/R4 \
     GRPC_PORT=50051
 
-CMD ["python", "run_rest_api.py"]
+CMD uvicorn backend.serving.rest_api:app --host ${HOST:-0.0.0.0} --port ${PORT:-8000}

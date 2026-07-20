@@ -8,6 +8,7 @@ sys.path.insert(
 )
 
 import pytest
+
 from ml_core.utils.fhir_connector import FHIRConnector
 
 

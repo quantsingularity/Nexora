@@ -234,28 +234,28 @@ pytest ml_core/tests/model_tests/
 
 **Breaking**
 
-- `ml/` renamed to `ml_core/` — all imports updated
+- `ml/` renamed to `ml_core/` - all imports updated
 
 **Bug fixes**
 
-- `survival_analysis.py` — silent dead assignment via `locals()[val]=…` fixed with direct variable assignment
+- `survival_analysis.py` - silent dead assignment via `locals()[val]=…` fixed with direct variable assignment
 - Duplicate `fairness_metrics.py` removed from `monitoring/` (canonical copy in `models/`)
 
 **New modules**
 
-- `ml_core/explainability/` — SHAP-style, LIME, attention, counterfactuals
-- `ml_core/feature_store/` — Parquet-backed feature persistence
-- `ml_core/versioning/` — SHA-256 artifact store with promotion workflow
-- `backend/serving/grpc_server.py` — gRPC server (was missing, referenced in docker-compose)
-- `backend/interfaces/streamlit_app.py` — Clinician UI (was missing, referenced in docker-compose)
+- `ml_core/explainability/` - SHAP-style, LIME, attention, counterfactuals
+- `ml_core/feature_store/` - Parquet-backed feature persistence
+- `ml_core/versioning/` - SHA-256 artifact store with promotion workflow
+- `backend/serving/grpc_server.py` - gRPC server (was missing, referenced in docker-compose)
+- `backend/interfaces/streamlit_app.py` - Clinician UI (was missing, referenced in docker-compose)
 
 **Improvements**
 
 - `backend/app/` stubs fully implemented (schemas, config, models, routes)
-- `rest_api.py` refactored — routes extracted to `api/routes.py`
+- `rest_api.py` refactored - routes extracted to `api/routes.py`
 - `fhir_ops.py` exposed via `utils/__init__.py`
 - All `__init__.py` files now export `__all__`
-- `docker-compose.yml` — fixed UI path, added `nexora-artifacts` volume
-- `requirements.txt` — added `streamlit`, `pytest-asyncio`
+- `docker-compose.yml` - fixed UI path, added `nexora-artifacts` volume
+- `requirements.txt` - added `streamlit`, `pytest-asyncio`
 - New tests: `test_explainer.py`, `test_feature_store.py`, `test_artifact_store.py`
 - Removed all `__pycache__` and `.pytest_cache` directories

@@ -1,11 +1,10 @@
 import {
-  CloudSync as CloudSyncIcon,
-  Notifications as NotificationsIcon,
+  CheckCircle as CheckCircleIcon,
+  ErrorOutline as ErrorOutlineIcon,
   Person as PersonIcon,
   Save as SaveIcon,
   Security as SecurityIcon,
   Settings as SettingsIcon,
-  Storage as StorageIcon,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -14,100 +13,147 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Chip,
   Divider,
-  FormControlLabel,
   Grid,
   List,
   ListItem,
-  ListItemIcon,
   ListItemText,
   Paper,
   Snackbar,
-  Switch,
   Tab,
   Tabs,
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 const Settings = () => {
+  const { user, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  const handleTabChange = (_event, newValue) => {
-    setActiveTab(newValue);
-  };
+  // ── Profile form ──────────────────────────────────────────────────────
+  const [profileForm, setProfileForm] = useState({
+    fullName: "",
+    organization: "",
+    specialty: "",
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
 
-  const handleSave = async () => {
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        fullName: user.full_name || "",
+        organization: user.organization || "",
+        specialty: user.specialty || "",
+      });
+    }
+  }, [user]);
+
+  const showSnackbar = (message, severity = "success") =>
+    setSnackbar({ open: true, message, severity });
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
     try {
-      await api.saveSettings({});
-      setSnackbarMessage("Settings saved successfully");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Error saving settings:", error);
-      setSnackbarMessage("Error saving settings. Please try again.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      await api.updateProfile(profileForm);
+      await refreshUser();
+      showSnackbar("Profile updated successfully.");
+    } catch (err) {
+      showSnackbar(err.message || "Failed to update profile.", "error");
+    } finally {
+      setSavingProfile(false);
     }
   };
 
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
+  // ── Security form ─────────────────────────────────────────────────────
+  const [pwForm, setPwForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (pwForm.newPassword !== pwForm.confirmPassword) {
+      showSnackbar("New passwords do not match.", "error");
+      return;
+    }
+    if (pwForm.newPassword.length < 8) {
+      showSnackbar("New password must be at least 8 characters.", "error");
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      await api.changePassword({
+        currentPassword: pwForm.currentPassword,
+        newPassword: pwForm.newPassword,
+      });
+      setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      showSnackbar("Password changed successfully.");
+    } catch (err) {
+      showSnackbar(err.message || "Failed to change password.", "error");
+    } finally {
+      setSavingPassword(false);
+    }
   };
+
+  // ── System tab ────────────────────────────────────────────────────────
+  const [health, setHealth] = useState(null);
+  const [healthError, setHealthError] = useState(null);
+  const [checkingHealth, setCheckingHealth] = useState(false);
 
   const handleHealthCheck = async () => {
+    setCheckingHealth(true);
+    setHealthError(null);
     try {
       const result = await api.checkHealth();
-      setSnackbarMessage(
-        `System is ${result.status}. Last checked: ${new Date(result.timestamp).toLocaleString()}`,
-      );
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Health check failed:", error);
-      setSnackbarMessage("System health check failed. Please contact support.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      setHealth(result);
+    } catch (err) {
+      setHealthError(err.message || "System health check failed.");
+      setHealth(null);
+    } finally {
+      setCheckingHealth(false);
     }
   };
+
+  useEffect(() => {
+    handleHealthCheck();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Box>
-      <Box
-        sx={{
-          mb: 4,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h4" component="h1" gutterBottom>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
           Settings
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          Manage your account, security, and system status
         </Typography>
       </Box>
 
       <Paper sx={{ mb: 3 }}>
         <Tabs
           value={activeTab}
-          onChange={handleTabChange}
+          onChange={(_e, v) => setActiveTab(v)}
           variant="scrollable"
           scrollButtons="auto"
-          aria-label="settings tabs"
         >
-          <Tab icon={<PersonIcon />} label="User Profile" />
-          <Tab icon={<SecurityIcon />} label="Security" />
-          <Tab icon={<NotificationsIcon />} label="Notifications" />
-          <Tab icon={<StorageIcon />} label="Data Management" />
-          <Tab icon={<SettingsIcon />} label="System" />
+          <Tab icon={<PersonIcon />} iconPosition="start" label="Profile" />
+          <Tab icon={<SecurityIcon />} iconPosition="start" label="Security" />
+          <Tab icon={<SettingsIcon />} iconPosition="start" label="System" />
         </Tabs>
       </Paper>
 
-      {/* User Profile Tab */}
+      {/* Profile Tab */}
       {activeTab === 0 && (
         <Card>
           <CardHeader title="User Profile" />
@@ -117,16 +163,11 @@ const Settings = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="First Name"
-                  defaultValue="John"
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  defaultValue="Doe"
+                  label="Full Name"
+                  value={profileForm.fullName}
+                  onChange={(e) =>
+                    setProfileForm((f) => ({ ...f, fullName: e.target.value }))
+                  }
                   margin="normal"
                 />
               </Grid>
@@ -134,49 +175,67 @@ const Settings = () => {
                 <TextField
                   fullWidth
                   label="Email"
-                  defaultValue="john.doe@hospital.org"
+                  value={user?.email || ""}
+                  margin="normal"
+                  disabled
+                  helperText="Email cannot be changed"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Organization"
+                  value={profileForm.organization}
+                  onChange={(e) =>
+                    setProfileForm((f) => ({
+                      ...f,
+                      organization: e.target.value,
+                    }))
+                  }
                   margin="normal"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Phone"
-                  defaultValue="(555) 123-4567"
+                  label="Specialty"
+                  value={profileForm.specialty}
+                  onChange={(e) =>
+                    setProfileForm((f) => ({ ...f, specialty: e.target.value }))
+                  }
                   margin="normal"
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Department"
-                  defaultValue="Internal Medicine"
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Role"
-                  defaultValue="Attending Physician"
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Make profile visible to other users"
-                />
+                <Typography variant="caption" color="text.secondary">
+                  Account created{" "}
+                  {user?.created_at
+                    ? new Date(user.created_at).toLocaleDateString()
+                    : "N/A"}
+                  {user?.last_login_at &&
+                    ` · Last sign-in ${new Date(user.last_login_at).toLocaleString()}`}
+                </Typography>
               </Grid>
             </Grid>
           </CardContent>
+          <Divider />
+          <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              startIcon={<SaveIcon />}
+              onClick={handleSaveProfile}
+              disabled={savingProfile}
+            >
+              {savingProfile ? "Saving…" : "Save Profile"}
+            </Button>
+          </Box>
         </Card>
       )}
 
       {/* Security Tab */}
       {activeTab === 1 && (
         <Card>
-          <CardHeader title="Security Settings" />
+          <CardHeader title="Change Password" />
           <Divider />
           <CardContent>
             <Grid container spacing={3}>
@@ -186,6 +245,13 @@ const Settings = () => {
                   label="Current Password"
                   type="password"
                   margin="normal"
+                  value={pwForm.currentPassword}
+                  onChange={(e) =>
+                    setPwForm((f) => ({
+                      ...f,
+                      currentPassword: e.target.value,
+                    }))
+                  }
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -194,6 +260,11 @@ const Settings = () => {
                   label="New Password"
                   type="password"
                   margin="normal"
+                  value={pwForm.newPassword}
+                  onChange={(e) =>
+                    setPwForm((f) => ({ ...f, newPassword: e.target.value }))
+                  }
+                  helperText="At least 8 characters, with a letter and a number"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -202,367 +273,122 @@ const Settings = () => {
                   label="Confirm New Password"
                   type="password"
                   margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Two-Factor Authentication
-                </Typography>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Enable two-factor authentication"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Session Settings
-                </Typography>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Automatically log out after inactivity"
-                />
-                <TextField
-                  fullWidth
-                  label="Inactivity Timeout (minutes)"
-                  type="number"
-                  defaultValue={30}
-                  margin="normal"
+                  value={pwForm.confirmPassword}
+                  onChange={(e) =>
+                    setPwForm((f) => ({
+                      ...f,
+                      confirmPassword: e.target.value,
+                    }))
+                  }
                 />
               </Grid>
             </Grid>
           </CardContent>
-        </Card>
-      )}
-
-      {/* Notifications Tab */}
-      {activeTab === 2 && (
-        <Card>
-          <CardHeader title="Notification Preferences" />
           <Divider />
-          <CardContent>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <NotificationsIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="High-Risk Patient Alerts"
-                  secondary="Receive notifications when patients are identified as high-risk"
-                />
-                <Switch defaultChecked />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <NotificationsIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Model Update Notifications"
-                  secondary="Receive notifications when prediction models are updated"
-                />
-                <Switch defaultChecked />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <NotificationsIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="System Maintenance Alerts"
-                  secondary="Receive notifications about scheduled maintenance"
-                />
-                <Switch defaultChecked />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <NotificationsIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Weekly Summary Reports"
-                  secondary="Receive weekly summary of patient risk profiles"
-                />
-                <Switch defaultChecked />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <NotificationsIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Email Notifications"
-                  secondary="Receive notifications via email"
-                />
-                <Switch defaultChecked />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <NotificationsIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Mobile Push Notifications"
-                  secondary="Receive notifications on your mobile device"
-                />
-                <Switch defaultChecked />
-              </ListItem>
-            </List>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Data Management Tab */}
-      {activeTab === 3 && (
-        <Card>
-          <CardHeader title="Data Management" />
-          <Divider />
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Data Sources
-            </Typography>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <StorageIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Electronic Health Record (EHR)"
-                  secondary="Connected: Epic Systems"
-                />
-                <Switch defaultChecked />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <StorageIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Laboratory Information System"
-                  secondary="Connected: Sunquest"
-                />
-                <Switch defaultChecked />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <StorageIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Pharmacy System"
-                  secondary="Connected: Cerner PharmNet"
-                />
-                <Switch defaultChecked />
-              </ListItem>
-            </List>
-
-            <Divider sx={{ my: 3 }} />
-
-            <Typography variant="h6" gutterBottom>
-              Data Synchronization
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Enable automatic data synchronization"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Sync Frequency (hours)"
-                  type="number"
-                  defaultValue={4}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Box sx={{ display: "flex", alignItems: "center", mt: 3 }}>
-                  <Button variant="outlined" startIcon={<CloudSyncIcon />}>
-                    Sync Now
-                  </Button>
-                </Box>
-              </Grid>
-            </Grid>
-
-            <Divider sx={{ my: 3 }} />
-
-            <Typography variant="h6" gutterBottom>
-              Data Retention
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Patient Data Retention Period (years)"
-                  type="number"
-                  defaultValue={7}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Audit Log Retention Period (years)"
-                  type="number"
-                  defaultValue={10}
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Automatically archive inactive patient records"
-                />
-              </Grid>
-            </Grid>
-          </CardContent>
+          <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              startIcon={<SaveIcon />}
+              onClick={handleChangePassword}
+              disabled={
+                savingPassword || !pwForm.currentPassword || !pwForm.newPassword
+              }
+            >
+              {savingPassword ? "Updating…" : "Update Password"}
+            </Button>
+          </Box>
         </Card>
       )}
 
       {/* System Tab */}
-      {activeTab === 4 && (
+      {activeTab === 2 && (
         <Card>
           <CardHeader
-            title="System Settings"
+            title="System Status"
             action={
               <Button
                 variant="outlined"
                 size="small"
                 onClick={handleHealthCheck}
+                disabled={checkingHealth}
               >
-                Check Health
+                {checkingHealth ? "Checking…" : "Check Health"}
               </Button>
             }
           />
           <Divider />
           <CardContent>
-            <Typography variant="h6" gutterBottom>
-              System Information
-            </Typography>
+            {health && (
+              <Alert
+                icon={<CheckCircleIcon />}
+                severity="success"
+                sx={{ mb: 3 }}
+              >
+                Backend is {health.status} (v{health.version}), last checked{" "}
+                {new Date(health.timestamp).toLocaleString()}
+              </Alert>
+            )}
+            {healthError && (
+              <Alert
+                icon={<ErrorOutlineIcon />}
+                severity="error"
+                sx={{ mb: 3 }}
+              >
+                {healthError}
+              </Alert>
+            )}
+
             <List>
-              <ListItem>
+              <ListItem divider>
                 <ListItemText
                   primary="Application Version"
-                  secondary="Nexora v1.2.0"
+                  secondary="Nexora v1.3.0"
                 />
               </ListItem>
-              <Divider />
-              <ListItem>
+              <ListItem divider>
                 <ListItemText
-                  primary="Last Updated"
-                  secondary="April 10, 2025"
+                  primary="API Base URL"
+                  secondary={
+                    process.env.REACT_APP_API_BASE_URL ||
+                    "http://localhost:8000"
+                  }
                 />
               </ListItem>
-              <Divider />
-              <ListItem>
+              <ListItem divider>
                 <ListItemText
-                  primary="Database Status"
-                  secondary="Connected (MongoDB v5.0)"
+                  primary="Signed in as"
+                  secondary={user ? `${user.full_name} (${user.role})` : "N/A"}
                 />
               </ListItem>
-              <Divider />
               <ListItem>
                 <ListItemText
-                  primary="API Status"
-                  secondary="Operational (v1.1)"
+                  primary="Compliance"
+                  secondary="All patient record access is written to the HIPAA audit log."
+                />
+                <Chip
+                  label="HIPAA-aware"
+                  color="primary"
+                  size="small"
+                  variant="outlined"
                 />
               </ListItem>
             </List>
-
-            <Divider sx={{ my: 3 }} />
-
-            <Typography variant="h6" gutterBottom>
-              Performance Settings
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Enable caching for faster performance"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Preload patient data for assigned patients"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Maximum patients to preload"
-                  type="number"
-                  defaultValue={50}
-                  margin="normal"
-                />
-              </Grid>
-            </Grid>
-
-            <Divider sx={{ my: 3 }} />
-
-            <Typography variant="h6" gutterBottom>
-              Logging
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Enable detailed application logging"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Log all user actions for audit purposes"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Log Level"
-                  defaultValue="info"
-                  margin="normal"
-                  SelectProps={{
-                    native: true,
-                  }}
-                >
-                  <option value="debug">Debug</option>
-                  <option value="info">Info</option>
-                  <option value="warning">Warning</option>
-                  <option value="error">Error</option>
-                </TextField>
-              </Grid>
-            </Grid>
           </CardContent>
         </Card>
       )}
 
-      <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-        <Button
-          variant="contained"
-          startIcon={<SaveIcon />}
-          onClick={handleSave}
-        >
-          Save Settings
-        </Button>
-      </Box>
-
       <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+        open={snackbar.open}
+        autoHideDuration={5000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbarSeverity}
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          severity={snackbar.severity}
           sx={{ width: "100%" }}
         >
-          {snackbarMessage}
+          {snackbar.message}
         </Alert>
       </Snackbar>
     </Box>

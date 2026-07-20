@@ -6,6 +6,10 @@ metadata:
     kubernetes.io/ingress.class: "{{ .Values.ingress.class }}"
     nginx.ingress.kubernetes.io/ssl-redirect: "{{ .Values.ingress.sslRedirect }}"
     cert-manager.io/cluster-issuer: "{{ .Values.ingress.certManager.issuer }}"
+    # The backend's FastAPI routes have no /api prefix (e.g. /auth/login,
+    # not /api/auth/login), so strip it here before proxying, matching
+    # docker/nginx/nginx.conf's `proxy_pass http://backend/;` behavior.
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   tls:
     - hosts:
@@ -15,13 +19,13 @@ spec:
     - host: "{{ .Values.ingress.host }}"
       http:
         paths:
-          - path: /api
-            pathType: Prefix
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: "{{ .Values.appName }}-backend"
                 port:
-                  number: { { .Values.code.servicePort } }
+                  number: { { .Values.backend.servicePort } }
           - path: /
             pathType: Prefix
             backend:

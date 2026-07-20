@@ -19,7 +19,7 @@ set -e
 
 echo "Starting Nexora project setup..."
 
-PROJECT_DIR="/projects_extracted/Nexora"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [ ! -d "${PROJECT_DIR}" ]; then
   echo "Error: Project directory ${PROJECT_DIR} not found."
