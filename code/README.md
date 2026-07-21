@@ -1,6 +1,6 @@
 # Nexora Clinical AI Platform
 
-> HIPAA-compliant clinical decision support with fairness monitoring, explainability, and multi-model serving.
+HIPAA-aware clinical decision support with authenticated patient management, fairness monitoring, explainability, and multi-model serving.
 
 ---
 
@@ -9,83 +9,61 @@
 - [Overview](#overview)
 - [Project Structure](#project-structure)
 - [Quickstart](#quickstart)
-- [ML Core Modules](#ml-core-modules)
 - [Backend API](#backend-api)
+- [ML Core Modules](#ml-core-modules)
 - [Clinician UI](#clinician-ui)
+- [gRPC Service](#grpc-service)
 - [Configuration](#configuration)
 - [Testing](#testing)
-- [Changelog v2.0.0](#changelog-v200)
 
 ---
 
 ## Overview
 
-Nexora is a production-ready clinical AI platform providing:
+Nexora is a clinical AI platform providing:
 
-- **Risk prediction** – readmission, mortality, and time-to-event models
-- **Explainability** – SHAP-style permutation importance, LIME, counterfactuals
-- **Fairness monitoring** – demographic parity, equal opportunity, calibration by group
-- **HIPAA compliance** – PHI de-identification, audit logging, right-to-erasure
-- **Concept drift detection** – statistical monitoring of feature and prediction distributions
-- **Multi-modal serving** – REST API (FastAPI) and gRPC server
-- **Clinician UI** – Streamlit dashboard for prediction, audit, and fairness inspection
+- **Authentication and accounts** - clinician registration, login, and profile management with JWT sessions
+- **Patient management** - a searchable patient roster with full CRUD, backed by SQLite
+- **Risk prediction** - readmission, mortality, and time-to-event models, computed per patient and recomputable on demand
+- **Dashboard analytics** - cohort risk distribution, admissions trends, and model performance in one summary endpoint
+- **Alerts** - notifications generated from current patient risk data
+- **Explainability** - SHAP-style permutation importance, LIME, attention, and counterfactuals
+- **Fairness monitoring** - demographic parity, equal opportunity, and calibration by group
+- **HIPAA-aware compliance** - PHI de-identification, audit logging, and right-to-erasure
+- **Concept drift detection** - statistical monitoring of feature and prediction distributions
+- **Multi-modal serving** - REST API (FastAPI), gRPC server, and a Streamlit clinician UI
 
 ---
 
 ## Project Structure
 
 ```
-nexora/
+code/
 ├── backend/
-│   ├── app/
-│   │   ├── api/routes.py           ← All FastAPI route handlers
-│   │   ├── core/config.py          ← Settings from environment variables
-│   │   ├── models/prediction_log.py
-│   │   └── schemas/clinical.py     ← Pydantic v2 request/response schemas
-│   ├── interfaces/
-│   │   └── streamlit_app.py        ← Clinician UI  [NEW]
-│   ├── serving/
-│   │   ├── rest_api.py             ← FastAPI app factory
-│   │   └── grpc_server.py          ← gRPC prediction server  [NEW]
-│   └── tests/api/test_rest_api.py
+│   ├── app/            # API routes, core config/security, data models, schemas
+│   ├── interfaces/     # Streamlit clinician UI
+│   ├── serving/        # FastAPI app factory and gRPC server
+│   └── tests/
 │
-├── ml_core/                        ← Renamed from ml/
-│   ├── compliance/phi_audit_logger.py
-│   ├── config/
-│   ├── explainability/             ← NEW
-│   │   └── explainer.py            ← SHAP, LIME, attention, counterfactuals
-│   ├── feature_store/              ← NEW
-│   │   └── feature_store.py        ← Parquet-backed patient feature store
-│   ├── models/
-│   │   ├── base_model.py
-│   │   ├── deep_fm.py
-│   │   ├── fairness_metrics.py     ← Canonical copy (duplicate removed)
-│   │   ├── model_calibration.py
-│   │   ├── model_registry.py
-│   │   ├── survival_analysis.py    ← Bug fixed
-│   │   └── transformer_model.py
-│   ├── monitoring/
-│   │   ├── adverse_event_reporting.py
-│   │   ├── clinical_metrics.py
-│   │   └── concept_drift.py
-│   ├── pipeline/
-│   ├── tests/
-│   │   ├── explainability/test_explainer.py   ← NEW
-│   │   ├── test_feature_store.py              ← NEW
-│   │   ├── test_artifact_store.py             ← NEW
-│   │   └── ... (existing test suites)
-│   ├── utils/
-│   │   ├── fhir_connector.py
-│   │   └── fhir_ops.py             ← Now exported via __init__
-│   ├── validation/pipeline_validator.py
-│   └── versioning/                 ← NEW
-│       └── artifact_store.py       ← SHA-256 checksums + promotion workflow
+├── ml_core/
+│   ├── compliance/      # PHI audit logging
+│   ├── explainability/  # SHAP, LIME, attention, counterfactuals
+│   ├── feature_store/   # Parquet-backed feature persistence
+│   ├── models/          # Prediction models, calibration, fairness, registry
+│   ├── monitoring/       # Clinical metrics, concept drift, adverse events
+│   ├── pipeline/         # FHIR ETL, de-identification, feature engineering
+│   ├── utils/            # FHIR client and healthcare metric helpers
+│   ├── validation/       # Pipeline validation utilities
+│   ├── versioning/       # Model artifact store
+│   └── tests/
 │
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
 └── README.md
 ```
+
+See [Backend API](#backend-api) and [ML Core Modules](#ml-core-modules) below for what lives in each file.
 
 ---
 
@@ -100,7 +78,7 @@ docker compose up --build
 | Service      | URL                        |
 | ------------ | -------------------------- |
 | REST API     | http://localhost:8000      |
-| API Docs     | http://localhost:8000/docs |
+| API docs     | http://localhost:8000/docs |
 | Clinician UI | http://localhost:8501      |
 | gRPC         | localhost:50051            |
 
@@ -112,107 +90,137 @@ pip install -r requirements.txt
 uvicorn backend.serving.rest_api:app --reload --port 8000
 ```
 
----
-
-## ML Core Modules
-
-### Models
-
-| Class                   | Framework                             |
-| ----------------------- | ------------------------------------- |
-| `DeepFMModel`           | TensorFlow (optional, numpy fallback) |
-| `TransformerModel`      | PyTorch (optional, numpy fallback)    |
-| `SurvivalAnalysisModel` | lifelines (optional, numpy fallback)  |
-| `ModelCalibrator`       | scikit-learn                          |
-| `FairnessEvaluator`     | pandas / sklearn                      |
-
-### Explainability (new)
-
-```python
-from ml_core.explainability import ModelExplainer
-
-explainer = ModelExplainer(
-    predict_fn=model.predict_proba,
-    feature_names=feature_names,
-    background_data=X_train,
-)
-result = explainer.explain(patient_vector, method="permutation_shap")
-print(result.top_features(n=5))
-
-cf = explainer.explain(patient_vector, method="counterfactual")
-print(cf.counterfactuals)  # minimal changes that flip the prediction
-
-df = explainer.global_importance(X_test)  # mean |SHAP| across cohort
-```
-
-Methods: `permutation_shap`, `lime`, `attention`, `counterfactual`.
-
-### Feature Store (new)
-
-```python
-from ml_core.feature_store import FeatureStore
-
-store = FeatureStore("data/feature_store")
-store.upsert("P001", {"age": 65, "creatinine": 1.2})
-row   = store.get("P001")
-recent = store.get_recent(days=7)
-store.delete_patient("P001")   # HIPAA right-to-erasure
-```
-
-### Artifact Versioning (new)
-
-```python
-from ml_core.versioning import ModelArtifactStore, ModelStage
-
-store = ModelArtifactStore("artifacts")
-store.register("deep_fm", "1.1.0", "trained.h5",
-               metrics={"auc": 0.89}, hyperparameters={"layers": [256, 128]})
-store.promote("deep_fm", "1.1.0", ModelStage.PRODUCTION)
-# Previous production version auto-archived
-```
+On first run, the API creates `data/nexora_app.db` and seeds 45 demo patients automatically, so there's nothing else to set up before exploring the endpoints.
 
 ---
 
 ## Backend API
 
-| Method   | Path                         | Description          |
-| -------- | ---------------------------- | -------------------- |
-| `GET`    | `/health`                    | Health check         |
-| `GET`    | `/models`                    | List models          |
-| `POST`   | `/predict`                   | Single prediction    |
-| `POST`   | `/predict/batch`             | Batch prediction     |
-| `POST`   | `/fhir/patient/{id}/predict` | Predict from FHIR    |
-| `GET`    | `/metrics`                   | Cohort metrics       |
-| `GET`    | `/audit/patient/{id}`        | PHI audit history    |
-| `DELETE` | `/models/{name}/{version}`   | Remove model version |
+All endpoints are served with no path prefix (for example `/auth/login`, not `/api/auth/login`). Endpoints marked **Auth** require an `Authorization: Bearer <token>` header.
+
+### System, models, and prediction
+
+| Method   | Path                         | Auth | Description                        |
+| -------- | ---------------------------- | :--: | ---------------------------------- |
+| `GET`    | `/health`                    |      | Health check                       |
+| `GET`    | `/models`                    |      | List registered models             |
+| `DELETE` | `/models/{name}/{version}`   |      | Remove a model version             |
+| `POST`   | `/predict`                   |      | Single prediction                  |
+| `POST`   | `/predict/batch`             |      | Batch prediction                   |
+| `POST`   | `/fhir/patient/{id}/predict` |      | Predict from a FHIR patient record |
+| `GET`    | `/metrics`                   |      | Cohort clinical metrics            |
+| `GET`    | `/audit/patient/{id}`        |      | PHI audit history for a patient    |
+
+### Authentication
+
+| Method  | Path                    | Auth | Description                       |
+| ------- | ----------------------- | :--: | --------------------------------- |
+| `POST`  | `/auth/register`        |      | Create a clinician account        |
+| `POST`  | `/auth/login`           |      | Sign in and receive a JWT         |
+| `GET`   | `/auth/me`              | Yes  | Get the current user's profile    |
+| `PATCH` | `/auth/me`              | Yes  | Update the current user's profile |
+| `POST`  | `/auth/change-password` | Yes  | Change password                   |
+| `POST`  | `/auth/logout`          | Yes  | Sign out                          |
+
+### Patients
+
+| Method   | Path                            | Auth | Description                              |
+| -------- | ------------------------------- | :--: | ---------------------------------------- |
+| `GET`    | `/patients`                     | Yes  | List patients, with search and paging    |
+| `POST`   | `/patients`                     | Yes  | Add a patient and compute its risk score |
+| `GET`    | `/patients/{id}`                | Yes  | Get full patient detail                  |
+| `PUT`    | `/patients/{id}`                | Yes  | Update patient details                   |
+| `DELETE` | `/patients/{id}`                | Yes  | Remove a patient                         |
+| `POST`   | `/patients/{id}/recompute-risk` | Yes  | Recompute a patient's risk score         |
+
+Risk scores come from the same model registry used by `/predict`, so a patient's score is always consistent with the standalone prediction endpoint. Patients are banded as **high** (score >= 0.75), **medium** (>= 0.40), or **low** (below 0.40).
+
+### Dashboard and alerts
+
+| Method  | Path                       | Auth | Description                        |
+| ------- | -------------------------- | :--: | ---------------------------------- |
+| `GET`   | `/dashboard/summary`       | Yes  | Cohort stats, risk mix, and trends |
+| `GET`   | `/notifications`           | Yes  | List alerts and unread count       |
+| `PATCH` | `/notifications/{id}/read` | Yes  | Mark one alert as read             |
+| `POST`  | `/notifications/read-all`  | Yes  | Mark all alerts as read            |
+
+---
+
+## ML Core Modules
+
+| Area           | Module                                   | Purpose                                                            |
+| -------------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| Models         | `models.deep_fm`                         | Factorization-machine model for 30-day readmission risk            |
+| Models         | `models.transformer_model`               | Sequence transformer over longitudinal clinical events             |
+| Models         | `models.survival_analysis`               | Time-to-event model for readmission likelihood                     |
+| Models         | `models.model_registry`                  | Versioned model lookup and lifecycle management                    |
+| Models         | `models.model_calibration`               | Isotonic regression, Platt scaling, and beta calibration           |
+| Models         | `models.fairness_metrics`                | Demographic parity, equal opportunity, calibration by group        |
+| Explainability | `explainability.explainer`               | Permutation SHAP, LIME, attention, and counterfactual explanations |
+| Feature store  | `feature_store.feature_store`            | Parquet-backed patient feature persistence with an in-memory cache |
+| Versioning     | `versioning.artifact_store`              | Checksummed model artifacts with a staging-to-production workflow  |
+| Monitoring     | `monitoring.clinical_metrics`            | Cohort-level clinical performance metrics                          |
+| Monitoring     | `monitoring.concept_drift`               | Statistical drift detection for features and predictions           |
+| Monitoring     | `monitoring.adverse_event_reporting`     | Structured adverse event capture                                   |
+| Pipeline       | `pipeline.clinical_etl`                  | Extracts from FHIR and transforms into model-ready features        |
+| Pipeline       | `pipeline.icd10_encoder`                 | ICD-10 diagnosis code encoding                                     |
+| Pipeline       | `pipeline.temporal_features`             | Time-windowed feature extraction                                   |
+| Pipeline       | `pipeline.hipaa_compliance.deidentifier` | Safe Harbor PHI de-identification                                  |
+| Pipeline       | `pipeline.hipaa_compliance.phi_detector` | Detects likely PHI fields ahead of de-identification               |
+| Compliance     | `compliance.phi_audit_logger`            | Logs every PHI access for HIPAA audit trails                       |
+| Utilities      | `utils.fhir_connector`                   | FHIR R4 server client                                              |
+| Utilities      | `utils.healthcare_metrics`               | Shared clinical calculation helpers                                |
+| Validation     | `validation.pipeline_validator`          | End-to-end pipeline validation utilities                           |
 
 ---
 
 ## Clinician UI
 
-Streamlit dashboard at http://localhost:8501:
+Streamlit dashboard at http://localhost:8501, with one page per task:
 
-- Single patient risk prediction with feature attribution chart
-- Batch prediction with CSV upload/download
-- Model registry browser
+- Single patient risk assessment with feature attribution
+- Batch prediction with CSV upload and download
+- Registered model browser
 - Concept drift monitoring per model
 - Fairness metrics by demographic group
 - PHI audit log with date-range and patient filters
 
 ---
 
+## gRPC Service
+
+`backend.serving.grpc_server` exposes a prediction service on port `50051` (configurable via `GRPC_PORT`):
+
+| Method        | Description                               |
+| ------------- | ----------------------------------------- |
+| `Predict`     | Run a prediction for a single patient     |
+| `HealthCheck` | Service health status                     |
+| `ListModels`  | List models available to the gRPC service |
+
+The server falls back to a stub mode when `grpcio` isn't installed, so importing the module never fails even without the optional dependency.
+
+---
+
 ## Configuration
 
-| Variable              | Default                      | Description                  |
-| --------------------- | ---------------------------- | ---------------------------- |
-| `PORT`                | `8000`                       | REST API port                |
-| `GRPC_PORT`           | `50051`                      | gRPC port                    |
-| `AUDIT_DB_PATH`       | `audit/phi_access.db`        | SQLite audit DB              |
-| `FHIR_SERVER_URL`     | `http://mock-fhir-server/R4` | FHIR R4 base URL             |
-| `FEATURE_STORE_PATH`  | `data/feature_store`         | Feature store root           |
-| `ARTIFACT_STORE_PATH` | `artifacts`                  | Artifact store root          |
-| `LOG_LEVEL`           | `INFO`                       | Logging level                |
-| `CORS_ORIGINS`        | `*`                          | Comma-separated CORS origins |
+| Variable              | Default                      | Description                                                    |
+| --------------------- | ---------------------------- | -------------------------------------------------------------- |
+| `HOST`                | `0.0.0.0`                    | REST API bind address                                          |
+| `PORT`                | `8000`                       | REST API port                                                  |
+| `GRPC_PORT`           | `50051`                      | gRPC port                                                      |
+| `GRPC_MAX_WORKERS`    | `10`                         | gRPC thread pool size                                          |
+| `AUDIT_DB_PATH`       | `audit/phi_access.db`        | SQLite PHI audit log                                           |
+| `APP_DB_PATH`         | `data/nexora_app.db`         | SQLite accounts and patients database                          |
+| `FHIR_SERVER_URL`     | `http://mock-fhir-server/R4` | FHIR R4 base URL                                               |
+| `FEATURE_STORE_PATH`  | `data/feature_store`         | Feature store root                                             |
+| `ARTIFACT_STORE_PATH` | `artifacts`                  | Artifact store root                                            |
+| `JWT_SECRET_KEY`      | development-only default     | Signing key for session tokens; set a real value in production |
+| `JWT_ALGORITHM`       | `HS256`                      | JWT signing algorithm                                          |
+| `JWT_EXPIRE_MINUTES`  | `10080` (7 days)             | Session token lifetime                                         |
+| `CORS_ORIGINS`        | `*`                          | Comma-separated allowed CORS origins                           |
+| `LOG_LEVEL`           | `INFO`                       | Logging level                                                  |
+| `DEBUG`               | `false`                      | Enables `uvicorn --reload`-friendly settings                   |
+| `NEXORA_API_URL`      | `http://localhost:8000`      | API base URL used by the Streamlit UI                          |
 
 ---
 
@@ -222,40 +230,23 @@ Streamlit dashboard at http://localhost:8501:
 pytest ml_core/tests/ backend/tests/ -v --cov=ml_core --cov=backend
 
 # Individual suites
+pytest backend/tests/api/test_auth_and_patients.py
 pytest ml_core/tests/explainability/
 pytest ml_core/tests/test_feature_store.py
 pytest ml_core/tests/test_artifact_store.py
 pytest ml_core/tests/model_tests/
 ```
 
----
-
-## Changelog v2.0.0
-
-**Breaking**
-
-- `ml/` renamed to `ml_core/` - all imports updated
-
-**Bug fixes**
-
-- `survival_analysis.py` - silent dead assignment via `locals()[val]=…` fixed with direct variable assignment
-- Duplicate `fairness_metrics.py` removed from `monitoring/` (canonical copy in `models/`)
-
-**New modules**
-
-- `ml_core/explainability/` - SHAP-style, LIME, attention, counterfactuals
-- `ml_core/feature_store/` - Parquet-backed feature persistence
-- `ml_core/versioning/` - SHA-256 artifact store with promotion workflow
-- `backend/serving/grpc_server.py` - gRPC server (was missing, referenced in docker-compose)
-- `backend/interfaces/streamlit_app.py` - Clinician UI (was missing, referenced in docker-compose)
-
-**Improvements**
-
-- `backend/app/` stubs fully implemented (schemas, config, models, routes)
-- `rest_api.py` refactored - routes extracted to `api/routes.py`
-- `fhir_ops.py` exposed via `utils/__init__.py`
-- All `__init__.py` files now export `__all__`
-- `docker-compose.yml` - fixed UI path, added `nexora-artifacts` volume
-- `requirements.txt` - added `streamlit`, `pytest-asyncio`
-- New tests: `test_explainer.py`, `test_feature_store.py`, `test_artifact_store.py`
-- Removed all `__pycache__` and `.pytest_cache` directories
+| Suite                        | Location                                                        | Covers                                           |
+| ---------------------------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| REST API core                | `backend/tests/api/test_rest_api.py`                            | Health, models, prediction, FHIR, metrics, audit |
+| REST API accounts            | `backend/tests/api/test_auth_and_patients.py`                   | Auth, patients, dashboard, notifications         |
+| Explainability               | `ml_core/tests/explainability/`                                 | SHAP, LIME, attention, counterfactuals           |
+| Model factory                | `ml_core/tests/model_factory/`                                  | Model registry lookup and lifecycle              |
+| Model behavior               | `ml_core/tests/model_tests/`                                    | Calibration, fairness, predictive equality       |
+| Monitoring                   | `ml_core/tests/monitoring/`                                     | Adverse events, clinical metrics                 |
+| Compliance                   | `ml_core/tests/compliance/`                                     | PHI audit logging                                |
+| Data pipeline                | `ml_core/tests/data_pipeline/`                                  | Clinical ETL                                     |
+| Clinical validation          | `ml_core/tests/clinical_tests/`                                 | Data validation, FHIR ingestion                  |
+| Feature store and versioning | `ml_core/tests/test_feature_store.py`, `test_artifact_store.py` | Feature persistence, artifact promotion          |
+| Utilities                    | `ml_core/tests/utils/`                                          | FHIR connector, healthcare metrics               |
